@@ -1,5 +1,13 @@
 {
   "main": "index.js",
+  "name": "session_util_wrapper",
+  "description": "Wrappers for the Session Util Library",
+  "version": "0.1.0",
+  "license": "GPL-3.0",
+  "author": {
+    "name": "Oxen Labs",
+    "email": "team@oxen.io"
+  },
   "scripts": {
     "configure": "node-gyp configure",
     "build": "node-gyp build"
