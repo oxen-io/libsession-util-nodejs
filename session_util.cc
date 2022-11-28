@@ -6,10 +6,10 @@ using v8::FunctionTemplate;
 // C++ constructs that are exposed to javascript are exported here
 
 NAN_MODULE_INIT(InitAll) {
-  Nan::Set(target, Nan::New("nothing").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(nothing)).ToLocalChecked());
-  // Nan::Set(target, Nan::New("aString").ToLocalChecked(),
-  //   Nan::GetFunction(Nan::New<FunctionTemplate>(aString)).ToLocalChecked());
+  // Nan::Set(target, Nan::New("nothing").ToLocalChecked(),
+  //   Nan::GetFunction(Nan::New<FunctionTemplate>(nothing)).ToLocalChecked());
+  Nan::Set(target, Nan::New("aString").ToLocalChecked(),
+    Nan::GetFunction(Nan::New<FunctionTemplate>(aString)).ToLocalChecked());
   // Nan::Set(target, Nan::New("aBoolean").ToLocalChecked(),
   //   Nan::GetFunction(Nan::New<FunctionTemplate>(aBoolean)).ToLocalChecked());
   // Nan::Set(target, Nan::New("aNumber").ToLocalChecked(),
