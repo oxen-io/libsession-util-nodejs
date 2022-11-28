@@ -2,7 +2,7 @@
   "targets": [
     {
       "target_name": "session_util_wrapper",
-      "sources": [ "session_util.cc", "user_config.cc" ],
+      "sources": [ "session_util.cpp", "user_config.cpp" ],
       "include_dirs" : [
         "<!(node -e \"require('nan')\")",
         "<(module_root_dir)/include/",
