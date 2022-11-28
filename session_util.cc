@@ -27,4 +27,4 @@ NAN_MODULE_INIT(InitAll) {
   // MyObject::Init(target);
 }
 
-NODE_MODULE(SessionUtilWrapper, InitAll)
+NODE_MODULE(session_util_wrapper, InitAll)
