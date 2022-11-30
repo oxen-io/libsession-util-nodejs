@@ -1,7 +1,11 @@
 declare module "session_util_wrapper" {
-  export class UserConfigWrapper {
+  export abstract class BaseConfigWrapper {
+    public needsDump(): boolean;
+    public needsPush(): boolean;
+  }
+  export class UserConfigWrapper extends BaseConfigWrapper {
     constructor();
-    constructor(restoreFromData: string);
-    public getValue(): number;
+    public getName(): string;
+    public setName(name: string);
   }
 }
