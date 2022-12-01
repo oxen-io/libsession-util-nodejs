@@ -15,10 +15,9 @@ public:
     tpl->SetClassName(Nan::New("UserConfigWrapper").ToLocalChecked());
     tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-    SESSION_LINK_BASE_CONFIG
-
     Nan::SetPrototypeMethod(tpl, "getName", GetName);
     Nan::SetPrototypeMethod(tpl, "setName", SetName);
+    SESSION_LINK_BASE_CONFIG
 
     // constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
     Nan::Set(target, Nan::New("UserConfigWrapper").ToLocalChecked(),
@@ -57,19 +56,17 @@ private:
   static NAN_METHOD(GetName)
   {
     v8::Isolate *isolate = info.GetIsolate();
-
     UserConfigWrapper *obj = Nan::ObjectWrap::Unwrap<UserConfigWrapper>(info.Holder());
     auto asUserProfile = static_cast<session::config::UserProfile *>(obj->config);
-
-    auto name = asUserProfile->get_name();
-    if (name == NULL)
+    if (asUserProfile == nullptr || asUserProfile->get_name() == nullptr)
     {
       info.GetReturnValue().Set(Nan::Null());
+      return;
     }
-    else
-    {
-      info.GetReturnValue().Set(v8::String::NewFromUtf8(isolate, name->c_str()).ToLocalChecked());
-    }
+
+    auto name = asUserProfile->get_name();
+    info.GetReturnValue().Set(v8::String::NewFromUtf8(isolate, name->c_str()).ToLocalChecked());
+    return;
   }
 
   static NAN_METHOD(SetName)

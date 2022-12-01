@@ -25,7 +25,31 @@ protected:
   void initWithConfig(session::config::ConfigBase *config)
   {
 
-    config = config;
+    if (this->isInitialized())
+    {
+      Nan::ThrowError("this instance of ConfigBaseWrapper was already initialized");
+      return;
+    }
+    this->config = config;
+  }
+
+  bool isInitialized()
+  {
+    return (this->config != nullptr);
+  }
+
+  /**
+   * This function throws and exception if this instance has not been initialized, but you still need to return in the parent if it returns false.
+   * The reason is that just throwing an exception does not apparently stop the executation of the current function.
+   */
+  bool isInitializedOrThrow()
+  {
+    if (!this->isInitialized())
+    {
+      Nan::ThrowError("this instance of ConfigBaseWrapper was already initialized");
+      return false;
+    }
+    return true;
   }
 
   ~ConfigBaseWrapper()
@@ -34,12 +58,12 @@ protected:
     //  if (config)
     //  {
     //    config_free(config)
-    //    config = NULL;
+    //    config = nullptr;
     //  }
   }
   ConfigBaseWrapper()
   {
-    config = NULL;
+    config = nullptr;
   }
 
   static NAN_METHOD(NeedsDump)
