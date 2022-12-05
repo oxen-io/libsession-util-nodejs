@@ -83,10 +83,9 @@ void assertIsString(const v8::Local<v8::Value> val) {
   }
 }
 
-v8::Local<v8::String> toJSString(v8::Isolate *isolate, std::string_view x) {
-  return v8::String::NewFromUtf8(isolate, x.data(), v8::NewStringType::kNormal,
-                                 x.size())
-      .ToLocalChecked();
+v8::Local<v8::String> toJSString(std::string_view x) {
+
+  return Nan::New<v8::String>(x.data(), x.size()).ToLocalChecked();
 }
 
 std::string toCppString(v8::Local<v8::Value> x) {
@@ -113,8 +112,23 @@ std::string toCppString(v8::Local<v8::Value> x) {
   throw std::invalid_argument(errorMsg);
 }
 
-v8::Local<v8::Object> toJSUInt8Array(v8::Isolate *isolate,
-                                     const std::string *x) {
+std::string toCppBuffer(v8::Local<v8::Value> x) {
+  if (x->IsUint8Array()) {
+    auto aUint8Array = x.As<v8::Uint8Array>();
+
+    std::string xStr;
+    xStr.resize(aUint8Array->Length());
+    aUint8Array->CopyContents(xStr.data(), xStr.size());
+    return xStr;
+  }
+
+  auto errorMsg = "toCppBuffer unsupported type";
+
+  throw std::invalid_argument(errorMsg);
+}
+
+v8::Local<v8::Object> toJsBuffer(const std::string *x) {
+  std::string as = *x;
 
   auto buf = Nan::CopyBuffer(x->data(), x->size()).ToLocalChecked();
   return buf;
