@@ -16,7 +16,8 @@
   "dependencies": {
     "bindings": "^1.5.0",
     "nan": "^2.17.0",
-    "node-gyp": "^9.3.0"
+    "node-gyp": "^9.3.0",
+    "session_util_wrapper": "file://home/audric/pro/contribs/session_util_wrapper/"
   },
   "typings": "session_util_wrapper.d.ts"
 }

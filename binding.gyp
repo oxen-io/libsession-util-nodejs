@@ -11,7 +11,13 @@
       "libraries": [ "<(module_root_dir)/lib/libsession-util.a"],
       "cflags_cc": [
         "-std=c++17",
-        "-fexceptions"
+        "-fexceptions",
+        "-frtti",
+      ],
+      "cflags": [
+        "-std=c++17",
+        "-fexceptions",
+        "-frtti",
       ]
     }
   ]
