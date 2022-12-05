@@ -29,8 +29,6 @@ NAN_METHOD(UserConfigWrapper::New) {
 
 NAN_METHOD(UserConfigWrapper::GetName) {
   tryOrWrapStdException([&]() {
-    v8::Isolate *isolate = info.GetIsolate();
-
     auto userProfile = to<session::config::UserProfile>(info);
 
     if (userProfile == nullptr || userProfile->get_name() == nullptr) {
@@ -40,7 +38,7 @@ NAN_METHOD(UserConfigWrapper::GetName) {
 
     auto name = userProfile->get_name();
     info.GetReturnValue().Set(
-        v8::String::NewFromUtf8(isolate, name->c_str()).ToLocalChecked());
+        Nan::New<v8::String>(name->c_str()).ToLocalChecked());
     return;
   });
 }
@@ -64,7 +62,6 @@ NAN_METHOD(UserConfigWrapper::SetName) {
 
 NAN_METHOD(UserConfigWrapper::GetProfilePic) {
   tryOrWrapStdException([&]() {
-    auto isolate = info.GetIsolate();
     auto context = Nan::GetCurrentContext();
     auto userProfile = to<session::config::UserProfile>(info);
 
@@ -81,16 +78,14 @@ NAN_METHOD(UserConfigWrapper::GetProfilePic) {
 
     v8::Local<v8::Object> pictureObject = Nan::New<v8::Object>();
 
-    auto urlStr = toJSString(isolate, *url);
+    auto urlStr = toJSString(*url);
 
     // key is a std::string not null terminated. We need to extract a
     // uint8Array out of it
-    auto keyUint8Array = toJSUInt8Array(isolate, key);
+    auto keyUint8Array = toJsBuffer(key);
 
-    auto result =
-        pictureObject->Set(context, toJSString(isolate, "url"), urlStr);
-    result =
-        pictureObject->Set(context, toJSString(isolate, "key"), keyUint8Array);
+    auto result = pictureObject->Set(context, toJSString("url"), urlStr);
+    result = pictureObject->Set(context, toJSString("key"), keyUint8Array);
 
     info.GetReturnValue().Set(pictureObject);
 
@@ -105,7 +100,7 @@ NAN_METHOD(UserConfigWrapper::SetProfilePic) {
     assertIsUInt8ArrayOrNull(info[1]);
 
     auto pic = toCppString(info[0]);
-    auto key = toCppString(info[1]);
+    auto key = toCppBuffer(info[1]);
 
     auto userProfile = to<session::config::UserProfile>(info);
     if (!userProfile) {

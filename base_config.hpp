@@ -21,11 +21,11 @@ template <typename Call> void tryOrWrapStdException(Call &&call) {
   }
 }
 
-v8::Local<v8::String> toJSString(v8::Isolate *isolate, std::string_view x);
+v8::Local<v8::String> toJSString(std::string_view x);
 std::string toCppString(v8::Local<v8::Value> x);
+std::string toCppBuffer(v8::Local<v8::Value> x);
 
-v8::Local<v8::Object> toJSUInt8Array(v8::Isolate *isolate,
-                                     const std::string *x);
+v8::Local<v8::Object> toJsBuffer(const std::string *x);
 
 class ConfigBaseWrapper : public Nan::ObjectWrap {
 public:
