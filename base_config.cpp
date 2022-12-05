@@ -4,8 +4,14 @@
 #include "oxenc/hex.h"
 #include <iostream>
 
+using v8::Local;
+using v8::Object;
+using v8::String;
+using v8::Uint8Array;
+using v8::Value;
+
 NAN_MODULE_INIT(ConfigBaseWrapper::Init) {
-  v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
+  Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
   tpl->SetClassName(Nan::New("ConfigBaseWrapper").ToLocalChecked());
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
@@ -42,7 +48,7 @@ NAN_METHOD(ConfigBaseWrapper::NeedsPush) {
   info.GetReturnValue().Set(obj->config->needs_push());
 }
 
-void assertInfoLength(const Nan::FunctionCallbackInfo<v8::Value> &info,
+void assertInfoLength(const Nan::FunctionCallbackInfo<Value> &info,
                       const int expected) {
   if (info.Length() != expected) {
     auto errorMsg = "Invalid number of arguments";
@@ -50,7 +56,7 @@ void assertInfoLength(const Nan::FunctionCallbackInfo<v8::Value> &info,
   }
 }
 
-void assertInfoMinLength(const Nan::FunctionCallbackInfo<v8::Value> &info,
+void assertInfoMinLength(const Nan::FunctionCallbackInfo<Value> &info,
                          const int minLength) {
   if (info.Length() < minLength) {
     auto errorMsg = "Invalid number of min length arguments";
@@ -59,7 +65,7 @@ void assertInfoMinLength(const Nan::FunctionCallbackInfo<v8::Value> &info,
   }
 }
 
-void assertIsStringOrNull(const v8::Local<v8::Value> val) {
+void assertIsStringOrNull(const Local<Value> val) {
   if (!val->IsString() && !val->IsNull()) {
     auto errorMsg = "Wrong arguments: expected string or null";
 
@@ -67,7 +73,7 @@ void assertIsStringOrNull(const v8::Local<v8::Value> val) {
   }
 }
 
-void assertIsUInt8ArrayOrNull(const v8::Local<v8::Value> val) {
+void assertIsUInt8ArrayOrNull(const Local<Value> val) {
   if (!val->IsUint8Array() && !val->IsNull()) {
     auto errorMsg = "Wrong arguments: expected uint8Array or null";
 
@@ -75,7 +81,7 @@ void assertIsUInt8ArrayOrNull(const v8::Local<v8::Value> val) {
   }
 }
 
-void assertIsString(const v8::Local<v8::Value> val) {
+void assertIsString(const Local<Value> val) {
   if (!val->IsString()) {
     auto errorMsg = "Wrong arguments: expected string";
 
@@ -83,15 +89,15 @@ void assertIsString(const v8::Local<v8::Value> val) {
   }
 }
 
-v8::Local<v8::String> toJSString(std::string_view x) {
+Local<String> toJSString(std::string_view x) {
 
-  return Nan::New<v8::String>(x.data(), x.size()).ToLocalChecked();
+  return Nan::New<String>(x.data(), x.size()).ToLocalChecked();
 }
 
-std::string toCppString(v8::Local<v8::Value> x) {
+std::string toCppString(Local<Value> x) {
 
   if (x->IsString()) {
-    auto asStr = x.As<v8::String>();
+    auto asStr = x.As<String>();
 
     Nan::Utf8String xUtf(x);
     std::string xStr{*xUtf, asStr->Length()};
@@ -99,7 +105,7 @@ std::string toCppString(v8::Local<v8::Value> x) {
   }
 
   if (x->IsUint8Array()) {
-    auto aUint8Array = x.As<v8::Uint8Array>();
+    auto aUint8Array = x.As<Uint8Array>();
 
     std::string xStr;
     xStr.resize(aUint8Array->Length());
@@ -112,9 +118,9 @@ std::string toCppString(v8::Local<v8::Value> x) {
   throw std::invalid_argument(errorMsg);
 }
 
-std::string toCppBuffer(v8::Local<v8::Value> x) {
+std::string toCppBuffer(Local<Value> x) {
   if (x->IsUint8Array()) {
-    auto aUint8Array = x.As<v8::Uint8Array>();
+    auto aUint8Array = x.As<Uint8Array>();
 
     std::string xStr;
     xStr.resize(aUint8Array->Length());
@@ -127,7 +133,7 @@ std::string toCppBuffer(v8::Local<v8::Value> x) {
   throw std::invalid_argument(errorMsg);
 }
 
-v8::Local<v8::Object> toJsBuffer(const std::string *x) {
+Local<Object> toJsBuffer(const std::string *x) {
   std::string as = *x;
 
   auto buf = Nan::CopyBuffer(x->data(), x->size()).ToLocalChecked();
