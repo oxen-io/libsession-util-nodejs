@@ -1,61 +1,98 @@
 #pragma once
 
-#include <nan.h>
 #include "session/config/base.hpp"
+#include <nan.h>
 
-#define SESSION_LINK_BASE_CONFIG                        \
-  Nan::SetPrototypeMethod(tpl, "needsDump", NeedsDump); \
-  Nan::SetPrototypeMethod(tpl, "needsPush", NeedsPush);
+void assertInfoLength(const Nan::FunctionCallbackInfo<v8::Value> &info,
+                      const int expected);
 
-class ConfigBaseWrapper : public Nan::ObjectWrap
-{
+void assertInfoMinLength(const Nan::FunctionCallbackInfo<v8::Value> &info,
+                         const int minLength);
+
+void assertIsStringOrNull(const v8::Local<v8::Value> value);
+void assertIsUInt8ArrayOrNull(const v8::Local<v8::Value> value);
+void assertIsString(const v8::Local<v8::Value> value);
+
+template <typename Call> void tryOrWrapStdException(Call &&call) {
+  try {
+    call();
+  } catch (const std::exception &e) {
+    Nan::ThrowError(e.what());
+  }
+}
+
+v8::Local<v8::String> toJSString(v8::Isolate *isolate, std::string_view x);
+std::string toCppString(v8::Local<v8::Value> x);
+
+v8::Local<v8::Object> toJSUInt8Array(v8::Isolate *isolate,
+                                     const std::string *x);
+
+class ConfigBaseWrapper : public Nan::ObjectWrap {
 public:
   static NAN_MODULE_INIT(Init);
 
-protected:
-  void initWithConfig(session::config::ConfigBase *config)
-  {
+  template <typename... More>
+  static void
+  RegisterNANMethods(v8::Local<v8::FunctionTemplate> &tpl, const char *name,
+                     Nan::FunctionCallback callback, More &&...more) {
 
-    if (this->isInitialized())
-    {
-      Nan::ThrowError("this instance of ConfigBaseWrapper was already initialized");
+    Nan::SetPrototypeMethod(tpl, name, std::move(callback));
+
+    if constexpr (sizeof...(More) > 0)
+      // If we were given more arguments then it is more methods, so recurse:
+      RegisterNANMethods(tpl, std::forward<More>(more)...);
+    else {
+      // We're at the end of the argument list, so now add the base class
+      // methods:
+      Nan::SetPrototypeMethod(tpl, "needsDump", &ConfigBaseWrapper::NeedsDump);
+      Nan::SetPrototypeMethod(tpl, "needsPush", &ConfigBaseWrapper::NeedsPush);
+    }
+  }
+
+protected:
+  void initWithConfig(session::config::ConfigBase *config) {
+    if (this->isInitialized()) {
+      Nan::ThrowError(
+          "this instance of ConfigBaseWrapper was already initialized");
       return;
     }
     this->config = config;
   }
 
-  bool isInitialized()
-  {
-    return (this->config != nullptr);
-  }
+  bool isInitialized() { return (this->config != nullptr); }
 
   /**
-   * This function throws and exception if this instance has not been initialized, but you still need to return in the parent if it returns false.
-   * The reason is that just throwing an exception does not apparently stop the executation of the current function.
+   * This function throws and exception if this instance has not been
+   * initialized, but you still need to return in the parent if it returns
+   * false. The reason is that just throwing an exception does not apparently
+   * stop the executation of the current function.
    */
-  bool isInitializedOrThrow()
-  {
-    if (!this->isInitialized())
-    {
-      Nan::ThrowError("this instance of ConfigBaseWrapper was already initialized");
+  bool isInitializedOrThrow() {
+    if (!this->isInitialized()) {
+      Nan::ThrowError(
+          "this instance of ConfigBaseWrapper was already initialized");
       return false;
     }
     return true;
   }
 
-  ~ConfigBaseWrapper()
-  {
-    // FIXME
-    //  if (config)
-    //  {
-    //    config_free(config)
-    //    config = nullptr;
-    //  }
+  template <typename Subtype>
+  static Subtype *to(const Nan::FunctionCallbackInfo<v8::Value> &info) {
+    ConfigBaseWrapper *obj =
+        Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
+
+    if (!obj->isInitializedOrThrow())
+      return nullptr;
+    return dynamic_cast<Subtype *>(obj->config);
   }
-  ConfigBaseWrapper()
-  {
+
+  virtual ~ConfigBaseWrapper() {
+    if (config)
+      delete config;
     config = nullptr;
   }
+
+  ConfigBaseWrapper() { config = nullptr; }
 
   static NAN_METHOD(NeedsDump);
   static NAN_METHOD(NeedsPush);
