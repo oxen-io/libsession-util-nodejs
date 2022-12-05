@@ -2,6 +2,13 @@
 #include "base_config.hpp"
 #include "oxenc/hex.h"
 #include <iostream>
+
+using v8::Local;
+using v8::Object;
+using v8::String;
+using v8::Uint8Array;
+using v8::Value;
+
 NAN_MODULE_INIT(UserConfigWrapper::Init) {
   v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
   tpl->SetClassName(Nan::New("UserConfigWrapper").ToLocalChecked());
@@ -37,8 +44,7 @@ NAN_METHOD(UserConfigWrapper::GetName) {
     }
 
     auto name = userProfile->get_name();
-    info.GetReturnValue().Set(
-        Nan::New<v8::String>(name->c_str()).ToLocalChecked());
+    info.GetReturnValue().Set(Nan::New<String>(name->c_str()).ToLocalChecked());
     return;
   });
 }
@@ -76,7 +82,7 @@ NAN_METHOD(UserConfigWrapper::GetProfilePic) {
       return;
     }
 
-    v8::Local<v8::Object> pictureObject = Nan::New<v8::Object>();
+    Local<Object> pictureObject = Nan::New<Object>();
 
     auto urlStr = toJSString(*url);
 
