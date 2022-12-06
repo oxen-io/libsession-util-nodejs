@@ -2,8 +2,34 @@
 
 #include "base_config.hpp"
 #include "oxenc/hex.h"
-#include <iostream>
 
+#include <iostream>
+#include <oxenc/hex.h>
+#include <string_view>
+
+using namespace std::literals;
+using namespace oxenc::literals;
+
+namespace {
+
+std::string printable(std::string_view x) {
+  std::string p;
+  for (auto c : x) {
+    if (c >= 0x20 && c <= 0x7e)
+      p += c;
+    else
+      p += "\\x" + oxenc::to_hex(&c, &c + 1);
+  }
+  return p;
+}
+std::string printable(const char *x) = delete;
+std::string printable(const char *x, size_t n) { return printable({x, n}); }
+
+} // namespace
+
+using std::cerr;
+
+using v8::Array;
 using v8::Local;
 using v8::Object;
 using v8::String;
@@ -81,7 +107,7 @@ NAN_METHOD(ConfigBaseWrapper::ConfirmPushed) {
   assertIsNumber(info[0]);
 
   auto seqno = info[0];
-  auto seqNoInteger = toCppInteger(seqno);
+  int64_t seqNoInteger = toCppInteger(seqno);
 
   obj->config->confirm_pushed(seqNoInteger);
 }
@@ -89,121 +115,24 @@ NAN_METHOD(ConfigBaseWrapper::ConfirmPushed) {
 NAN_METHOD(ConfigBaseWrapper::Merge) {
   ConfigBaseWrapper *obj =
       Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
-  assertIsNumber(info[0]);
+  assertIsArray(info[0]);
 
-  auto seqno = info[0];
+  Local<Array> asArray = info[0].As<Array>();
 
-  obj->config->merge(seqno);
-}
+  uint32_t arrayLength = asArray->Length();
+  std::vector<std::string> conf_strs;
 
-void assertInfoLength(const Nan::FunctionCallbackInfo<Value> &info,
-                      const int expected) {
-  if (info.Length() != expected) {
-    auto errorMsg = "Invalid number of arguments";
-    throw std::invalid_argument(errorMsg);
-  }
-}
+  std::vector<std::string_view>
+      to_merge; // FIXME: drop this with new libsession-util ustring changes
+  to_merge.reserve(arrayLength);
 
-void assertInfoMinLength(const Nan::FunctionCallbackInfo<Value> &info,
-                         const int minLength) {
-  if (info.Length() < minLength) {
-    auto errorMsg = "Invalid number of min length arguments";
-
-    throw std::invalid_argument(errorMsg);
-  }
-}
-
-void assertIsStringOrNull(const Local<Value> val) {
-  if (!val->IsString() && !val->IsNull()) {
-    auto errorMsg = "Wrong arguments: expected string or null";
-
-    throw std::invalid_argument(errorMsg);
-  }
-}
-
-void assertIsNumber(const Local<Value> val) {
-  if (!val->IsNumber()) {
-    auto errorMsg = "Wrong arguments: expected number";
-
-    throw std::invalid_argument(errorMsg);
-  }
-}
-
-void assertIsUInt8ArrayOrNull(const Local<Value> val) {
-  if (!val->IsUint8Array() && !val->IsNull()) {
-    auto errorMsg = "Wrong arguments: expected uint8Array or null";
-
-    throw std::invalid_argument(errorMsg);
-  }
-}
-
-void assertIsString(const Local<Value> val) {
-  if (!val->IsString()) {
-    auto errorMsg = "Wrong arguments: expected string";
-
-    throw std::invalid_argument(errorMsg);
-  }
-}
-
-Local<String> toJSString(std::string_view x) {
-
-  return Nan::New<String>(x.data(), x.size()).ToLocalChecked();
-}
-
-std::string toCppString(Local<Value> x) {
-
-  if (x->IsString()) {
-    auto asStr = Nan::To<String>(x).ToLocalChecked();
-
-    Nan::Utf8String xUtf(x);
-    std::string xStr{*xUtf, asStr->Length()};
-    return xStr;
+  for (uint32_t i = 0; i < asArray->Length(); i++) {
+    Local<Value> item =
+        asArray->Get(Nan::GetCurrentContext(), i).ToLocalChecked();
+    assertIsUInt8Array(item);
+    conf_strs.push_back(toCppBuffer(item));
+    to_merge.push_back(conf_strs.back());
   }
 
-  if (x->IsUint8Array()) {
-    auto aUint8Array = x.As<Uint8Array>();
-
-    std::string xStr;
-    xStr.resize(aUint8Array->Length());
-    aUint8Array->CopyContents(xStr.data(), xStr.size());
-    return xStr;
-  }
-
-  auto errorMsg = "toCppString unsupported type";
-
-  throw std::invalid_argument(errorMsg);
-}
-
-std::string toCppBuffer(Local<Value> x) {
-  if (x->IsUint8Array()) {
-    auto aUint8Array = x.As<Uint8Array>();
-
-    std::string xStr;
-    xStr.resize(aUint8Array->Length());
-    aUint8Array->CopyContents(xStr.data(), xStr.size());
-    return xStr;
-  }
-
-  auto errorMsg = "toCppBuffer unsupported type";
-
-  throw std::invalid_argument(errorMsg);
-}
-
-Local<Object> toJsBuffer(const std::string *x) {
-  std::string as = *x;
-
-  auto buf = Nan::CopyBuffer(x->data(), x->size()).ToLocalChecked();
-  return buf;
-}
-
-int64_t toCppInteger(Local<Value> x) {
-
-  if (x->IsNumber()) {
-    auto asNumber = x.As<v8::Number>();
-    return asNumber->Value();
-  }
-
-  auto errorMsg = "toCppInteger unsupported type";
-
-  throw std::invalid_argument(errorMsg);
+  obj->config->merge(to_merge);
 }
