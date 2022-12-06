@@ -110,8 +110,8 @@ NAN_METHOD(UserConfigWrapper::SetProfilePic) {
     assertIsStringOrNull(info[0]);
     assertIsUInt8ArrayOrNull(info[1]);
 
-    auto pic = toCppString(info[0]);
-    auto key = toCppBuffer(info[1]);
+    std::string pic = toCppString(info[0]);
+    std::string key = toCppBuffer(info[1]);
 
     auto userProfile = to<session::config::UserProfile>(info);
     if (!userProfile) {
