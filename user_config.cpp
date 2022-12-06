@@ -78,7 +78,12 @@ NAN_METHOD(UserConfigWrapper::GetProfilePic) {
 
     auto [url, key] = userProfile->get_profile_pic();
     if (!url || !key) {
-      info.GetReturnValue().Set(Nan::Null());
+      Local<Object> pictureObject = Nan::New<Object>();
+
+      auto result = pictureObject->Set(context, toJSString("url"), Nan::Null());
+      result = pictureObject->Set(context, toJSString("key"), Nan::Null());
+
+      info.GetReturnValue().Set(pictureObject);
       return;
     }
 
