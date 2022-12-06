@@ -2,9 +2,9 @@ declare module "session_util_wrapper" {
   export abstract class BaseConfigWrapper {
     public needsDump(): boolean;
     public needsPush(): boolean;
-    public push(): { toPush: Uint8Array; seqno: number };
+    public push(): { data: Uint8Array; seqno: number };
     public dump(): Uint8Array;
-    public confirmPushed(): void;
+    public confirmPushed(seqno: number): void;
     public merge(toMerge: Array<Uint8Array>): void;
   }
   export class UserConfigWrapper extends BaseConfigWrapper {
@@ -14,7 +14,7 @@ declare module "session_util_wrapper" {
     public getProfilePic(): {
       url: string | null;
       key: Uint8Array | null;
-    } | null;
+    };
     public setProfilePic(url: string | null, key: Uint8Array | null);
   }
 }
