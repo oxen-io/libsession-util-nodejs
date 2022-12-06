@@ -10,6 +10,7 @@ void assertInfoMinLength(const Nan::FunctionCallbackInfo<v8::Value> &info,
                          const int minLength);
 
 void assertIsStringOrNull(const v8::Local<v8::Value> value);
+void assertIsNumber(const v8::Local<v8::Value> value);
 void assertIsUInt8ArrayOrNull(const v8::Local<v8::Value> value);
 void assertIsString(const v8::Local<v8::Value> value);
 
@@ -26,6 +27,7 @@ std::string toCppString(v8::Local<v8::Value> x);
 std::string toCppBuffer(v8::Local<v8::Value> x);
 
 v8::Local<v8::Object> toJsBuffer(const std::string *x);
+int64_t toCppInteger(v8::Local<v8::Value> x);
 
 class ConfigBaseWrapper : public Nan::ObjectWrap {
 public:
@@ -46,6 +48,11 @@ public:
       // methods:
       Nan::SetPrototypeMethod(tpl, "needsDump", &ConfigBaseWrapper::NeedsDump);
       Nan::SetPrototypeMethod(tpl, "needsPush", &ConfigBaseWrapper::NeedsPush);
+      Nan::SetPrototypeMethod(tpl, "push", &ConfigBaseWrapper::Push);
+      Nan::SetPrototypeMethod(tpl, "dump", &ConfigBaseWrapper::Dump);
+      Nan::SetPrototypeMethod(tpl, "confirmPushed",
+                              &ConfigBaseWrapper::ConfirmPushed);
+      Nan::SetPrototypeMethod(tpl, "merge", &ConfigBaseWrapper::Merge);
     }
   }
 
@@ -96,6 +103,10 @@ protected:
 
   static NAN_METHOD(NeedsDump);
   static NAN_METHOD(NeedsPush);
+  static NAN_METHOD(Push);
+  static NAN_METHOD(Dump);
+  static NAN_METHOD(ConfirmPushed);
+  static NAN_METHOD(Merge);
 
   session::config::ConfigBase *config;
 

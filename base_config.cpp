@@ -48,6 +48,54 @@ NAN_METHOD(ConfigBaseWrapper::NeedsPush) {
   info.GetReturnValue().Set(obj->config->needs_push());
 }
 
+NAN_METHOD(ConfigBaseWrapper::Push) {
+  ConfigBaseWrapper *obj =
+      Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
+  auto context = Nan::GetCurrentContext();
+
+  auto [to_push, seqno] = obj->config->push();
+
+  auto to_push_js = toJsBuffer(&to_push);
+  auto seqno_js = Nan::New<v8::Number>(seqno);
+  Local<Object> to_return = Nan::New<Object>();
+  auto result = to_return->Set(context, toJSString("data"), to_push_js);
+  result = to_return->Set(context, toJSString("seqno"), seqno_js);
+
+  info.GetReturnValue().Set(to_return);
+}
+
+NAN_METHOD(ConfigBaseWrapper::Dump) {
+  ConfigBaseWrapper *obj =
+      Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
+
+  auto dumped = obj->config->dump();
+
+  auto dumped_js = toJsBuffer(&dumped);
+
+  info.GetReturnValue().Set(dumped_js);
+}
+
+NAN_METHOD(ConfigBaseWrapper::ConfirmPushed) {
+  ConfigBaseWrapper *obj =
+      Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
+  assertIsNumber(info[0]);
+
+  auto seqno = info[0];
+  auto seqNoInteger = toCppInteger(seqno);
+
+  obj->config->confirm_pushed(seqNoInteger);
+}
+
+NAN_METHOD(ConfigBaseWrapper::Merge) {
+  ConfigBaseWrapper *obj =
+      Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
+  assertIsNumber(info[0]);
+
+  auto seqno = info[0];
+
+  obj->config->merge(seqno);
+}
+
 void assertInfoLength(const Nan::FunctionCallbackInfo<Value> &info,
                       const int expected) {
   if (info.Length() != expected) {
@@ -68,6 +116,14 @@ void assertInfoMinLength(const Nan::FunctionCallbackInfo<Value> &info,
 void assertIsStringOrNull(const Local<Value> val) {
   if (!val->IsString() && !val->IsNull()) {
     auto errorMsg = "Wrong arguments: expected string or null";
+
+    throw std::invalid_argument(errorMsg);
+  }
+}
+
+void assertIsNumber(const Local<Value> val) {
+  if (!val->IsNumber()) {
+    auto errorMsg = "Wrong arguments: expected number";
 
     throw std::invalid_argument(errorMsg);
   }
@@ -97,7 +153,7 @@ Local<String> toJSString(std::string_view x) {
 std::string toCppString(Local<Value> x) {
 
   if (x->IsString()) {
-    auto asStr = x.As<String>();
+    auto asStr = Nan::To<String>(x).ToLocalChecked();
 
     Nan::Utf8String xUtf(x);
     std::string xStr{*xUtf, asStr->Length()};
@@ -138,4 +194,16 @@ Local<Object> toJsBuffer(const std::string *x) {
 
   auto buf = Nan::CopyBuffer(x->data(), x->size()).ToLocalChecked();
   return buf;
+}
+
+int64_t toCppInteger(Local<Value> x) {
+
+  if (x->IsNumber()) {
+    auto asNumber = x.As<v8::Number>();
+    return asNumber->Value();
+  }
+
+  auto errorMsg = "toCppInteger unsupported type";
+
+  throw std::invalid_argument(errorMsg);
 }
