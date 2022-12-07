@@ -9,6 +9,11 @@ using v8::String;
 using v8::Uint8Array;
 using v8::Value;
 
+using session::ustring;
+using session::ustring_view;
+
+using std::cerr;
+
 NAN_MODULE_INIT(UserConfigWrapper::Init) {
   v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
   tpl->SetClassName(Nan::New("UserConfigWrapper").ToLocalChecked());
@@ -17,7 +22,6 @@ NAN_MODULE_INIT(UserConfigWrapper::Init) {
   RegisterNANMethods(tpl, "getName", GetName, "setName", SetName,
                      "getProfilePic", GetProfilePic, "setProfilePic",
                      SetProfilePic);
-
   // constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
   Nan::Set(target, Nan::New("UserConfigWrapper").ToLocalChecked(),
            Nan::GetFunction(tpl).ToLocalChecked());
@@ -25,11 +29,23 @@ NAN_MODULE_INIT(UserConfigWrapper::Init) {
 
 NAN_METHOD(UserConfigWrapper::New) {
   if (info.IsConstructCall()) {
-    UserConfigWrapper *obj = new UserConfigWrapper();
+    // we should get secret key as first arg and optional dumped as second
+    // argument
+    assertIsUInt8Array(info[0]);
+    assertIsUInt8ArrayOrNull(info[1]);
+
+    ustring secretKey = toCppBuffer(info[0]);
+
+    std::optional<ustring_view> dumped = std::nullopt;
+
+    UserConfigWrapper *obj = new UserConfigWrapper(secretKey, dumped);
+
     obj->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
   } else {
-    Nan::ThrowError("You need to call the constructor with the `new` syntax");
+
+    throw std::invalid_argument(
+        "You need to call the constructor with the `new` syntax");
     return;
   }
 }
@@ -38,13 +54,19 @@ NAN_METHOD(UserConfigWrapper::GetName) {
   tryOrWrapStdException([&]() {
     auto userProfile = to<session::config::UserProfile>(info);
 
-    if (userProfile == nullptr || userProfile->get_name() == nullptr) {
+    if (!userProfile || !userProfile->get_name()) {
       info.GetReturnValue().Set(Nan::Null());
       return;
     }
 
     auto name = userProfile->get_name();
-    info.GetReturnValue().Set(Nan::New<String>(name->c_str()).ToLocalChecked());
+
+    if (name) {
+      info.GetReturnValue().Set(toJsString(*name));
+    } else {
+      info.GetReturnValue().Set(Nan::Null());
+    }
+
     return;
   });
 }
@@ -53,15 +75,15 @@ NAN_METHOD(UserConfigWrapper::SetName) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 1);
     assertIsStringOrNull(info[0]);
-
     Nan::Utf8String str(info[0]);
     std::string cppStr(*str);
 
     auto userProfile = to<session::config::UserProfile>(info);
     if (!userProfile) {
-      Nan::ThrowTypeError("User profile is null");
+      throw std::invalid_argument("User profile is null");
       return;
     }
+
     userProfile->set_name(cppStr);
   });
 }
@@ -71,35 +93,35 @@ NAN_METHOD(UserConfigWrapper::GetProfilePic) {
     auto context = Nan::GetCurrentContext();
     auto userProfile = to<session::config::UserProfile>(info);
 
-    if (userProfile == nullptr) {
+    if (!userProfile) {
       info.GetReturnValue().Set(Nan::Null());
       return;
     }
 
-    auto [url, key] = userProfile->get_profile_pic();
-    if (!url || !key) {
+    std::optional<session::config::profile_pic> profile_pic =
+        userProfile->get_profile_pic();
+    if (profile_pic) {
       Local<Object> pictureObject = Nan::New<Object>();
 
-      auto result = pictureObject->Set(context, toJSString("url"), Nan::Null());
-      result = pictureObject->Set(context, toJSString("key"), Nan::Null());
+      auto urlStr = toJsString(profile_pic->url);
+
+      // key is a std::string not null terminated. We need to extract a
+      // uint8Array out of it
+      auto keyUint8Array = toJsBuffer(profile_pic->key);
+
+      auto result = pictureObject->Set(context, toJsString("url"), urlStr);
+      result = pictureObject->Set(context, toJsString("key"), keyUint8Array);
 
       info.GetReturnValue().Set(pictureObject);
+
       return;
     }
-
     Local<Object> pictureObject = Nan::New<Object>();
 
-    auto urlStr = toJSString(*url);
-
-    // key is a std::string not null terminated. We need to extract a
-    // uint8Array out of it
-    auto keyUint8Array = toJsBuffer(key);
-
-    auto result = pictureObject->Set(context, toJSString("url"), urlStr);
-    result = pictureObject->Set(context, toJSString("key"), keyUint8Array);
+    auto result = pictureObject->Set(context, toJsString("url"), Nan::Null());
+    result = pictureObject->Set(context, toJsString("key"), Nan::Null());
 
     info.GetReturnValue().Set(pictureObject);
-
     return;
   });
 }
@@ -111,7 +133,7 @@ NAN_METHOD(UserConfigWrapper::SetProfilePic) {
     assertIsUInt8ArrayOrNull(info[1]);
 
     std::string pic = toCppString(info[0]);
-    std::string key = toCppBuffer(info[1]);
+    session::ustring_view key = toCppBuffer(info[1]);
 
     auto userProfile = to<session::config::UserProfile>(info);
     if (!userProfile) {

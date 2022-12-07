@@ -29,15 +29,18 @@ public:
       Nan::SetPrototypeMethod(tpl, "confirmPushed",
                               &ConfigBaseWrapper::ConfirmPushed);
       Nan::SetPrototypeMethod(tpl, "merge", &ConfigBaseWrapper::Merge);
+      Nan::SetPrototypeMethod(tpl, "storageNamespace",
+                              &ConfigBaseWrapper::StorageNamespace);
+      Nan::SetPrototypeMethod(tpl, "encryptionDomain",
+                              &ConfigBaseWrapper::EncryptionDomain);
     }
   }
 
 protected:
   void initWithConfig(session::config::ConfigBase *config) {
     if (this->isInitialized()) {
-      Nan::ThrowError(
+      throw std::invalid_argument(
           "this instance of ConfigBaseWrapper was already initialized");
-      return;
     }
     this->config = config;
   }
@@ -52,9 +55,8 @@ protected:
    */
   bool isInitializedOrThrow() {
     if (!this->isInitialized()) {
-      Nan::ThrowError(
+      throw std::invalid_argument(
           "this instance of ConfigBaseWrapper was already initialized");
-      return false;
     }
     return true;
   }
@@ -83,6 +85,8 @@ protected:
   static NAN_METHOD(Dump);
   static NAN_METHOD(ConfirmPushed);
   static NAN_METHOD(Merge);
+  static NAN_METHOD(EncryptionDomain);
+  static NAN_METHOD(StorageNamespace);
 
   session::config::ConfigBase *config;
 
