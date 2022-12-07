@@ -1,19 +1,35 @@
 #pragma once
 
+#include <oxenc/hex.h>
+#include <string_view>
+
+using namespace std::literals;
+using namespace oxenc::literals;
 #include <nan.h>
 
-void assertInfoLength(const Nan::FunctionCallbackInfo<v8::Value> &info,
+#include "session/types.hpp"
+
+using session::ustring;
+using session::ustring_view;
+
+using v8::Local;
+using v8::Number;
+using v8::Object;
+using v8::String;
+using v8::Value;
+
+void assertInfoLength(const Nan::FunctionCallbackInfo<Value> &info,
                       const int expected);
 
-void assertInfoMinLength(const Nan::FunctionCallbackInfo<v8::Value> &info,
+void assertInfoMinLength(const Nan::FunctionCallbackInfo<Value> &info,
                          const int minLength);
 
-void assertIsStringOrNull(const v8::Local<v8::Value> value);
-void assertIsNumber(const v8::Local<v8::Value> value);
-void assertIsArray(const v8::Local<v8::Value> value);
-void assertIsUInt8ArrayOrNull(const v8::Local<v8::Value> value);
-void assertIsUInt8Array(const v8::Local<v8::Value> value);
-void assertIsString(const v8::Local<v8::Value> value);
+void assertIsStringOrNull(const Local<Value> value);
+void assertIsNumber(const Local<Value> value);
+void assertIsArray(const Local<Value> value);
+void assertIsUInt8ArrayOrNull(const Local<Value> value);
+void assertIsUInt8Array(const Local<Value> value);
+void assertIsString(const Local<Value> value);
 
 template <typename Call> void tryOrWrapStdException(Call &&call) {
   try {
@@ -23,9 +39,18 @@ template <typename Call> void tryOrWrapStdException(Call &&call) {
   }
 }
 
-v8::Local<v8::String> toJSString(std::string_view x);
-std::string toCppString(v8::Local<v8::Value> x);
-std::string toCppBuffer(v8::Local<v8::Value> x);
+std::string toCppString(Local<Value> x);
+session::ustring toCppBuffer(Local<Value> x);
+int64_t toCppInteger(Local<Value> x);
 
-v8::Local<v8::Object> toJsBuffer(const std::string *x);
-int64_t toCppInteger(v8::Local<v8::Value> x);
+Local<String> toJsString(std::string_view x);
+Local<Object> toJsBuffer(const ustring *x);
+Local<Object> toJsBuffer(const ustring &x);
+Local<Object> toJsBuffer(const ustring_view *x);
+Local<Object> toJsBuffer(const ustring_view &x);
+Local<Number> toJsNumber(int x);
+
+std::string printable(std::string_view x);
+std::string printable(session::ustring_view x);
+std::string printable(const char *x) = delete;
+std::string printable(const char *x, size_t n);

@@ -1,11 +1,15 @@
 #include "utilities.hpp"
 #include "base_config.hpp"
+#include <iostream>
 
 using v8::Local;
 using v8::Object;
 using v8::String;
 using v8::Uint8Array;
 using v8::Value;
+
+using session::ustring;
+using session::ustring_view;
 
 void assertInfoLength(const Nan::FunctionCallbackInfo<Value> &info,
                       const int expected) {
@@ -72,10 +76,12 @@ void assertIsString(const Local<Value> val) {
   }
 }
 
-Local<String> toJSString(std::string_view x) {
+Local<String> toJsString(std::string_view x) {
 
   return Nan::New<String>(x.data(), x.size()).ToLocalChecked();
 }
+
+Local<Number> toJsNumber(int x) { return Nan::New<Number>(x); }
 
 std::string toCppString(Local<Value> x) {
 
@@ -101,11 +107,11 @@ std::string toCppString(Local<Value> x) {
   throw std::invalid_argument(errorMsg);
 }
 
-std::string toCppBuffer(Local<Value> x) {
+session::ustring toCppBuffer(Local<Value> x) {
   if (x->IsUint8Array()) {
     auto aUint8Array = x.As<Uint8Array>();
 
-    std::string xStr;
+    session::ustring xStr;
     xStr.resize(aUint8Array->Length());
     aUint8Array->CopyContents(xStr.data(), xStr.size());
     return xStr;
@@ -116,10 +122,25 @@ std::string toCppBuffer(Local<Value> x) {
   throw std::invalid_argument(errorMsg);
 }
 
-Local<Object> toJsBuffer(const std::string *x) {
-  std::string as = *x;
+Local<Object> toJsBuffer(const ustring *x) {
+  auto buf =
+      Nan::CopyBuffer((const char *)x->data(), x->size()).ToLocalChecked();
+  return buf;
+}
 
-  auto buf = Nan::CopyBuffer(x->data(), x->size()).ToLocalChecked();
+Local<Object> toJsBuffer(const ustring &x) {
+  auto buf = Nan::CopyBuffer((const char *)x.data(), x.size()).ToLocalChecked();
+  return buf;
+}
+
+Local<Object> toJsBuffer(const ustring_view *x) {
+  auto buf =
+      Nan::CopyBuffer((const char *)x->data(), x->size()).ToLocalChecked();
+  return buf;
+}
+
+Local<Object> toJsBuffer(const ustring_view &x) {
+  auto buf = Nan::CopyBuffer((const char *)x.data(), x.size()).ToLocalChecked();
   return buf;
 }
 
@@ -134,3 +155,25 @@ int64_t toCppInteger(Local<Value> x) {
 
   throw std::invalid_argument(errorMsg);
 }
+
+std::string printable(std::string_view x) {
+  std::string p;
+  for (auto c : x) {
+    if (c >= 0x20 && c <= 0x7e)
+      p += c;
+    else
+      p += "\\x" + oxenc::to_hex(&c, &c + 1);
+  }
+  return p;
+}
+std::string printable(session::ustring_view x) {
+  std::string p;
+  for (auto c : x) {
+    if (c >= 0x20 && c <= 0x7e)
+      p += c;
+    else
+      p += "\\x" + oxenc::to_hex(&c, &c + 1);
+  }
+  return p;
+}
+std::string printable(const char *x, size_t n) { return printable({x, n}); }

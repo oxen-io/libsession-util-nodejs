@@ -6,15 +6,16 @@
 
 #include "session/config/user_profile.hpp"
 
-class UserConfigWrapper : public ConfigBaseWrapper
-{
+using session::ustring_view;
+
+class UserConfigWrapper : public ConfigBaseWrapper {
 public:
   static NAN_MODULE_INIT(Init);
 
 private:
-  explicit UserConfigWrapper()
-  {
-    initWithConfig(new session::config::UserProfile());
+  explicit UserConfigWrapper(ustring_view ed25519_secretkey,
+                             std::optional<ustring_view> dumped) {
+    initWithConfig(new session::config::UserProfile(ed25519_secretkey, dumped));
   }
 
   static NAN_METHOD(New);
