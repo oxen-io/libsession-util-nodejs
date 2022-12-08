@@ -15,7 +15,10 @@ public:
 private:
   explicit UserConfigWrapper(ustring_view ed25519_secretkey,
                              std::optional<ustring_view> dumped) {
-    initWithConfig(new session::config::UserProfile(ed25519_secretkey, dumped));
+    tryOrWrapStdException([&]() {
+      initWithConfig(
+          new session::config::UserProfile(ed25519_secretkey, dumped));
+    });
   }
 
   static NAN_METHOD(New);

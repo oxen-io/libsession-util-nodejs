@@ -28,26 +28,28 @@ NAN_MODULE_INIT(UserConfigWrapper::Init) {
 }
 
 NAN_METHOD(UserConfigWrapper::New) {
-  if (info.IsConstructCall()) {
-    // we should get secret key as first arg and optional dumped as second
-    // argument
-    assertIsUInt8Array(info[0]);
-    assertIsUInt8ArrayOrNull(info[1]);
+  tryOrWrapStdException([&]() {
+    if (info.IsConstructCall()) {
+      // we should get secret key as first arg and optional dumped as second
+      // argument
+      assertIsUInt8Array(info[0]);
+      assertIsUInt8ArrayOrNull(info[1]);
 
-    ustring secretKey = toCppBuffer(info[0]);
+      ustring secretKey = toCppBuffer(info[0]);
 
-    std::optional<ustring_view> dumped = std::nullopt;
+      std::optional<ustring_view> dumped = std::nullopt;
 
-    UserConfigWrapper *obj = new UserConfigWrapper(secretKey, dumped);
+      UserConfigWrapper *obj = new UserConfigWrapper(secretKey, dumped);
 
-    obj->Wrap(info.This());
-    info.GetReturnValue().Set(info.This());
-  } else {
+      obj->Wrap(info.This());
+      info.GetReturnValue().Set(info.This());
+    } else {
 
-    throw std::invalid_argument(
-        "You need to call the constructor with the `new` syntax");
-    return;
-  }
+      throw std::invalid_argument(
+          "You need to call the constructor with the `new` syntax");
+      return;
+    }
+  });
 }
 
 NAN_METHOD(UserConfigWrapper::GetName) {
