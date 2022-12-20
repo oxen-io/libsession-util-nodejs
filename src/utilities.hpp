@@ -8,6 +8,7 @@ using namespace oxenc::literals;
 #include <nan.h>
 
 #include "session/types.hpp"
+#include <iostream>
 
 using session::ustring;
 using session::ustring_view;
@@ -27,14 +28,17 @@ void assertInfoMinLength(const Nan::FunctionCallbackInfo<Value> &info,
 void assertIsStringOrNull(const Local<Value> value);
 void assertIsNumber(const Local<Value> value);
 void assertIsArray(const Local<Value> value);
+void assertIsObject(const Local<Value> value);
 void assertIsUInt8ArrayOrNull(const Local<Value> value);
 void assertIsUInt8Array(const Local<Value> value);
 void assertIsString(const Local<Value> value);
+void assertIsBoolean(const Local<Value> val);
 
 template <typename Call> void tryOrWrapStdException(Call &&call) {
   try {
     call();
   } catch (const std::exception &e) {
+    std::cerr << "caught and rethrowing exception: " << e.what() << "\n\n";
     Nan::ThrowError(e.what());
   }
 }
@@ -54,3 +58,5 @@ std::string printable(std::string_view x);
 std::string printable(session::ustring_view x);
 std::string printable(const char *x) = delete;
 std::string printable(const char *x, size_t n);
+
+std::string toCppDetailString(const Local<Value> val);
