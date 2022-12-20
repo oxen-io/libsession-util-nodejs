@@ -1,5 +1,6 @@
 #include "utilities.hpp"
 #include "base_config.hpp"
+#include "oxenc/hex.h"
 #include <iostream>
 
 using v8::Local;
@@ -10,6 +11,7 @@ using v8::Value;
 
 using session::ustring;
 using session::ustring_view;
+using namespace std;
 
 void assertInfoLength(const Nan::FunctionCallbackInfo<Value> &info,
                       const int expected) {
@@ -52,6 +54,14 @@ void assertIsArray(const Local<Value> val) {
   }
 }
 
+void assertIsObject(const Local<Value> val) {
+  if (!val->IsObject() || val.IsEmpty()) {
+    auto errorMsg = "Wrong arguments: expected object";
+
+    throw std::invalid_argument(errorMsg);
+  }
+}
+
 void assertIsUInt8ArrayOrNull(const Local<Value> val) {
   if (!val->IsUint8Array() && !val->IsNull()) {
     auto errorMsg = "Wrong arguments: expected uint8Array or null";
@@ -76,6 +86,14 @@ void assertIsString(const Local<Value> val) {
   }
 }
 
+void assertIsBoolean(const Local<Value> val) {
+  if (!val->IsBoolean()) {
+    auto errorMsg = "Wrong arguments: expected boolean";
+
+    throw std::invalid_argument(errorMsg);
+  }
+}
+
 Local<String> toJsString(std::string_view x) {
 
   return Nan::New<String>(x.data(), x.size()).ToLocalChecked();
@@ -84,7 +102,9 @@ Local<String> toJsString(std::string_view x) {
 Local<Number> toJsNumber(int x) { return Nan::New<Number>(x); }
 
 std::string toCppString(Local<Value> x) {
-
+  if (x->IsNullOrUndefined()) {
+    throw std::invalid_argument("toCppString called with null or undefined");
+  }
   if (x->IsString()) {
     auto asStr = Nan::To<String>(x).ToLocalChecked();
 
@@ -108,16 +128,21 @@ std::string toCppString(Local<Value> x) {
 }
 
 session::ustring toCppBuffer(Local<Value> x) {
+  if (x->IsNullOrUndefined()) {
+    throw std::invalid_argument("toCppBuffer called with null or undefined");
+  }
   if (x->IsUint8Array()) {
     auto aUint8Array = x.As<Uint8Array>();
 
     session::ustring xStr;
     xStr.resize(aUint8Array->Length());
-    aUint8Array->CopyContents(xStr.data(), xStr.size());
+    auto copied = aUint8Array->CopyContents(xStr.data(), xStr.size());
+
     return xStr;
   }
 
   auto errorMsg = "toCppBuffer unsupported type";
+  std::cerr << "pop " << toCppDetailString(x) << std::endl;
 
   throw std::invalid_argument(errorMsg);
 }
@@ -142,6 +167,12 @@ Local<Object> toJsBuffer(const ustring_view *x) {
 Local<Object> toJsBuffer(const ustring_view &x) {
   auto buf = Nan::CopyBuffer((const char *)x.data(), x.size()).ToLocalChecked();
   return buf;
+}
+
+std::string toCppDetailString(const Local<Value> val) {
+  auto context = Nan::GetCurrentContext();
+
+  return toCppString(val->ToDetailString(context).ToLocalChecked());
 }
 
 int64_t toCppInteger(Local<Value> x) {

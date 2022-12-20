@@ -30,6 +30,8 @@ NAN_MODULE_INIT(UserConfigWrapper::Init) {
 NAN_METHOD(UserConfigWrapper::New) {
   tryOrWrapStdException([&]() {
     if (info.IsConstructCall()) {
+      assertInfoLength(info, 2);
+
       // we should get secret key as first arg and optional dumped as second
       // argument
       assertIsUInt8Array(info[0]);
@@ -131,11 +133,14 @@ NAN_METHOD(UserConfigWrapper::GetProfilePic) {
 NAN_METHOD(UserConfigWrapper::SetProfilePic) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 2);
-    assertIsStringOrNull(info[0]);
-    assertIsUInt8ArrayOrNull(info[1]);
 
-    std::string pic = toCppString(info[0]);
-    session::ustring_view key = toCppBuffer(info[1]);
+    auto first = info[0];
+    auto second = info[1];
+    assertIsStringOrNull(first);
+    assertIsUInt8ArrayOrNull(second);
+
+    std::string pic = toCppString(first);
+    session::ustring_view key = toCppBuffer(second);
 
     auto userProfile = to<session::config::UserProfile>(info);
     if (!userProfile) {

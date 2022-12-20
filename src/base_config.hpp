@@ -1,9 +1,11 @@
 #pragma once
 
 #include "session/config/base.hpp"
+#include "session/types.hpp"
 #include "utilities.hpp"
 
 #include <nan.h>
+#include <optional>
 
 class ConfigBaseWrapper : public Nan::ObjectWrap {
 public:
