@@ -38,7 +38,6 @@ template <typename Call> void tryOrWrapStdException(Call &&call) {
   try {
     call();
   } catch (const std::exception &e) {
-    std::cerr << "caught and rethrowing exception: " << e.what() << "\n\n";
     Nan::ThrowError(e.what());
   }
 }

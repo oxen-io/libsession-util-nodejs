@@ -25,6 +25,7 @@ private:
   static NAN_METHOD(New);
   static NAN_METHOD(Get);
   static NAN_METHOD(GetOrCreate);
+  static NAN_METHOD(GetAll);
   static NAN_METHOD(Set);
   static NAN_METHOD(SetName);
   static NAN_METHOD(SetNickname);

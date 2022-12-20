@@ -7,6 +7,7 @@
 #include <optional>
 
 using Nan::MaybeLocal;
+using v8::Array;
 using v8::Boolean;
 using v8::Local;
 using v8::Object;
@@ -122,6 +123,7 @@ NAN_MODULE_INIT(ContactsConfigWrapper::Init) {
 
   RegisterNANMethods(tpl, "get", Get);
   RegisterNANMethods(tpl, "getOrCreate", GetOrCreate);
+  RegisterNANMethods(tpl, "getAll", GetAll);
   RegisterNANMethods(tpl, "set", Set);
   RegisterNANMethods(tpl, "setName", SetName);
   RegisterNANMethods(tpl, "setNickname", SetNickname);
@@ -213,6 +215,35 @@ NAN_METHOD(ContactsConfigWrapper::GetOrCreate) {
     auto contact = contacts->get_or_create(sessionIdHexStr);
 
     info.GetReturnValue().Set(toJSContact(contact));
+
+    return;
+  });
+}
+
+NAN_METHOD(ContactsConfigWrapper::GetAll) {
+  tryOrWrapStdException([&]() {
+    assertInfoLength(info, 0);
+    auto contacts = to<session::config::Contacts>(info);
+
+    if (!contacts) {
+      info.GetReturnValue().Set(Nan::Null());
+      return;
+    }
+
+    int length = 0;
+    // get the length // FIXME
+    for (auto &contact : *contacts) {
+      length++;
+    }
+
+    Local<Array> allContacts = Nan::New<Array>(length);
+    int index = 0;
+    for (auto &contact : *contacts) {
+      allContacts->Set(Nan::GetCurrentContext(), index, toJSContact((contact)));
+      index++;
+    }
+
+    info.GetReturnValue().Set(allContacts);
 
     return;
   });
