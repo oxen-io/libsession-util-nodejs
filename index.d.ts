@@ -41,7 +41,8 @@ declare module 'session_util_wrapper' {
     public setName(pubkeyHex: string, name: string);
     public setNickname(pubkeyHex: string, nickname: string);
     public setApproved(pubkeyHex: string, approved:boolean);
-    public setApprovedMe(pubkeyHex: string, approvedMe:boolean);
+    public setApprovedMe(pubkeyHex: string, approvedMe: boolean);
 
+    public getAll(): Array<ContactInfo>;
   }
 }
