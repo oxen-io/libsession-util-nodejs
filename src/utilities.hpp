@@ -45,6 +45,7 @@ template <typename Call> void tryOrWrapStdException(Call &&call) {
 std::string toCppString(Local<Value> x);
 session::ustring toCppBuffer(Local<Value> x);
 int64_t toCppInteger(Local<Value> x);
+bool toCppBoolean(Local<Value> x);
 
 Local<String> toJsString(std::string_view x);
 Local<Object> toJsBuffer(const ustring *x);

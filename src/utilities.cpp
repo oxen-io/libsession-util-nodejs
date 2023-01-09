@@ -142,7 +142,6 @@ session::ustring toCppBuffer(Local<Value> x) {
   }
 
   auto errorMsg = "toCppBuffer unsupported type";
-  std::cerr << "pop " << toCppDetailString(x) << std::endl;
 
   throw std::invalid_argument(errorMsg);
 }
@@ -183,6 +182,22 @@ int64_t toCppInteger(Local<Value> x) {
   }
 
   auto errorMsg = "toCppInteger unsupported type";
+
+  throw std::invalid_argument(errorMsg);
+}
+
+bool toCppBoolean(Local<Value> x) {
+
+  if (x->IsNullOrUndefined()) {
+    return false;
+  }
+
+  if (x->IsBoolean()) {
+    auto asBool = x.As<v8::Boolean>();
+    return asBool->Value();
+  }
+
+  auto errorMsg = "toCppBoolean unsupported type";
 
   throw std::invalid_argument(errorMsg);
 }
