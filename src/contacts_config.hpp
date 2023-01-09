@@ -31,6 +31,9 @@ private:
   static NAN_METHOD(SetNickname);
   static NAN_METHOD(SetApproved);
   static NAN_METHOD(SetApprovedMe);
+  static NAN_METHOD(SetBlocked);
+  static NAN_METHOD(SetProfilePic);
+  static NAN_METHOD(Erase);
 };
 
 NODE_MODULE(session_util_wrapper, ContactsConfigWrapper::Init)

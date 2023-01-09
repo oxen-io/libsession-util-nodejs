@@ -26,10 +26,12 @@ declare module 'session_util_wrapper' {
     name?: string;
     nickname?: string;
     profilePicture?: ProfilePicture;
-    approved: boolean;
-    approvedMe: boolean;
-    blocked: boolean;
+    approved?: boolean = false;
+    approvedMe?: boolean = false;
+    blocked?: boolean = false;
   };
+
+
 
   export class ContactsConfigWrapper extends BaseConfigWrapper {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
@@ -40,9 +42,13 @@ declare module 'session_util_wrapper' {
 
     public setName(pubkeyHex: string, name: string);
     public setNickname(pubkeyHex: string, nickname: string);
-    public setApproved(pubkeyHex: string, approved:boolean);
+    public setApproved(pubkeyHex: string, approved: boolean);
     public setApprovedMe(pubkeyHex: string, approvedMe: boolean);
+    public setBlocked(pubkeyHex: string, blocked: boolean);
+    public setProfilePic(pubkeyHex: string, url: string|null, key: Uint8Array | null)
 
     public getAll(): Array<ContactInfo>;
+
+    public erase(pubkeyHex: string);
   }
 }
