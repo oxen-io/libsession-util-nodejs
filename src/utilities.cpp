@@ -39,7 +39,7 @@ void assertIsStringOrNull(const Local<Value> val) {
 }
 
 void assertIsNumber(const Local<Value> val) {
-  if (!val->IsNumber()) {
+  if (!val->IsNumber() || val.IsEmpty() || val->IsNullOrUndefined()) {
     auto errorMsg = "Wrong arguments: expected number";
 
     throw std::invalid_argument(errorMsg);
@@ -55,7 +55,7 @@ void assertIsArray(const Local<Value> val) {
 }
 
 void assertIsObject(const Local<Value> val) {
-  if (!val->IsObject() || val.IsEmpty()) {
+  if (!val->IsObject() || val.IsEmpty() || val->IsNullOrUndefined()) {
     auto errorMsg = "Wrong arguments: expected object";
 
     throw std::invalid_argument(errorMsg);
@@ -72,7 +72,7 @@ void assertIsUInt8ArrayOrNull(const Local<Value> val) {
 
 void assertIsUInt8Array(const Local<Value> val) {
   if (!val->IsUint8Array()) {
-    auto errorMsg = "Wrong arguments: expected uint8Array";
+    auto errorMsg = "assertIsUInt8Array: Wrong arguments: expected uint8Array";
 
     throw std::invalid_argument(errorMsg);
   }
@@ -80,7 +80,7 @@ void assertIsUInt8Array(const Local<Value> val) {
 
 void assertIsString(const Local<Value> val) {
   if (!val->IsString()) {
-    auto errorMsg = "Wrong arguments: expected string";
+    auto errorMsg = "assertIsString: Wrong arguments: expected string";
 
     throw std::invalid_argument(errorMsg);
   }
@@ -88,7 +88,7 @@ void assertIsString(const Local<Value> val) {
 
 void assertIsBoolean(const Local<Value> val) {
   if (!val->IsBoolean()) {
-    auto errorMsg = "Wrong arguments: expected boolean";
+    auto errorMsg = "assertIsBoolean: Wrong arguments: expected boolean";
 
     throw std::invalid_argument(errorMsg);
   }

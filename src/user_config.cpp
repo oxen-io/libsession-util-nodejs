@@ -22,7 +22,6 @@ NAN_MODULE_INIT(UserConfigWrapper::Init) {
   RegisterNANMethods(tpl, "getName", GetName, "setName", SetName,
                      "getProfilePic", GetProfilePic, "setProfilePic",
                      SetProfilePic);
-  // constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
   Nan::Set(target, Nan::New("UserConfigWrapper").ToLocalChecked(),
            Nan::GetFunction(tpl).ToLocalChecked());
 }
