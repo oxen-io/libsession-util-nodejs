@@ -194,7 +194,7 @@ NAN_MODULE_INIT(ContactsConfigWrapper::Init) {
   RegisterNANMethods(tpl, "setNickname", SetNickname);
   RegisterNANMethods(tpl, "setApproved", SetApproved);
   RegisterNANMethods(tpl, "setApprovedMe", SetApprovedMe);
-  RegisterNANMethods(tpl, "setProfilePic", SetProfilePic);
+  RegisterNANMethods(tpl, "setProfilePicture", SetProfilePicture);
   RegisterNANMethods(tpl, "setBlocked", SetBlocked);
   RegisterNANMethods(tpl, "erase", Erase);
 
@@ -450,7 +450,7 @@ NAN_METHOD(ContactsConfigWrapper::SetBlocked) {
   });
 }
 
-NAN_METHOD(ContactsConfigWrapper::SetProfilePic) {
+NAN_METHOD(ContactsConfigWrapper::SetProfilePicture) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 3);
 

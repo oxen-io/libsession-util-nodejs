@@ -19,9 +19,11 @@ NAN_MODULE_INIT(UserConfigWrapper::Init) {
   tpl->SetClassName(Nan::New("UserConfigWrapper").ToLocalChecked());
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-  RegisterNANMethods(tpl, "getName", GetName, "setName", SetName,
-                     "getProfilePic", GetProfilePic, "setProfilePic",
-                     SetProfilePic);
+  RegisterNANMethods(tpl, "getName", GetName);
+  RegisterNANMethods(tpl, "setName", SetName);
+  RegisterNANMethods(tpl, "getProfilePicture", GetProfilePicture);
+  RegisterNANMethods(tpl, "setProfilePicture", SetProfilePicture);
+
   Nan::Set(target, Nan::New("UserConfigWrapper").ToLocalChecked(),
            Nan::GetFunction(tpl).ToLocalChecked());
 }
@@ -91,7 +93,7 @@ NAN_METHOD(UserConfigWrapper::SetName) {
   });
 }
 
-NAN_METHOD(UserConfigWrapper::GetProfilePic) {
+NAN_METHOD(UserConfigWrapper::GetProfilePicture) {
   tryOrWrapStdException([&]() {
     auto context = Nan::GetCurrentContext();
     auto userProfile = to<session::config::UserProfile>(info);
@@ -129,7 +131,7 @@ NAN_METHOD(UserConfigWrapper::GetProfilePic) {
   });
 }
 
-NAN_METHOD(UserConfigWrapper::SetProfilePic) {
+NAN_METHOD(UserConfigWrapper::SetProfilePicture) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 2);
 

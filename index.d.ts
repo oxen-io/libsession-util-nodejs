@@ -13,12 +13,16 @@ declare module 'session_util_wrapper' {
     public storageNamespace(): number;
     public encryptionDomain(): string;
   }
+
+  export class PLOP {
+  }
+
   export class UserConfigWrapper extends BaseConfigWrapper {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
     public getName(): string;
     public setName(name: string);
-    public getProfilePic(): ProfilePicture;
-    public setProfilePic(url: string | null, key: Uint8Array | null);
+    public getProfilePicture(): ProfilePicture;
+    public setProfilePicture(url: string | null, key: Uint8Array | null);
   }
 
   export type ContactInfo = {
@@ -45,7 +49,7 @@ declare module 'session_util_wrapper' {
     public setApproved(pubkeyHex: string, approved: boolean);
     public setApprovedMe(pubkeyHex: string, approvedMe: boolean);
     public setBlocked(pubkeyHex: string, blocked: boolean);
-    public setProfilePic(pubkeyHex: string, url: string|null, key: Uint8Array | null)
+    public setProfilePicture(pubkeyHex: string, url: string|null, key: Uint8Array | null)
 
     public getAll(): Array<ContactInfo>;
 
