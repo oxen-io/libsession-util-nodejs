@@ -280,7 +280,7 @@ NAN_METHOD(ContactsConfigWrapper::GetOrCreate) {
       return;
     }
 
-    auto contact = contacts->get_or_create(sessionIdHexStr);
+    auto contact = contacts->get_or_construct(sessionIdHexStr);
 
     info.GetReturnValue().Set(toJSContact(contact));
 
@@ -298,11 +298,7 @@ NAN_METHOD(ContactsConfigWrapper::GetAll) {
       return;
     }
 
-    int length = 0;
-    // get the length // FIXME
-    for (auto &contact : *contacts) {
-      length++;
-    }
+    auto length = contacts->size();
 
     Local<Array> allContacts = Nan::New<Array>(length);
     int index = 0;

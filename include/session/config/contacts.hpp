@@ -49,8 +49,19 @@ struct contact_info {
     contact_info(const struct contacts_contact& c);  // From c struct
     void into(contacts_contact& c);                  // Into c struct
 
+    // Sets a name, storing the name internally in the object.  This is intended for use where the
+    // source string is a temporary may not outlive the `contact_info` object: the name is first
+    // copied into an internal std::string, and then the name string_view references that.
+    void set_name(std::string name);
+
+    // Same as above, but for nickname.
+    void set_nickname(std::string nickname);
+
   private:
     friend class Contacts;
+
+    std::string name_;
+    std::string nickname_;
 
     void load(const dict& info_dict);
 };
@@ -84,24 +95,25 @@ class Contacts : public ConfigBase {
 
     /// Similar to get(), but if the session ID does not exist this returns a filled-out
     /// contact_info containing the session_id (all other fields will be empty/defaulted).  This is
-    /// intended to be combined with `set` to set-or-create a record.  Note that this does not add
-    /// the session id to the contact list when called: that requires also calling `set` with this
-    /// value.
-    contact_info get_or_create(std::string_view pubkey_hex) const;
+    /// intended to be combined with `set` to set-or-create a record.
+    ///
+    /// NB: calling this does *not* add the session id to the contact list when called: that
+    /// requires also calling `set` with this value.
+    contact_info get_or_construct(std::string_view pubkey_hex) const;
 
     /// Sets or updates multiple contact info values at once with the given info.  The usual use is
     /// to access the current info, change anything desired, then pass it back into set_contact,
     /// e.g.:
     ///
-    ///     auto c = contacts.get_or_create(pubkey);
+    ///     auto c = contacts.get_or_construct(pubkey);
     ///     c.name = "Session User 42";
     ///     c.nickname = "BFF";
     ///     contacts.set(c);
     void set(const contact_info& contact);
 
     /// Alternative to `set()` for setting individual fields.
-    void set_name(std::string_view session_id, std::string_view name);
-    void set_nickname(std::string_view session_id, std::string_view nickname);
+    void set_name(std::string_view session_id, std::string name);
+    void set_nickname(std::string_view session_id, std::string nickname);
     void set_profile_pic(std::string_view session_id, profile_pic pic);
     void set_approved(std::string_view session_id, bool approved);
     void set_approved_me(std::string_view session_id, bool approved_me);
@@ -118,6 +130,12 @@ class Contacts : public ConfigBase {
     /// intended for use where elements are to be removed during iteration: see below for an
     /// example.
     iterator erase(iterator it);
+
+    /// Returns the number of contacts.
+    size_t size() const;
+
+    /// Returns true if the contact list is empty.
+    bool empty() const { return size() == 0; }
 
     /// Iterators for iterating through all contacts.  Typically you access this implicit via a for
     /// loop over the `Contacts` object:
