@@ -17,7 +17,6 @@ using v8::Value;
 
 using session::ustring;
 using session::config::contact_info;
-// using session::config::contact_info_hard;
 using session::config::profile_pic;
 
 using session::config::Contacts;
@@ -26,43 +25,6 @@ using std::endl;
 using std::make_optional;
 using std::optional;
 using std::string;
-
-struct profile_pic_hard {
-  std::string url;
-  ustring key;
-
-  profile_pic_hard(std::string url, ustring key) : url{url}, key{key} {}
-};
-
-struct contact_info_hard {
-  std::string session_id; // in hex
-  std::optional<std::string> name;
-  std::optional<std::string> nickname;
-  std::optional<profile_pic_hard> profile_picture;
-  bool approved = false;
-  bool approved_me = false;
-  bool blocked = false;
-
-  contact_info_hard(std::string sid) : session_id(sid) {}
-};
-
-contact_info to_contact_info(contact_info_hard info) {
-  auto ret = contact_info(info.session_id);
-
-  ret.approved = info.approved;
-  ret.approved_me = info.approved_me;
-  ret.blocked = info.blocked;
-  ret.name = info.name;
-  ret.nickname = info.nickname;
-
-  if (info.profile_picture) {
-    auto pic =
-        profile_pic(info.profile_picture->url, info.profile_picture->key);
-    ret.profile_picture = pic;
-  }
-
-  return ret;
-};
 
 /**
  * TODO
@@ -111,7 +73,7 @@ Local<Object> toJSContact(const contact_info contact) {
   return obj;
 }
 
-contact_info_hard toCppContact(MaybeLocal<Value> contactMaybe) {
+contact_info toCppContact(MaybeLocal<Value> contactMaybe) {
 
   if (contactMaybe.IsEmpty()) {
     throw std::invalid_argument("cppContact received empty");
@@ -134,7 +96,7 @@ contact_info_hard toCppContact(MaybeLocal<Value> contactMaybe) {
   assertIsString(sessionId);
   std::string sessionIdStr = toCppString(sessionId);
 
-  contact_info_hard contactCpp(sessionIdStr);
+  contact_info contactCpp(sessionIdStr);
 
   contactCpp.approved = toCppBoolean(
       (Nan::Get(contact, toJsString("approved"))).ToLocalChecked());
@@ -148,7 +110,7 @@ contact_info_hard toCppContact(MaybeLocal<Value> contactMaybe) {
     // We need to store it as a string and not directly the  string_view
     // otherwise it gets garbage collected
     auto nameStr = toCppString(name.ToLocalChecked());
-    contactCpp.name = nameStr;
+    contactCpp.set_name(nameStr);
   }
 
   auto nickname = Nan::Get(contact, toJsString("nickname"));
@@ -156,8 +118,7 @@ contact_info_hard toCppContact(MaybeLocal<Value> contactMaybe) {
     // We need to store it as a string and not directly the  string_view
     // otherwise it gets garbage collected
     auto nicknameStr = toCppString(nickname.ToLocalChecked());
-
-    contactCpp.nickname = nicknameStr;
+    contactCpp.set_nickname(nicknameStr);
   }
 
   auto picMaybe = Nan::Get(contact, toJsString("profilePicture"));
@@ -173,7 +134,13 @@ contact_info_hard toCppContact(MaybeLocal<Value> contactMaybe) {
     if (!urlMaybe.IsEmpty() && !keyMaybe.IsEmpty()) {
       std::string url = toCppString(urlMaybe.ToLocalChecked());
       session::ustring key = toCppBuffer(keyMaybe.ToLocalChecked());
-      profile_pic_hard img = profile_pic_hard(url, key);
+      profile_pic img = profile_pic(url, key);
+      // we need to make sure to call the .set_url and .set_key so the
+      // profile_pic instance takes ownership of those strings
+      img.set_url(url);
+      throw std::invalid_argument("FIXME // img.set_key(key);");
+      // img.set_key(key);
+
       contactCpp.profile_picture = img;
     }
   }
@@ -323,14 +290,14 @@ NAN_METHOD(ContactsConfigWrapper::Set) {
 
     auto first = info[0];
     assertIsObject(first);
-    contact_info_hard firstAsContact = toCppContact(first);
+    contact_info firstAsContact = toCppContact(first);
 
     Contacts *contacts = to<Contacts>(info);
     if (!contacts) {
       return;
     }
 
-    contacts->set(to_contact_info(firstAsContact));
+    contacts->set(firstAsContact);
   });
 }
 
