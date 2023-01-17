@@ -134,12 +134,11 @@ contact_info toCppContact(MaybeLocal<Value> contactMaybe) {
     if (!urlMaybe.IsEmpty() && !keyMaybe.IsEmpty()) {
       std::string url = toCppString(urlMaybe.ToLocalChecked());
       session::ustring key = toCppBuffer(keyMaybe.ToLocalChecked());
-      profile_pic img = profile_pic(url, key);
+      profile_pic img = profile_pic();
       // we need to make sure to call the .set_url and .set_key so the
       // profile_pic instance takes ownership of those strings
       img.set_url(url);
-      throw std::invalid_argument("FIXME // img.set_key(key);");
-      // img.set_key(key);
+      img.set_key(key);
 
       contactCpp.profile_picture = img;
     }

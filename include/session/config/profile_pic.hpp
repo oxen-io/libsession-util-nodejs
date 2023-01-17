@@ -15,6 +15,11 @@ struct profile_pic {
     std::string_view url;
     ustring_view key;
 
+    // Default constructor, makes an empty profile pic
+    profile_pic() = default;
+
+    // Constructs from string views: the values must stay alive for the duration of the profile_pic
+    // instance.  (If not, use `set_url`/`set_key` or the rvalue-argument constructor instead).
     profile_pic(std::string_view url, ustring_view key) : url{url}, key{key} {}
 
     // Constructs from temporary strings; the strings are stored/managed internally
@@ -28,7 +33,7 @@ struct profile_pic {
     // profile_pic object.  (This is only needed when the source string may not outlive the
     // profile_pic object; if it does, the `url` or `key` can be assigned to directly).
     void set_url(std::string url);
-    void set_key(std::string key);
+    void set_key(ustring key);
 };
 
 }  // namespace session::config
