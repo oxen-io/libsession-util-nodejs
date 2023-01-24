@@ -3,6 +3,7 @@ declare module 'session_util_wrapper' {
     url: string | null;
     key: Uint8Array | null;
   };
+
   export abstract class BaseConfigWrapper {
     public needsDump(): boolean;
     public needsPush(): boolean;
@@ -14,8 +15,20 @@ declare module 'session_util_wrapper' {
     public encryptionDomain(): string;
   }
 
-  export class PLOP {
-  }
+  type MakeActionCall<A extends BaseConfigWrapper, B extends string> = [
+    B,
+    ...Parameters<A[B]>
+  ]; // ReturnType<A[B]>,
+
+  export type BaseConfigActions =
+    | MakeActionCall<BaseConfigWrapper, 'needsDump'>
+    | MakeActionCall<BaseConfigWrapper, 'needsPush'>
+    | MakeActionCall<BaseConfigWrapper, 'push'>
+    | MakeActionCall<BaseConfigWrapper, 'dump'>
+    | MakeActionCall<BaseConfigWrapper, 'confirmPushed'>
+    | MakeActionCall<BaseConfigWrapper, 'merge'>
+    | MakeActionCall<BaseConfigWrapper, 'storageNamespace'>
+    | MakeActionCall<BaseConfigWrapper, 'encryptionDomain'>;
 
   export class UserConfigWrapper extends BaseConfigWrapper {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
@@ -25,17 +38,22 @@ declare module 'session_util_wrapper' {
     public setProfilePicture(url: string | null, key: Uint8Array | null);
   }
 
+  export type UserConfigActionsType =
+    | ['init', Uint8Array, Uint8Array | null]
+    | MakeActionCall<UserConfigWrapper, 'getName'>
+    | MakeActionCall<UserConfigWrapper, 'setName'>
+    | MakeActionCall<UserConfigWrapper, 'getProfilePicture'>
+    | MakeActionCall<UserConfigWrapper, 'setProfilePicture'>;
+
   export type ContactInfo = {
     id: string;
     name?: string;
     nickname?: string;
     profilePicture?: ProfilePicture;
-    approved?: boolean = false;
-    approvedMe?: boolean = false;
-    blocked?: boolean = false;
+    approved?: boolean;
+    approvedMe?: boolean;
+    blocked?: boolean;
   };
-
-
 
   export class ContactsConfigWrapper extends BaseConfigWrapper {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
@@ -49,7 +67,11 @@ declare module 'session_util_wrapper' {
     public setApproved(pubkeyHex: string, approved: boolean);
     public setApprovedMe(pubkeyHex: string, approvedMe: boolean);
     public setBlocked(pubkeyHex: string, blocked: boolean);
-    public setProfilePicture(pubkeyHex: string, url: string|null, key: Uint8Array | null)
+    public setProfilePicture(
+      pubkeyHex: string,
+      url: string | null,
+      key: Uint8Array | null
+    );
 
     public getAll(): Array<ContactInfo>;
 
