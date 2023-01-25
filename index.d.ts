@@ -77,4 +77,18 @@ declare module 'session_util_wrapper' {
 
     public erase(pubkeyHex: string);
   }
+
+  export type ContactsConfigActionsType =
+    | ['init', Uint8Array, Uint8Array | null]
+    | MakeActionCall<ContactsConfigWrapper, 'get'>
+    | MakeActionCall<ContactsConfigWrapper, 'getOrCreate'>
+    | MakeActionCall<ContactsConfigWrapper, 'set'>
+    | MakeActionCall<ContactsConfigWrapper, 'setName'>
+    | MakeActionCall<ContactsConfigWrapper, 'setNickname'>
+    | MakeActionCall<ContactsConfigWrapper, 'setApproved'>
+    | MakeActionCall<ContactsConfigWrapper, 'setApprovedMe'>
+    | MakeActionCall<ContactsConfigWrapper, 'setBlocked'>
+    | MakeActionCall<ContactsConfigWrapper, 'setProfilePicture'>
+    | MakeActionCall<ContactsConfigWrapper, 'getAll'>
+    | MakeActionCall<ContactsConfigWrapper, 'erase'>;
 }
