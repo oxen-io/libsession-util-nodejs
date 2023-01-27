@@ -140,6 +140,15 @@ NAN_METHOD(UserConfigWrapper::SetProfilePicture) {
     assertIsStringOrNull(first);
     assertIsUInt8ArrayOrNull(second);
 
+    if (first->IsNullOrUndefined() || second->IsNullOrUndefined()) {
+      auto userProfile = to<session::config::UserProfile>(info);
+      if (!userProfile) {
+        throw std::invalid_argument("User profile is null");
+      }
+      userProfile->set_profile_pic(nullptr, nullptr);
+      return;
+    }
+
     std::string pic = toCppString(first);
     session::ustring_view key = toCppBuffer(second);
 
