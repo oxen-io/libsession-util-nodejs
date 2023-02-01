@@ -7,7 +7,7 @@
 #include <nan.h>
 #include <optional>
 
-class ConfigBaseWrapper : public Nan::ObjectWrap {
+class ConfigBaseWrapperInsideWorker : public Nan::ObjectWrap {
 public:
   static NAN_MODULE_INIT(Init);
 
@@ -24,17 +24,22 @@ public:
     else {
       // We're at the end of the argument list, so now add the base class
       // methods:
-      Nan::SetPrototypeMethod(tpl, "needsDump", &ConfigBaseWrapper::NeedsDump);
-      Nan::SetPrototypeMethod(tpl, "needsPush", &ConfigBaseWrapper::NeedsPush);
-      Nan::SetPrototypeMethod(tpl, "push", &ConfigBaseWrapper::Push);
-      Nan::SetPrototypeMethod(tpl, "dump", &ConfigBaseWrapper::Dump);
+      Nan::SetPrototypeMethod(tpl, "needsDump",
+                              &ConfigBaseWrapperInsideWorker::NeedsDump);
+      Nan::SetPrototypeMethod(tpl, "needsPush",
+                              &ConfigBaseWrapperInsideWorker::NeedsPush);
+      Nan::SetPrototypeMethod(tpl, "push",
+                              &ConfigBaseWrapperInsideWorker::Push);
+      Nan::SetPrototypeMethod(tpl, "dump",
+                              &ConfigBaseWrapperInsideWorker::Dump);
       Nan::SetPrototypeMethod(tpl, "confirmPushed",
-                              &ConfigBaseWrapper::ConfirmPushed);
-      Nan::SetPrototypeMethod(tpl, "merge", &ConfigBaseWrapper::Merge);
+                              &ConfigBaseWrapperInsideWorker::ConfirmPushed);
+      Nan::SetPrototypeMethod(tpl, "merge",
+                              &ConfigBaseWrapperInsideWorker::Merge);
       Nan::SetPrototypeMethod(tpl, "storageNamespace",
-                              &ConfigBaseWrapper::StorageNamespace);
+                              &ConfigBaseWrapperInsideWorker::StorageNamespace);
       Nan::SetPrototypeMethod(tpl, "encryptionDomain",
-                              &ConfigBaseWrapper::EncryptionDomain);
+                              &ConfigBaseWrapperInsideWorker::EncryptionDomain);
     }
   }
 
@@ -42,7 +47,8 @@ protected:
   void initWithConfig(session::config::ConfigBase *config) {
     if (this->isInitialized()) {
       throw std::invalid_argument(
-          "this instance of ConfigBaseWrapper was already initialized");
+          "this instance of ConfigBaseWrapperInsideWorker was already "
+          "initialized");
     }
     this->config = config;
   }
@@ -58,28 +64,29 @@ protected:
   bool isInitializedOrThrow() {
     if (!this->isInitialized()) {
       throw std::invalid_argument(
-          "this instance of ConfigBaseWrapper was already initialized");
+          "this instance of ConfigBaseWrapperInsideWorker was already "
+          "initialized");
     }
     return true;
   }
 
   template <typename Subtype>
   static Subtype *to(const Nan::FunctionCallbackInfo<v8::Value> &info) {
-    ConfigBaseWrapper *obj =
-        Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
+    ConfigBaseWrapperInsideWorker *obj =
+        Nan::ObjectWrap::Unwrap<ConfigBaseWrapperInsideWorker>(info.Holder());
 
     if (!obj->isInitializedOrThrow())
       return nullptr;
     return dynamic_cast<Subtype *>(obj->config);
   }
 
-  virtual ~ConfigBaseWrapper() {
+  virtual ~ConfigBaseWrapperInsideWorker() {
     if (config)
       delete config;
     config = nullptr;
   }
 
-  ConfigBaseWrapper() { config = nullptr; }
+  ConfigBaseWrapperInsideWorker() { config = nullptr; }
 
   static NAN_METHOD(NeedsDump);
   static NAN_METHOD(NeedsPush);

@@ -3,8 +3,8 @@
 #include <nan.h>
 
 void InitAll(v8::Local<v8::Object> exports) {
-  ContactsConfigWrapper::Init(exports);
-  UserConfigWrapper::Init(exports);
+  ContactsConfigWrapperInsideWorker::Init(exports);
+  UserConfigWrapperInsideWorker::Init(exports);
 }
 
 NODE_MODULE(session_util_wrapper, InitAll)

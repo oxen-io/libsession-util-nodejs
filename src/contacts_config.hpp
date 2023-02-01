@@ -10,13 +10,13 @@ using session::ustring_view;
 
 using std::optional;
 
-class ContactsConfigWrapper : public ConfigBaseWrapper {
+class ContactsConfigWrapperInsideWorker : public ConfigBaseWrapperInsideWorker {
 public:
   static NAN_MODULE_INIT(Init);
 
 private:
-  explicit ContactsConfigWrapper(ustring_view ed25519_secretkey,
-                                 optional<ustring_view> dumped) {
+  explicit ContactsConfigWrapperInsideWorker(ustring_view ed25519_secretkey,
+                                             optional<ustring_view> dumped) {
     tryOrWrapStdException([&]() {
       initWithConfig(new session::config::Contacts(ed25519_secretkey, dumped));
     });
