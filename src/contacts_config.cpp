@@ -147,9 +147,10 @@ contact_info toCppContact(MaybeLocal<Value> contactMaybe) {
   return contactCpp;
 }
 
-NAN_MODULE_INIT(ContactsConfigWrapper::Init) {
+NAN_MODULE_INIT(ContactsConfigWrapperInsideWorker::Init) {
   v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
-  tpl->SetClassName(Nan::New("ContactsConfigWrapper").ToLocalChecked());
+  tpl->SetClassName(
+      Nan::New("ContactsConfigWrapperInsideWorker").ToLocalChecked());
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
   RegisterNANMethods(tpl, "get", Get);
@@ -164,11 +165,12 @@ NAN_MODULE_INIT(ContactsConfigWrapper::Init) {
   RegisterNANMethods(tpl, "setBlocked", SetBlocked);
   RegisterNANMethods(tpl, "erase", Erase);
 
-  Nan::Set(target, Nan::New("ContactsConfigWrapper").ToLocalChecked(),
+  Nan::Set(target,
+           Nan::New("ContactsConfigWrapperInsideWorker").ToLocalChecked(),
            Nan::GetFunction(tpl).ToLocalChecked());
 }
 
-NAN_METHOD(ContactsConfigWrapper::New) {
+NAN_METHOD(ContactsConfigWrapperInsideWorker::New) {
   tryOrWrapStdException([&]() {
     if (info.IsConstructCall()) {
       assertInfoLength(info, 2);
@@ -184,13 +186,13 @@ NAN_METHOD(ContactsConfigWrapper::New) {
       bool dumpIsSet = !second.IsEmpty() && !second->IsNullOrUndefined();
       if (dumpIsSet) {
         ustring dumped = toCppBuffer(second);
-        ContactsConfigWrapper *obj =
-            new ContactsConfigWrapper(secretKey, dumped);
+        ContactsConfigWrapperInsideWorker *obj =
+            new ContactsConfigWrapperInsideWorker(secretKey, dumped);
         obj->Wrap(info.This());
       } else {
 
-        ContactsConfigWrapper *obj =
-            new ContactsConfigWrapper(secretKey, std::nullopt);
+        ContactsConfigWrapperInsideWorker *obj =
+            new ContactsConfigWrapperInsideWorker(secretKey, std::nullopt);
         obj->Wrap(info.This());
       }
 
@@ -207,7 +209,7 @@ NAN_METHOD(ContactsConfigWrapper::New) {
  *             GETTERS
  * ============================== */
 
-NAN_METHOD(ContactsConfigWrapper::Get) {
+NAN_METHOD(ContactsConfigWrapperInsideWorker::Get) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 1);
     auto first = info[0];
@@ -232,7 +234,7 @@ NAN_METHOD(ContactsConfigWrapper::Get) {
   });
 }
 
-NAN_METHOD(ContactsConfigWrapper::GetOrCreate) {
+NAN_METHOD(ContactsConfigWrapperInsideWorker::GetOrCreate) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 1);
     auto first = info[0];
@@ -254,7 +256,7 @@ NAN_METHOD(ContactsConfigWrapper::GetOrCreate) {
   });
 }
 
-NAN_METHOD(ContactsConfigWrapper::GetAll) {
+NAN_METHOD(ContactsConfigWrapperInsideWorker::GetAll) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 0);
     auto contacts = to<session::config::Contacts>(info);
@@ -283,7 +285,7 @@ NAN_METHOD(ContactsConfigWrapper::GetAll) {
  *             SETTERS
  * ============================== */
 
-NAN_METHOD(ContactsConfigWrapper::Set) {
+NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 1);
 
@@ -300,7 +302,7 @@ NAN_METHOD(ContactsConfigWrapper::Set) {
   });
 }
 
-NAN_METHOD(ContactsConfigWrapper::SetName) {
+NAN_METHOD(ContactsConfigWrapperInsideWorker::SetName) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 2);
 
@@ -323,7 +325,7 @@ NAN_METHOD(ContactsConfigWrapper::SetName) {
   });
 }
 
-NAN_METHOD(ContactsConfigWrapper::SetNickname) {
+NAN_METHOD(ContactsConfigWrapperInsideWorker::SetNickname) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 2);
 
@@ -346,7 +348,7 @@ NAN_METHOD(ContactsConfigWrapper::SetNickname) {
   });
 }
 
-NAN_METHOD(ContactsConfigWrapper::SetApproved) {
+NAN_METHOD(ContactsConfigWrapperInsideWorker::SetApproved) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 2);
 
@@ -368,7 +370,7 @@ NAN_METHOD(ContactsConfigWrapper::SetApproved) {
   });
 }
 
-NAN_METHOD(ContactsConfigWrapper::SetApprovedMe) {
+NAN_METHOD(ContactsConfigWrapperInsideWorker::SetApprovedMe) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 2);
 
@@ -390,7 +392,7 @@ NAN_METHOD(ContactsConfigWrapper::SetApprovedMe) {
   });
 }
 
-NAN_METHOD(ContactsConfigWrapper::SetBlocked) {
+NAN_METHOD(ContactsConfigWrapperInsideWorker::SetBlocked) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 2);
 
@@ -412,7 +414,7 @@ NAN_METHOD(ContactsConfigWrapper::SetBlocked) {
   });
 }
 
-NAN_METHOD(ContactsConfigWrapper::SetProfilePicture) {
+NAN_METHOD(ContactsConfigWrapperInsideWorker::SetProfilePicture) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 3);
 
@@ -449,7 +451,7 @@ NAN_METHOD(ContactsConfigWrapper::SetProfilePicture) {
  *             ERASERS
  * ============================== */
 
-NAN_METHOD(ContactsConfigWrapper::Erase) {
+NAN_METHOD(ContactsConfigWrapperInsideWorker::Erase) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 1);
 

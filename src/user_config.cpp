@@ -14,9 +14,9 @@ using session::ustring_view;
 
 using std::cerr;
 
-NAN_MODULE_INIT(UserConfigWrapper::Init) {
+NAN_MODULE_INIT(UserConfigWrapperInsideWorker::Init) {
   v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
-  tpl->SetClassName(Nan::New("UserConfigWrapper").ToLocalChecked());
+  tpl->SetClassName(Nan::New("UserConfigWrapperInsideWorker").ToLocalChecked());
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
   RegisterNANMethods(tpl, "getName", GetName);
@@ -24,11 +24,11 @@ NAN_MODULE_INIT(UserConfigWrapper::Init) {
   RegisterNANMethods(tpl, "getProfilePicture", GetProfilePicture);
   RegisterNANMethods(tpl, "setProfilePicture", SetProfilePicture);
 
-  Nan::Set(target, Nan::New("UserConfigWrapper").ToLocalChecked(),
+  Nan::Set(target, Nan::New("UserConfigWrapperInsideWorker").ToLocalChecked(),
            Nan::GetFunction(tpl).ToLocalChecked());
 }
 
-NAN_METHOD(UserConfigWrapper::New) {
+NAN_METHOD(UserConfigWrapperInsideWorker::New) {
   tryOrWrapStdException([&]() {
     if (info.IsConstructCall()) {
       assertInfoLength(info, 2);
@@ -42,7 +42,8 @@ NAN_METHOD(UserConfigWrapper::New) {
 
       std::optional<ustring_view> dumped = std::nullopt;
 
-      UserConfigWrapper *obj = new UserConfigWrapper(secretKey, dumped);
+      UserConfigWrapperInsideWorker *obj =
+          new UserConfigWrapperInsideWorker(secretKey, dumped);
 
       obj->Wrap(info.This());
       info.GetReturnValue().Set(info.This());
@@ -55,7 +56,7 @@ NAN_METHOD(UserConfigWrapper::New) {
   });
 }
 
-NAN_METHOD(UserConfigWrapper::GetName) {
+NAN_METHOD(UserConfigWrapperInsideWorker::GetName) {
   tryOrWrapStdException([&]() {
     auto userProfile = to<session::config::UserProfile>(info);
 
@@ -76,7 +77,7 @@ NAN_METHOD(UserConfigWrapper::GetName) {
   });
 }
 
-NAN_METHOD(UserConfigWrapper::SetName) {
+NAN_METHOD(UserConfigWrapperInsideWorker::SetName) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 1);
     assertIsStringOrNull(info[0]);
@@ -93,7 +94,7 @@ NAN_METHOD(UserConfigWrapper::SetName) {
   });
 }
 
-NAN_METHOD(UserConfigWrapper::GetProfilePicture) {
+NAN_METHOD(UserConfigWrapperInsideWorker::GetProfilePicture) {
   tryOrWrapStdException([&]() {
     auto context = Nan::GetCurrentContext();
     auto userProfile = to<session::config::UserProfile>(info);
@@ -131,7 +132,7 @@ NAN_METHOD(UserConfigWrapper::GetProfilePicture) {
   });
 }
 
-NAN_METHOD(UserConfigWrapper::SetProfilePicture) {
+NAN_METHOD(UserConfigWrapperInsideWorker::SetProfilePicture) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 2);
 

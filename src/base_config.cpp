@@ -20,20 +20,20 @@ using v8::String;
 using v8::Uint8Array;
 using v8::Value;
 
-NAN_MODULE_INIT(ConfigBaseWrapper::Init) {
+NAN_MODULE_INIT(ConfigBaseWrapperInsideWorker::Init) {
   Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
-  tpl->SetClassName(Nan::New("ConfigBaseWrapper").ToLocalChecked());
+  tpl->SetClassName(Nan::New("ConfigBaseWrapperInsideWorker").ToLocalChecked());
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-  Nan::Set(target, Nan::New("ConfigBaseWrapper").ToLocalChecked(),
+  Nan::Set(target, Nan::New("ConfigBaseWrapperInsideWorker").ToLocalChecked(),
            Nan::GetFunction(tpl).ToLocalChecked());
 }
 
-NAN_METHOD(ConfigBaseWrapper::New) {
+NAN_METHOD(ConfigBaseWrapperInsideWorker::New) {
   tryOrWrapStdException([&]() {
     if (info.IsConstructCall()) {
       assertInfoLength(info, 0);
-      ConfigBaseWrapper *obj = new ConfigBaseWrapper();
+      ConfigBaseWrapperInsideWorker *obj = new ConfigBaseWrapperInsideWorker();
       obj->Wrap(info.This());
       info.GetReturnValue().Set(info.This());
     } else {
@@ -45,28 +45,28 @@ NAN_METHOD(ConfigBaseWrapper::New) {
   });
 }
 
-NAN_METHOD(ConfigBaseWrapper::NeedsDump) {
+NAN_METHOD(ConfigBaseWrapperInsideWorker::NeedsDump) {
   tryOrWrapStdException([&]() {
-    ConfigBaseWrapper *obj =
-        Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
+    ConfigBaseWrapperInsideWorker *obj =
+        Nan::ObjectWrap::Unwrap<ConfigBaseWrapperInsideWorker>(info.Holder());
     assertInfoLength(info, 0);
     info.GetReturnValue().Set(obj->config->needs_dump());
     return;
   });
 }
 
-NAN_METHOD(ConfigBaseWrapper::NeedsPush) {
+NAN_METHOD(ConfigBaseWrapperInsideWorker::NeedsPush) {
   tryOrWrapStdException([&]() {
-    ConfigBaseWrapper *obj =
-        Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
+    ConfigBaseWrapperInsideWorker *obj =
+        Nan::ObjectWrap::Unwrap<ConfigBaseWrapperInsideWorker>(info.Holder());
     info.GetReturnValue().Set(obj->config->needs_push());
   });
 }
 
-NAN_METHOD(ConfigBaseWrapper::Push) {
+NAN_METHOD(ConfigBaseWrapperInsideWorker::Push) {
   tryOrWrapStdException([&]() {
-    ConfigBaseWrapper *obj =
-        Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
+    ConfigBaseWrapperInsideWorker *obj =
+        Nan::ObjectWrap::Unwrap<ConfigBaseWrapperInsideWorker>(info.Holder());
     assertInfoLength(info, 0);
     auto context = Nan::GetCurrentContext();
     auto [to_push, seqno] = obj->config->push();
@@ -81,10 +81,10 @@ NAN_METHOD(ConfigBaseWrapper::Push) {
   });
 }
 
-NAN_METHOD(ConfigBaseWrapper::Dump) {
+NAN_METHOD(ConfigBaseWrapperInsideWorker::Dump) {
   tryOrWrapStdException([&]() {
-    ConfigBaseWrapper *obj =
-        Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
+    ConfigBaseWrapperInsideWorker *obj =
+        Nan::ObjectWrap::Unwrap<ConfigBaseWrapperInsideWorker>(info.Holder());
     assertInfoLength(info, 0);
     auto dumped = obj->config->dump();
 
@@ -94,10 +94,10 @@ NAN_METHOD(ConfigBaseWrapper::Dump) {
   });
 }
 
-NAN_METHOD(ConfigBaseWrapper::ConfirmPushed) {
+NAN_METHOD(ConfigBaseWrapperInsideWorker::ConfirmPushed) {
   tryOrWrapStdException([&]() {
-    ConfigBaseWrapper *obj =
-        Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
+    ConfigBaseWrapperInsideWorker *obj =
+        Nan::ObjectWrap::Unwrap<ConfigBaseWrapperInsideWorker>(info.Holder());
     assertInfoLength(info, 1);
     assertIsNumber(info[0]);
 
@@ -108,10 +108,10 @@ NAN_METHOD(ConfigBaseWrapper::ConfirmPushed) {
   });
 }
 
-NAN_METHOD(ConfigBaseWrapper::Merge) {
+NAN_METHOD(ConfigBaseWrapperInsideWorker::Merge) {
   tryOrWrapStdException([&]() {
-    ConfigBaseWrapper *obj =
-        Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
+    ConfigBaseWrapperInsideWorker *obj =
+        Nan::ObjectWrap::Unwrap<ConfigBaseWrapperInsideWorker>(info.Holder());
     assertInfoLength(info, 1);
     assertIsArray(info[0]);
 
@@ -133,10 +133,10 @@ NAN_METHOD(ConfigBaseWrapper::Merge) {
   });
 }
 
-NAN_METHOD(ConfigBaseWrapper::StorageNamespace) {
+NAN_METHOD(ConfigBaseWrapperInsideWorker::StorageNamespace) {
   tryOrWrapStdException([&]() {
-    ConfigBaseWrapper *obj =
-        Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
+    ConfigBaseWrapperInsideWorker *obj =
+        Nan::ObjectWrap::Unwrap<ConfigBaseWrapperInsideWorker>(info.Holder());
     assertInfoLength(info, 0);
     session::config::Namespace config_namespace =
         obj->config->storage_namespace();
@@ -146,10 +146,10 @@ NAN_METHOD(ConfigBaseWrapper::StorageNamespace) {
   });
 }
 
-NAN_METHOD(ConfigBaseWrapper::EncryptionDomain) {
+NAN_METHOD(ConfigBaseWrapperInsideWorker::EncryptionDomain) {
   tryOrWrapStdException([&]() {
-    ConfigBaseWrapper *obj =
-        Nan::ObjectWrap::Unwrap<ConfigBaseWrapper>(info.Holder());
+    ConfigBaseWrapperInsideWorker *obj =
+        Nan::ObjectWrap::Unwrap<ConfigBaseWrapperInsideWorker>(info.Holder());
     assertInfoLength(info, 0);
 
     const char *domain = obj->config->encryption_domain();
