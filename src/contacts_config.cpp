@@ -73,80 +73,6 @@ Local<Object> toJSContact(const contact_info contact) {
   return obj;
 }
 
-contact_info toCppContact(MaybeLocal<Value> contactMaybe) {
-
-  if (contactMaybe.IsEmpty()) {
-    throw std::invalid_argument("cppContact received empty");
-  }
-  Local<Value> contactValue = contactMaybe.ToLocalChecked();
-
-  if (!contactValue->IsObject()) {
-    throw std::invalid_argument("cppContact received not object");
-  }
-  Local<Object> contact = Nan::To<Object>(contactValue).ToLocalChecked();
-
-  MaybeLocal<Value> sessionIdMaybe = Nan::Get(contact, toJsString("id"));
-
-  if (sessionIdMaybe.IsEmpty() ||
-      sessionIdMaybe.ToLocalChecked()->IsNullOrUndefined()) {
-    throw std::invalid_argument("SessionID is empty");
-  }
-
-  Local<Value> sessionId = sessionIdMaybe.ToLocalChecked();
-  assertIsString(sessionId);
-  std::string sessionIdStr = toCppString(sessionId);
-
-  contact_info contactCpp(sessionIdStr);
-
-  contactCpp.approved = toCppBoolean(
-      (Nan::Get(contact, toJsString("approved"))).ToLocalChecked());
-  contactCpp.approved_me = toCppBoolean(
-      (Nan::Get(contact, toJsString("approvedMe"))).ToLocalChecked());
-  contactCpp.blocked =
-      toCppBoolean((Nan::Get(contact, toJsString("blocked"))).ToLocalChecked());
-
-  auto name = Nan::Get(contact, toJsString("name"));
-  if (!name.IsEmpty() && !name.ToLocalChecked()->IsNullOrUndefined()) {
-    // We need to store it as a string and not directly the  string_view
-    // otherwise it gets garbage collected
-    auto nameStr = toCppString(name.ToLocalChecked());
-    contactCpp.set_name(nameStr);
-  }
-
-  auto nickname = Nan::Get(contact, toJsString("nickname"));
-  if (!nickname.IsEmpty() && !nickname.ToLocalChecked()->IsNullOrUndefined()) {
-    // We need to store it as a string and not directly the  string_view
-    // otherwise it gets garbage collected
-    auto nicknameStr = toCppString(nickname.ToLocalChecked());
-    contactCpp.set_nickname(nicknameStr);
-  }
-
-  auto picMaybe = Nan::Get(contact, toJsString("profilePicture"));
-  if (!picMaybe.IsEmpty() & !picMaybe.ToLocalChecked()->IsNullOrUndefined()) {
-    auto pic = picMaybe.ToLocalChecked();
-
-    assertIsObject(pic);
-
-    auto picObject = Nan::To<Object>(pic).ToLocalChecked();
-    auto urlMaybe = Nan::Get(picObject, toJsString("url"));
-    auto keyMaybe = Nan::Get(picObject, toJsString("key"));
-
-    if (!urlMaybe.IsEmpty() && !keyMaybe.IsEmpty()) {
-      std::string url = toCppString(urlMaybe.ToLocalChecked());
-      session::ustring key = toCppBuffer(keyMaybe.ToLocalChecked());
-      profile_pic img = profile_pic();
-      // we need to make sure to call the .set_url and .set_key so the
-      // profile_pic instance takes ownership of those strings
-      img.set_url(url);
-      img.set_key(key);
-
-      contactCpp.profile_picture = img;
-    }
-  }
-
-  return contactCpp;
-}
-
 NAN_MODULE_INIT(ContactsConfigWrapperInsideWorker::Init) {
   v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
   tpl->SetClassName(
@@ -289,16 +215,84 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 1);
 
-    auto first = info[0];
-    assertIsObject(first);
-    contact_info firstAsContact = toCppContact(first);
+    auto contactValue = info[0];
+    assertIsObject(contactValue);
+
+    if (contactValue.IsEmpty()) {
+      throw std::invalid_argument("cppContact received empty");
+    }
+
+    if (!contactValue->IsObject()) {
+      throw std::invalid_argument("cppContact received not object");
+    }
+    Local<Object> contact = Nan::To<Object>(contactValue).ToLocalChecked();
+
+    MaybeLocal<Value> sessionIdMaybe = Nan::Get(contact, toJsString("id"));
+
+    if (sessionIdMaybe.IsEmpty() ||
+        sessionIdMaybe.ToLocalChecked()->IsNullOrUndefined()) {
+      throw std::invalid_argument("SessionID is empty");
+    }
+
+    Local<Value> sessionId = sessionIdMaybe.ToLocalChecked();
+    assertIsString(sessionId);
+    std::string sessionIdStr = toCppString(sessionId);
+
+    contact_info contactCpp(sessionIdStr);
+
+    contactCpp.approved = toCppBoolean(
+        (Nan::Get(contact, toJsString("approved"))).ToLocalChecked());
+    contactCpp.approved_me = toCppBoolean(
+        (Nan::Get(contact, toJsString("approvedMe"))).ToLocalChecked());
+    contactCpp.blocked = toCppBoolean(
+        (Nan::Get(contact, toJsString("blocked"))).ToLocalChecked());
+
+    auto name = Nan::Get(contact, toJsString("name"));
+    if (!name.IsEmpty() && !name.ToLocalChecked()->IsNullOrUndefined()) {
+      // We need to store it as a string and not directly the  string_view
+      // otherwise it gets garbage collected
+      auto nameStr = toCppString(name.ToLocalChecked());
+      contactCpp.set_name(nameStr);
+    }
+    auto nickname = Nan::Get(contact, toJsString("nickname"));
+    if (!nickname.IsEmpty() &&
+        !nickname.ToLocalChecked()->IsNullOrUndefined()) {
+      // We need to store it as a string and not directly the  string_view
+      // otherwise it gets garbage collected
+      auto nicknameStr = toCppString(nickname.ToLocalChecked());
+      contactCpp.set_nickname(nicknameStr);
+    }
+
+    auto picMaybe = Nan::Get(contact, toJsString("profilePicture"));
+
+    if (!picMaybe.IsEmpty() & !picMaybe.ToLocalChecked()->IsNullOrUndefined()) {
+      auto pic = picMaybe.ToLocalChecked();
+
+      assertIsObject(pic);
+
+      auto picObject = Nan::To<Object>(pic).ToLocalChecked();
+      auto urlMaybe = Nan::Get(picObject, toJsString("url"));
+      auto keyMaybe = Nan::Get(picObject, toJsString("key"));
+
+      if (!urlMaybe.IsEmpty() && !keyMaybe.IsEmpty()) {
+        std::string url = toCppString(urlMaybe.ToLocalChecked());
+        session::ustring key = toCppBuffer(keyMaybe.ToLocalChecked());
+
+        profile_pic img = profile_pic();
+        // we need to make sure to call the .set_url and .set_key so the
+        // profile_pic instance takes ownership of those strings
+        img.set_url(url);
+        img.set_key(key);
+        contactCpp.profile_picture = img;
+      }
+    }
 
     Contacts *contacts = to<Contacts>(info);
     if (!contacts) {
       return;
     }
 
-    contacts->set(firstAsContact);
+    contacts->set(contactCpp);
   });
 }
 
