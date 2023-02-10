@@ -13,6 +13,7 @@ using session::ustring;
 using session::ustring_view;
 
 using std::cerr;
+using std::endl;
 
 NAN_MODULE_INIT(UserConfigWrapperInsideWorker::Init) {
   v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
@@ -106,28 +107,28 @@ NAN_METHOD(UserConfigWrapperInsideWorker::GetProfilePicture) {
 
     std::optional<session::config::profile_pic> profile_pic =
         userProfile->get_profile_pic();
-    if (profile_pic) {
+    if (!profile_pic) {
       Local<Object> pictureObject = Nan::New<Object>();
 
-      auto urlStr = toJsString(profile_pic->url);
-
-      // key is a std::string not null terminated. We need to extract a
-      // uint8Array out of it
-      auto keyUint8Array = toJsBuffer(profile_pic->key);
-
-      auto result = pictureObject->Set(context, toJsString("url"), urlStr);
-      result = pictureObject->Set(context, toJsString("key"), keyUint8Array);
+      auto result = pictureObject->Set(context, toJsString("url"), Nan::Null());
+      result = pictureObject->Set(context, toJsString("key"), Nan::Null());
 
       info.GetReturnValue().Set(pictureObject);
-
       return;
     }
     Local<Object> pictureObject = Nan::New<Object>();
 
-    auto result = pictureObject->Set(context, toJsString("url"), Nan::Null());
-    result = pictureObject->Set(context, toJsString("key"), Nan::Null());
+    auto urlStr = toJsString(profile_pic->url);
+
+    // key is a std::string not null terminated. We need to extract a
+    // uint8Array out of it
+    auto keyUint8Array = toJsBuffer(profile_pic->key);
+
+    auto result = pictureObject->Set(context, toJsString("url"), urlStr);
+    result = pictureObject->Set(context, toJsString("key"), keyUint8Array);
 
     info.GetReturnValue().Set(pictureObject);
+
     return;
   });
 }
@@ -144,8 +145,7 @@ NAN_METHOD(UserConfigWrapperInsideWorker::SetProfilePicture) {
     assertIsUInt8Array(second);
 
     std::string pic = toCppString(first);
-    session::ustring_view key = toCppBuffer(second);
-
+    session::ustring key = toCppBuffer(second);
     auto userProfile = to<session::config::UserProfile>(info);
     if (!userProfile) {
       throw std::invalid_argument("User profile is null");
