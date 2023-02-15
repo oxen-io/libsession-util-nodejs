@@ -222,9 +222,6 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
       throw std::invalid_argument("cppContact received empty");
     }
 
-    if (!contactValue->IsObject()) {
-      throw std::invalid_argument("cppContact received not object");
-    }
     Local<Object> contact = Nan::To<Object>(contactValue).ToLocalChecked();
 
     MaybeLocal<Value> sessionIdMaybe = Nan::Get(contact, toJsString("id"));
@@ -241,11 +238,16 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
     contact_info contactCpp(sessionIdStr);
 
     contactCpp.approved = toCppBoolean(
-        (Nan::Get(contact, toJsString("approved"))).ToLocalChecked());
+        (Nan::Get(contact, toJsString("approved"))).ToLocalChecked(),
+        "set.approved");
+
     contactCpp.approved_me = toCppBoolean(
-        (Nan::Get(contact, toJsString("approvedMe"))).ToLocalChecked());
+        (Nan::Get(contact, toJsString("approvedMe"))).ToLocalChecked(),
+        "set.approvedMe");
+
     contactCpp.blocked = toCppBoolean(
-        (Nan::Get(contact, toJsString("blocked"))).ToLocalChecked());
+        (Nan::Get(contact, toJsString("blocked"))).ToLocalChecked(),
+        "set.blocked");
 
     auto name = Nan::Get(contact, toJsString("name"));
     if (!name.IsEmpty() && !name.ToLocalChecked()->IsNullOrUndefined()) {
@@ -278,12 +280,12 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
         std::string url = toCppString(urlMaybe.ToLocalChecked());
         session::ustring key = toCppBuffer(keyMaybe.ToLocalChecked());
 
-        profile_pic img = profile_pic();
+        auto &img =
+            contactCpp.profile_picture.emplace(); // Get a reference, not a copy
         // we need to make sure to call the .set_url and .set_key so the
         // profile_pic instance takes ownership of those strings
         img.set_url(url);
         img.set_key(key);
-        contactCpp.profile_picture = img;
       }
     }
 

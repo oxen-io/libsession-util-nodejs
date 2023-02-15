@@ -186,18 +186,19 @@ int64_t toCppInteger(Local<Value> x) {
   throw std::invalid_argument(errorMsg);
 }
 
-bool toCppBoolean(Local<Value> x) {
+bool toCppBoolean(Local<Value> x, std::string identifier) {
 
   if (x->IsNullOrUndefined()) {
     return false;
   }
 
-  if (x->IsBoolean()) {
-    auto asBool = x.As<v8::Boolean>();
-    return asBool->Value();
+  if (x->IsBoolean() || x->IsNumber()) {
+    return x.As<v8::Boolean>()->Value();
   }
 
-  auto errorMsg = "toCppBoolean unsupported type";
+  std::string errorMsg =
+      "toCppBoolean unsupported type with identifier: " + identifier +
+      " and detailString: " + toCppDetailString(x);
 
   throw std::invalid_argument(errorMsg);
 }
