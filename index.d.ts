@@ -1,5 +1,4 @@
 declare module 'session_util_wrapper' {
-
   /**
    * This is quite a complex setup, but so far I didn't find an easier way to describe what we want to do with the wrappers and have strong typings.
    *
@@ -35,25 +34,18 @@ declare module 'session_util_wrapper' {
     ...args: Parameters<T>
   ) => Promise<ReturnType<T>>;
 
-
-
   type MakeWrapperActionCalls<Type extends BaseConfigWrapper> = {
-    [Property in keyof Type]: AsyncWrapper<Type[Property]>
+    [Property in keyof Type]: AsyncWrapper<Type[Property]>;
   };
-
 
   export type ProfilePicture = {
     url: string | null;
     key: Uint8Array | null;
   };
 
-  export type PushConfigResult = { data: Uint8Array; seqno: number }
+  export type PushConfigResult = { data: Uint8Array; seqno: number };
 
-
-  type MakeActionCall<A extends BaseConfigWrapper, B extends string> = [
-    B,
-    ...Parameters<A[B]>
-  ];
+  type MakeActionCall<A extends BaseConfigWrapper, B extends string> = [B, ...Parameters<A[B]>];
 
   /**
    *
@@ -62,36 +54,33 @@ declare module 'session_util_wrapper' {
    */
 
   type BaseConfigWrapper = {
-      needsDump: ()=> boolean;
-      needsPush: ()=> boolean;
-      push: ()=> PushConfigResult;
-      dump: ()=> Uint8Array;
-      confirmPushed: (seqno: number) => void;
-      merge: (toMerge: Array<Uint8Array>)=>  number;
-      storageNamespace: ()=>  number;
-  }
+    needsDump: () => boolean;
+    needsPush: () => boolean;
+    push: () => PushConfigResult;
+    dump: () => Uint8Array;
+    confirmPushed: (seqno: number) => void;
+    merge: (toMerge: Array<Uint8Array>) => number;
+    storageNamespace: () => number;
+  };
 
-  type MakeActionsCall<A extends BaseConfigWrapper, B extends string> = [
-    B,
-    ...Parameters<A[B]>
-  ];
+  type MakeActionsCall<A extends BaseConfigWrapper, B extends string> = [B, ...Parameters<A[B]>];
   export type BaseConfigActions =
-  | MakeActionCall<BaseConfigWrapper, 'needsDump'>
-  | MakeActionCall<BaseConfigWrapper, 'needsPush'>
-  | MakeActionCall<BaseConfigWrapper, 'push'>
-  | MakeActionCall<BaseConfigWrapper, 'dump'>
-  | MakeActionCall<BaseConfigWrapper, 'confirmPushed'>
-  | MakeActionCall<BaseConfigWrapper, 'merge'>
-  | MakeActionCall<BaseConfigWrapper, 'storageNamespace'>;
+    | MakeActionCall<BaseConfigWrapper, 'needsDump'>
+    | MakeActionCall<BaseConfigWrapper, 'needsPush'>
+    | MakeActionCall<BaseConfigWrapper, 'push'>
+    | MakeActionCall<BaseConfigWrapper, 'dump'>
+    | MakeActionCall<BaseConfigWrapper, 'confirmPushed'>
+    | MakeActionCall<BaseConfigWrapper, 'merge'>
+    | MakeActionCall<BaseConfigWrapper, 'storageNamespace'>;
 
   export abstract class BaseConfigWrapperInsideWorker {
-    public needsDump: BaseConfigWrapper['needsDump']
-    public needsPush: BaseConfigWrapper['needsPush']
-    public push: BaseConfigWrapper['push']
-    public dump: BaseConfigWrapper['dump']
-    public confirmPushed: BaseConfigWrapper['confirmPushed']
-    public merge: BaseConfigWrapper['merge']
-    public storageNamespace: BaseConfigWrapper['storageNamespace']
+    public needsDump: BaseConfigWrapper['needsDump'];
+    public needsPush: BaseConfigWrapper['needsPush'];
+    public push: BaseConfigWrapper['push'];
+    public dump: BaseConfigWrapper['dump'];
+    public confirmPushed: BaseConfigWrapper['confirmPushed'];
+    public merge: BaseConfigWrapper['merge'];
+    public storageNamespace: BaseConfigWrapper['storageNamespace'];
   }
 
   export type BaseWrapperActionsCalls = MakeWrapperActionCalls<BaseConfigWrapper>;
@@ -102,19 +91,15 @@ declare module 'session_util_wrapper' {
    *
    */
 
-
   type UserConfigWrapper = BaseConfigWrapper & {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
-    getName:()=> string;
-    setName: (name: string)=> void;
-    getProfilePicture: ()=> ProfilePicture;
-    setProfilePicture: (url: string, key: Uint8Array) =>  void;
-  }
-
+    getName: () => string;
+    setName: (name: string) => void;
+    getProfilePicture: () => ProfilePicture;
+    setProfilePicture: (url: string, key: Uint8Array) => void;
+  };
 
   export type UserConfigWrapperActionsCalls = MakeWrapperActionCalls<UserConfigWrapper>;
-
-
 
   /**
    * To be used inside the web worker only (calls are synchronous and won't work asynchrously)
@@ -126,8 +111,6 @@ declare module 'session_util_wrapper' {
     public getProfilePicture: UserConfigWrapper['getProfilePicture'];
     public setProfilePicture: UserConfigWrapper['setProfilePicture'];
   }
-
-
 
   /**
    * Those actions are used internally for the web worker communication.
@@ -141,7 +124,6 @@ declare module 'session_util_wrapper' {
     | MakeActionCall<UserConfigWrapper, 'getProfilePicture'>
     | MakeActionCall<UserConfigWrapper, 'setProfilePicture'>;
 
-
   /**
    *
    * Contacts wrapper logic
@@ -150,23 +132,20 @@ declare module 'session_util_wrapper' {
 
   type ContactsWrapper = BaseConfigWrapper & {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
-    get:(pubkeyHex: string)=> ContactInfo | null;
-    getOrCreate:(pubkeyHex: string)=>ContactInfo;
-    set:(contact: ContactInfo)=> void;
-    setName:(pubkeyHex: string, name: string)=> void;
-    setNickname:(pubkeyHex: string, nickname: string)=> void;
-    setApproved:(pubkeyHex: string, approved: boolean)=> void;
-    setApprovedMe:(pubkeyHex: string, approvedMe: boolean) => void;
-    setBlocked:(pubkeyHex: string, blocked: boolean)=> void;
+    get: (pubkeyHex: string) => ContactInfo | null;
+    getOrCreate: (pubkeyHex: string) => ContactInfo;
+    set: (contact: ContactInfo) => void;
+    setName: (pubkeyHex: string, name: string) => void;
+    setNickname: (pubkeyHex: string, nickname: string) => void;
+    setApproved: (pubkeyHex: string, approved: boolean) => void;
+    setApprovedMe: (pubkeyHex: string, approvedMe: boolean) => void;
+    setBlocked: (pubkeyHex: string, blocked: boolean) => void;
     setProfilePicture: (pubkeyHex: string, url: string, key: Uint8Array) => void;
     getAll: () => Array<ContactInfo>;
-    erase: (pubkeyHex: string)=> void;
-  }
-
+    erase: (pubkeyHex: string) => void;
+  };
 
   export type ContactsWrapperActionsCalls = MakeWrapperActionCalls<ContactsWrapper>;
-
-
 
   export type ContactInfo = {
     id: string;
@@ -176,6 +155,8 @@ declare module 'session_util_wrapper' {
     approved?: boolean;
     approvedMe?: boolean;
     blocked?: boolean;
+    hidden: boolean;
+    priority: number;
   };
 
   export class ContactsConfigWrapperInsideWorker extends BaseConfigWrapperInsideWorker {

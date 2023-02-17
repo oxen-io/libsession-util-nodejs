@@ -39,14 +39,23 @@ NAN_METHOD(UserConfigWrapperInsideWorker::New) {
       assertIsUInt8Array(info[0]);
       assertIsUInt8ArrayOrNull(info[1]);
 
+      auto second = info[1];
+
       ustring secretKey = toCppBuffer(info[0]);
 
       std::optional<ustring_view> dumped = std::nullopt;
+      bool dumpIsSet = !second.IsEmpty() && !second->IsNullOrUndefined();
+      if (dumpIsSet) {
+        ustring dumped = toCppBuffer(second);
+        UserConfigWrapperInsideWorker *obj =
+            new UserConfigWrapperInsideWorker(secretKey, dumped);
+        obj->Wrap(info.This());
+      } else {
+        UserConfigWrapperInsideWorker *obj =
+            new UserConfigWrapperInsideWorker(secretKey, std::nullopt);
+        obj->Wrap(info.This());
+      }
 
-      UserConfigWrapperInsideWorker *obj =
-          new UserConfigWrapperInsideWorker(secretKey, dumped);
-
-      obj->Wrap(info.This());
       info.GetReturnValue().Set(info.This());
     } else {
 
@@ -105,8 +114,7 @@ NAN_METHOD(UserConfigWrapperInsideWorker::GetProfilePicture) {
       return;
     }
 
-    std::optional<session::config::profile_pic> profile_pic =
-        userProfile->get_profile_pic();
+    session::config::profile_pic profile_pic = userProfile->get_profile_pic();
     if (!profile_pic) {
       Local<Object> pictureObject = Nan::New<Object>();
 
@@ -118,11 +126,11 @@ NAN_METHOD(UserConfigWrapperInsideWorker::GetProfilePicture) {
     }
     Local<Object> pictureObject = Nan::New<Object>();
 
-    auto urlStr = toJsString(profile_pic->url);
+    auto urlStr = toJsString(profile_pic.url);
 
     // key is a std::string not null terminated. We need to extract a
     // uint8Array out of it
-    auto keyUint8Array = toJsBuffer(profile_pic->key);
+    auto keyUint8Array = toJsBuffer(profile_pic.key);
 
     auto result = pictureObject->Set(context, toJsString("url"), urlStr);
     result = pictureObject->Set(context, toJsString("key"), keyUint8Array);
