@@ -174,14 +174,20 @@ std::string toCppDetailString(const Local<Value> val) {
   return toCppString(val->ToDetailString(context).ToLocalChecked());
 }
 
-int64_t toCppInteger(Local<Value> x) {
+int64_t toCppInteger(Local<Value> x, std::string identifier,
+                     bool allowUndefined) {
 
+  if (allowUndefined && x->IsNullOrUndefined()) {
+    return 0;
+  }
   if (x->IsNumber()) {
     auto asNumber = x.As<v8::Number>();
     return asNumber->Value();
   }
 
-  auto errorMsg = "toCppInteger unsupported type";
+  std::string errorMsg =
+      "toCppInteger unsupported type with identifier: " + identifier +
+      " and detailString: " + toCppDetailString(x);
 
   throw std::invalid_argument(errorMsg);
 }

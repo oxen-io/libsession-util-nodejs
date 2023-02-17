@@ -102,7 +102,7 @@ NAN_METHOD(ConfigBaseWrapperInsideWorker::ConfirmPushed) {
     assertIsNumber(info[0]);
 
     auto seqno = info[0];
-    int64_t seqNoInteger = toCppInteger(seqno);
+    int64_t seqNoInteger = toCppInteger(seqno, "ConfirmPushed", false);
 
     obj->config->confirm_pushed(seqNoInteger);
   });

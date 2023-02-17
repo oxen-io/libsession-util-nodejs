@@ -39,16 +39,16 @@ Local<Object> toJSContact(const contact_info contact) {
   auto result = obj->Set(context, toJsString("id"),
                          toJsString(contact.session_id)); // in hex
 
-  if (contact.name) {
-    result = obj->Set(context, toJsString("name"), toJsString(*(contact.name)));
+  if (!contact.name.empty()) {
+    result = obj->Set(context, toJsString("name"), toJsString(contact.name));
 
   } else {
     result = obj->Set(context, toJsString("name"), Nan::Null());
   }
 
-  if (contact.nickname) {
-    result = obj->Set(context, toJsString("nickname"),
-                      toJsString(*contact.nickname));
+  if (!contact.nickname.empty()) {
+    result =
+        obj->Set(context, toJsString("nickname"), toJsString(contact.nickname));
   } else {
     result = obj->Set(context, toJsString("nickname"), Nan::Null());
   }
@@ -59,13 +59,17 @@ Local<Object> toJSContact(const contact_info contact) {
                     Nan::New<Boolean>(contact.approved_me));
   result = obj->Set(context, toJsString("blocked"),
                     Nan::New<Boolean>(contact.blocked));
+  result = obj->Set(context, toJsString("hidden"),
+                    Nan::New<Boolean>(contact.hidden));
+  result = obj->Set(context, toJsString("priority"),
+                    Nan::New<Number>(contact.priority));
 
   if (contact.profile_picture) {
     Local<Object> profilePic = Nan::New<Object>();
     result = profilePic->Set(context, toJsString("url"),
-                             toJsString(contact.profile_picture->url));
+                             toJsString(contact.profile_picture.url));
     result = profilePic->Set(context, toJsString("key"),
-                             toJsBuffer(contact.profile_picture->key));
+                             toJsBuffer(contact.profile_picture.key));
 
     result = obj->Set(context, toJsString("profilePicture"), profilePic);
   }
@@ -249,6 +253,14 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
         (Nan::Get(contact, toJsString("blocked"))).ToLocalChecked(),
         "set.blocked");
 
+    contactCpp.hidden =
+        toCppBoolean((Nan::Get(contact, toJsString("hidden"))).ToLocalChecked(),
+                     "set.hidden");
+
+    contactCpp.priority = toCppInteger(
+        (Nan::Get(contact, toJsString("priority"))).ToLocalChecked(),
+        "set.priority", true);
+
     auto name = Nan::Get(contact, toJsString("name"));
     if (!name.IsEmpty() && !name.ToLocalChecked()->IsNullOrUndefined()) {
       // We need to store it as a string and not directly the  string_view
@@ -280,12 +292,10 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
         std::string url = toCppString(urlMaybe.ToLocalChecked());
         session::ustring key = toCppBuffer(keyMaybe.ToLocalChecked());
 
-        auto &img =
-            contactCpp.profile_picture.emplace(); // Get a reference, not a copy
         // we need to make sure to call the .set_url and .set_key so the
         // profile_pic instance takes ownership of those strings
-        img.set_url(url);
-        img.set_key(key);
+        contactCpp.profile_picture = profile_pic(url, key);
+        // contactCpp.profile_picture.set_key(key);
       }
     }
 

@@ -5,7 +5,6 @@
 #include "utilities.hpp"
 
 #include <nan.h>
-#include <optional>
 
 class ConfigBaseWrapperInsideWorker : public Nan::ObjectWrap {
 public:
