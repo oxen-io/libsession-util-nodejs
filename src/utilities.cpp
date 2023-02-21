@@ -131,6 +131,7 @@ session::ustring toCppBuffer(Local<Value> x) {
   if (x->IsNullOrUndefined()) {
     throw std::invalid_argument("toCppBuffer called with null or undefined");
   }
+
   if (x->IsUint8Array()) {
     auto aUint8Array = x.As<Uint8Array>();
 
