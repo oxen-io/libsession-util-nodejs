@@ -114,7 +114,6 @@ NAN_METHOD(ConfigBaseWrapperInsideWorker::Merge) {
         Nan::ObjectWrap::Unwrap<ConfigBaseWrapperInsideWorker>(info.Holder());
     assertInfoLength(info, 1);
     assertIsArray(info[0]);
-
     Local<Array> asArray = info[0].As<Array>();
 
     uint32_t arrayLength = asArray->Length();
