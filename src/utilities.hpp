@@ -42,8 +42,8 @@ template <typename Call> void tryOrWrapStdException(Call &&call) {
   }
 }
 
-std::string toCppString(Local<Value> x);
-session::ustring toCppBuffer(Local<Value> x);
+std::string toCppString(Local<Value> x, std::string identifier);
+session::ustring toCppBuffer(Local<Value> x, std::string identifier);
 int64_t toCppInteger(Local<Value> x, std::string identifier,
                      bool allowUndefined);
 bool toCppBoolean(Local<Value> x, std::string identifier);
@@ -60,4 +60,7 @@ std::string printable(session::ustring_view x);
 std::string printable(const char *x) = delete;
 std::string printable(const char *x, size_t n);
 
-std::string toCppDetailString(const Local<Value> val);
+std::string toCppDetailString(const Local<Value> val, std::string identifier);
+
+template <typename T>
+inline void ignore_result(const T & /* unused result */) {}

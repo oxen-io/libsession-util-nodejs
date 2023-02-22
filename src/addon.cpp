@@ -1,9 +1,11 @@
 #include "contacts_config.hpp"
 #include "user_config.hpp"
+#include "user_groups_config.hpp"
 #include <nan.h>
 
 void InitAll(v8::Local<v8::Object> exports) {
   ContactsConfigWrapperInsideWorker::Init(exports);
+  UserGroupsWrapperInsideWorker::Init(exports);
   UserConfigWrapperInsideWorker::Init(exports);
 }
 

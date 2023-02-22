@@ -124,7 +124,7 @@ NAN_METHOD(ConfigBaseWrapperInsideWorker::Merge) {
       Local<Value> item =
           asArray->Get(Nan::GetCurrentContext(), i).ToLocalChecked();
       assertIsUInt8Array(item);
-      conf_strs.push_back(toCppBuffer(item));
+      conf_strs.push_back(toCppBuffer(item, "base.merge"));
     }
 
     int accepted = obj->config->merge(conf_strs);

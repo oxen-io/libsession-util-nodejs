@@ -133,7 +133,7 @@ declare module 'session_util_wrapper' {
   type ContactsWrapper = BaseConfigWrapper & {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
     get: (pubkeyHex: string) => ContactInfo | null;
-    getOrCreate: (pubkeyHex: string) => ContactInfo;
+    getOrConstruct: (pubkeyHex: string) => ContactInfo;
     set: (contact: ContactInfo) => void;
     setName: (pubkeyHex: string, name: string) => void;
     setNickname: (pubkeyHex: string, nickname: string) => void;
@@ -162,7 +162,7 @@ declare module 'session_util_wrapper' {
   export class ContactsConfigWrapperInsideWorker extends BaseConfigWrapperInsideWorker {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
     public get: ContactsWrapper['get'];
-    public getOrCreate: ContactsWrapper['getOrCreate'];
+    public getOrConstruct: ContactsWrapper['getOrConstruct'];
     public set: ContactsWrapper['set'];
     public setName: ContactsWrapper['setName'];
     public setNickname: ContactsWrapper['setNickname'];
@@ -177,7 +177,7 @@ declare module 'session_util_wrapper' {
   export type ContactsConfigActionsType =
     | ['init', Uint8Array, Uint8Array | null]
     | MakeActionCall<ContactsWrapper, 'get'>
-    | MakeActionCall<ContactsWrapper, 'getOrCreate'>
+    | MakeActionCall<ContactsWrapper, 'getOrConstruct'>
     | MakeActionCall<ContactsWrapper, 'set'>
     | MakeActionCall<ContactsWrapper, 'setName'>
     | MakeActionCall<ContactsWrapper, 'setNickname'>
@@ -187,4 +187,59 @@ declare module 'session_util_wrapper' {
     | MakeActionCall<ContactsWrapper, 'setProfilePicture'>
     | MakeActionCall<ContactsWrapper, 'getAll'>
     | MakeActionCall<ContactsWrapper, 'erase'>;
+
+  /**
+   *
+   * UserGroups wrapper logic
+   *
+   */
+
+  export type CommunityInfo = {
+    pubkeyHex: string;
+    baseUrl: string;
+    fullUrl: string;
+    roomNormalized: string;
+    roomCasePreserved: string;
+    priority: number;
+  };
+
+  type UserGroupsWrapper = BaseConfigWrapper & {
+    init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
+
+    // Communities related methods
+    getCommunity: (baseUrl: string, room: string) => CommunityInfo | null;
+
+    /**
+     * This will take care of duplicates and just return the existing one if one is already there matching it
+     */
+    setCommunityByFullUrl: (fullUrl: string, priority: number) => CommunityInfo;
+    getAllCommunities: () => Array<CommunityInfo>;
+    setCommunityPriority: (fullUrl: string, priority: number) => void;
+    eraseCommunity: (baseUrl: string, room: string) => void;
+    buildFullUrlFromDetails: (baseUrl: string, roomId: string, pubkeyHex: string) => string;
+
+    // Legacy groups related methods
+    // TODO
+  };
+
+  export type UserGroupsWrapperActionsCalls = MakeWrapperActionCalls<UserGroupsWrapper>;
+
+  export class UserGroupsWrapperInsideWorker extends BaseConfigWrapperInsideWorker {
+    constructor(secretKey: Uint8Array, dump: Uint8Array | null);
+    public getCommunity: UserGroupsWrapper['getCommunity'];
+    public setCommunityByFullUrl: UserGroupsWrapper['setCommunityByFullUrl'];
+    public getAllCommunities: UserGroupsWrapper['getAllCommunities'];
+    public setCommunityPriority: UserGroupsWrapper['setCommunityPriority'];
+    public eraseCommunity: UserGroupsWrapper['eraseCommunity'];
+    public buildFullUrlFromDetails: UserGroupsWrapper['buildFullUrlFromDetails'];
+  }
+
+  export type UserGroupsConfigActionsType =
+    | ['init', Uint8Array, Uint8Array | null]
+    | MakeActionCall<UserGroupsWrapper, 'getCommunity'>
+    | MakeActionCall<UserGroupsWrapper, 'setCommunityByFullUrl'>
+    | MakeActionCall<UserGroupsWrapper, 'getAllCommunities'>
+    | MakeActionCall<UserGroupsWrapper, 'setCommunityPriority'>
+    | MakeActionCall<UserGroupsWrapper, 'eraseCommunity'>
+    | MakeActionCall<UserGroupsWrapper, 'buildFullUrlFromDetails'>;
 }

@@ -41,12 +41,11 @@ NAN_METHOD(UserConfigWrapperInsideWorker::New) {
 
       auto second = info[1];
 
-      ustring secretKey = toCppBuffer(info[0]);
+      ustring secretKey = toCppBuffer(info[0], "user.new");
 
-      std::optional<ustring_view> dumped = std::nullopt;
       bool dumpIsSet = !second.IsEmpty() && !second->IsNullOrUndefined();
       if (dumpIsSet) {
-        ustring dumped = toCppBuffer(second);
+        ustring dumped = toCppBuffer(second, "user.new");
         UserConfigWrapperInsideWorker *obj =
             new UserConfigWrapperInsideWorker(secretKey, dumped);
         obj->Wrap(info.This());
@@ -152,8 +151,8 @@ NAN_METHOD(UserConfigWrapperInsideWorker::SetProfilePicture) {
     assertIsString(first);
     assertIsUInt8Array(second);
 
-    std::string pic = toCppString(first);
-    session::ustring key = toCppBuffer(second);
+    std::string pic = toCppString(first, "user.setProfilePicture");
+    session::ustring key = toCppBuffer(second, "user.setProfilePicture");
     auto userProfile = to<session::config::UserProfile>(info);
     if (!userProfile) {
       throw std::invalid_argument("User profile is null");
