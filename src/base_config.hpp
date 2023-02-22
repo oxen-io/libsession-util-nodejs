@@ -42,6 +42,16 @@ public:
     }
   }
 
+  template <typename Subtype>
+  static Subtype *to(const Nan::FunctionCallbackInfo<v8::Value> &info) {
+    ConfigBaseWrapperInsideWorker *obj =
+        Nan::ObjectWrap::Unwrap<ConfigBaseWrapperInsideWorker>(info.Holder());
+
+    if (!obj->isInitializedOrThrow())
+      return nullptr;
+    return dynamic_cast<Subtype *>(obj->config);
+  }
+
 protected:
   void initWithConfig(session::config::ConfigBase *config) {
     if (this->isInitialized()) {
@@ -67,16 +77,6 @@ protected:
           "initialized");
     }
     return true;
-  }
-
-  template <typename Subtype>
-  static Subtype *to(const Nan::FunctionCallbackInfo<v8::Value> &info) {
-    ConfigBaseWrapperInsideWorker *obj =
-        Nan::ObjectWrap::Unwrap<ConfigBaseWrapperInsideWorker>(info.Holder());
-
-    if (!obj->isInitializedOrThrow())
-      return nullptr;
-    return dynamic_cast<Subtype *>(obj->config);
   }
 
   virtual ~ConfigBaseWrapperInsideWorker() {

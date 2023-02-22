@@ -101,9 +101,11 @@ Local<String> toJsString(std::string_view x) {
 
 Local<Number> toJsNumber(int x) { return Nan::New<Number>(x); }
 
-std::string toCppString(Local<Value> x) {
+std::string toCppString(Local<Value> x, std::string identifier) {
   if (x->IsNullOrUndefined()) {
-    throw std::invalid_argument("toCppString called with null or undefined");
+    throw std::invalid_argument(
+        "toCppString called with null or undefined with identifier: " +
+        identifier);
   }
   if (x->IsString()) {
     auto asStr = Nan::To<String>(x).ToLocalChecked();
@@ -122,14 +124,16 @@ std::string toCppString(Local<Value> x) {
     return xStr;
   }
 
-  auto errorMsg = "toCppString unsupported type";
+  auto errorMsg = "toCppString unsupported type with identifier: " + identifier;
 
   throw std::invalid_argument(errorMsg);
 }
 
-session::ustring toCppBuffer(Local<Value> x) {
+session::ustring toCppBuffer(Local<Value> x, std::string identifier) {
   if (x->IsNullOrUndefined()) {
-    throw std::invalid_argument("toCppBuffer called with null or undefined");
+    throw std::invalid_argument(
+        "toCppBuffer called with null or undefined with identifier: " +
+        identifier);
   }
 
   if (x->IsUint8Array()) {
@@ -137,12 +141,12 @@ session::ustring toCppBuffer(Local<Value> x) {
 
     session::ustring xStr;
     xStr.resize(aUint8Array->Length());
-    auto copied = aUint8Array->CopyContents(xStr.data(), xStr.size());
+    aUint8Array->CopyContents(xStr.data(), xStr.size());
 
     return xStr;
   }
 
-  auto errorMsg = "toCppBuffer unsupported type";
+  auto errorMsg = "toCppBuffer unsupported type with identifier: " + identifier;
 
   throw std::invalid_argument(errorMsg);
 }
@@ -169,10 +173,10 @@ Local<Object> toJsBuffer(const ustring_view &x) {
   return buf;
 }
 
-std::string toCppDetailString(const Local<Value> val) {
+std::string toCppDetailString(const Local<Value> val, std::string identifier) {
   auto context = Nan::GetCurrentContext();
 
-  return toCppString(val->ToDetailString(context).ToLocalChecked());
+  return toCppString(val->ToDetailString(context).ToLocalChecked(), identifier);
 }
 
 int64_t toCppInteger(Local<Value> x, std::string identifier,
@@ -188,7 +192,7 @@ int64_t toCppInteger(Local<Value> x, std::string identifier,
 
   std::string errorMsg =
       "toCppInteger unsupported type with identifier: " + identifier +
-      " and detailString: " + toCppDetailString(x);
+      " and detailString: " + toCppDetailString(x, "toCppInteger");
 
   throw std::invalid_argument(errorMsg);
 }
@@ -205,7 +209,7 @@ bool toCppBoolean(Local<Value> x, std::string identifier) {
 
   std::string errorMsg =
       "toCppBoolean unsupported type with identifier: " + identifier +
-      " and detailString: " + toCppDetailString(x);
+      " and detailString: " + toCppDetailString(x, "toCppBoolean");
 
   throw std::invalid_argument(errorMsg);
 }
@@ -220,6 +224,7 @@ std::string printable(std::string_view x) {
   }
   return p;
 }
+
 std::string printable(session::ustring_view x) {
   std::string p;
   for (auto c : x) {
@@ -230,4 +235,5 @@ std::string printable(session::ustring_view x) {
   }
   return p;
 }
+
 std::string printable(const char *x, size_t n) { return printable({x, n}); }

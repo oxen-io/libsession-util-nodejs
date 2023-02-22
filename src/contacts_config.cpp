@@ -6,31 +6,26 @@
 #include <iostream>
 #include <optional>
 
-using Nan::MaybeLocal;
-using v8::Array;
-using v8::Boolean;
-using v8::Local;
-using v8::Object;
-using v8::String;
-using v8::Uint8Array;
-using v8::Value;
+using namespace Nan;
+using namespace v8;
 
 using session::ustring;
 using session::config::contact_info;
 using session::config::profile_pic;
 
 using session::config::Contacts;
-using std::cerr;
-using std::endl;
-using std::make_optional;
-using std::optional;
-using std::string;
+using namespace std;
 
-/**
- * TODO
- * - pull latest lib changes and use .size() for the getAll method
- *
- */
+session::config::Contacts *
+getContactWrapperOrThrow(const Nan::FunctionCallbackInfo<v8::Value> &info) {
+  auto contacts =
+      ConfigBaseWrapperInsideWorker::to<session::config::Contacts>(info);
+
+  if (!contacts) {
+    throw std::invalid_argument("contacts wrapper is empty");
+  }
+  return contacts;
+}
 
 Local<Object> toJSContact(const contact_info contact) {
   Local<Object> obj = Nan::New<Object>();
@@ -84,7 +79,7 @@ NAN_MODULE_INIT(ContactsConfigWrapperInsideWorker::Init) {
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
   RegisterNANMethods(tpl, "get", Get);
-  RegisterNANMethods(tpl, "getOrCreate", GetOrCreate);
+  RegisterNANMethods(tpl, "getOrConstruct", GetOrConstruct);
   RegisterNANMethods(tpl, "getAll", GetAll);
   RegisterNANMethods(tpl, "set", Set);
   RegisterNANMethods(tpl, "setName", SetName);
@@ -112,10 +107,10 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::New) {
       assertIsUInt8Array(first);
       assertIsUInt8ArrayOrNull(second);
 
-      ustring secretKey = toCppBuffer(first);
+      ustring secretKey = toCppBuffer(first, "contacts.new");
       bool dumpIsSet = !second.IsEmpty() && !second->IsNullOrUndefined();
       if (dumpIsSet) {
-        ustring dumped = toCppBuffer(second);
+        ustring dumped = toCppBuffer(second, "contacts.new");
         ContactsConfigWrapperInsideWorker *obj =
             new ContactsConfigWrapperInsideWorker(secretKey, dumped);
         obj->Wrap(info.This());
@@ -144,13 +139,8 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Get) {
     assertInfoLength(info, 1);
     auto first = info[0];
     assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first);
-    auto contacts = to<session::config::Contacts>(info);
-
-    if (!contacts) {
-      info.GetReturnValue().Set(Nan::Null());
-      return;
-    }
+    std::string sessionIdHexStr = toCppString(first, "contacts.get");
+    auto contacts = getContactWrapperOrThrow(info);
 
     optional<contact_info> contact = contacts->get(sessionIdHexStr);
 
@@ -164,19 +154,14 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Get) {
   });
 }
 
-NAN_METHOD(ContactsConfigWrapperInsideWorker::GetOrCreate) {
+NAN_METHOD(ContactsConfigWrapperInsideWorker::GetOrConstruct) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 1);
     auto first = info[0];
     assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first);
+    std::string sessionIdHexStr = toCppString(first, "contacts.getOrConstruct");
 
-    auto contacts = to<session::config::Contacts>(info);
-
-    if (!contacts) {
-      info.GetReturnValue().Set(Nan::Null());
-      return;
-    }
+    auto contacts = getContactWrapperOrThrow(info);
 
     auto contact = contacts->get_or_construct(sessionIdHexStr);
 
@@ -201,7 +186,8 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::GetAll) {
     Local<Array> allContacts = Nan::New<Array>(length);
     int index = 0;
     for (auto &contact : *contacts) {
-      allContacts->Set(Nan::GetCurrentContext(), index, toJSContact((contact)));
+      ignore_result(allContacts->Set(Nan::GetCurrentContext(), index,
+                                     toJSContact((contact))));
       index++;
     }
 
@@ -228,7 +214,7 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
 
     Local<Object> contact = Nan::To<Object>(contactValue).ToLocalChecked();
 
-    MaybeLocal<Value> sessionIdMaybe = Nan::Get(contact, toJsString("id"));
+    Nan::MaybeLocal<Value> sessionIdMaybe = Nan::Get(contact, toJsString("id"));
 
     if (sessionIdMaybe.IsEmpty() ||
         sessionIdMaybe.ToLocalChecked()->IsNullOrUndefined()) {
@@ -237,7 +223,7 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
 
     Local<Value> sessionId = sessionIdMaybe.ToLocalChecked();
     assertIsString(sessionId);
-    std::string sessionIdStr = toCppString(sessionId);
+    std::string sessionIdStr = toCppString(sessionId, "contacts.set");
 
     contact_info contactCpp(sessionIdStr);
 
@@ -265,7 +251,7 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
     if (!name.IsEmpty() && !name.ToLocalChecked()->IsNullOrUndefined()) {
       // We need to store it as a string and not directly the  string_view
       // otherwise it gets garbage collected
-      auto nameStr = toCppString(name.ToLocalChecked());
+      auto nameStr = toCppString(name.ToLocalChecked(), "contacts.set1");
       contactCpp.set_name(nameStr);
     }
     auto nickname = Nan::Get(contact, toJsString("nickname"));
@@ -273,13 +259,15 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
         !nickname.ToLocalChecked()->IsNullOrUndefined()) {
       // We need to store it as a string and not directly the  string_view
       // otherwise it gets garbage collected
-      auto nicknameStr = toCppString(nickname.ToLocalChecked());
+      auto nicknameStr =
+          toCppString(nickname.ToLocalChecked(), "contacts.set2");
       contactCpp.set_nickname(nicknameStr);
     }
 
     auto picMaybe = Nan::Get(contact, toJsString("profilePicture"));
 
-    if (!picMaybe.IsEmpty() & !picMaybe.ToLocalChecked()->IsNullOrUndefined()) {
+    if (!picMaybe.IsEmpty() &&
+        !picMaybe.ToLocalChecked()->IsNullOrUndefined()) {
       auto pic = picMaybe.ToLocalChecked();
 
       assertIsObject(pic);
@@ -288,9 +276,13 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
       auto urlMaybe = Nan::Get(picObject, toJsString("url"));
       auto keyMaybe = Nan::Get(picObject, toJsString("key"));
 
-      if (!urlMaybe.IsEmpty() && !keyMaybe.IsEmpty()) {
-        std::string url = toCppString(urlMaybe.ToLocalChecked());
-        session::ustring key = toCppBuffer(keyMaybe.ToLocalChecked());
+      if (!urlMaybe.IsEmpty() && !keyMaybe.IsEmpty() &&
+          !urlMaybe.ToLocalChecked()->IsNullOrUndefined() &&
+          !keyMaybe.ToLocalChecked()->IsNullOrUndefined()) {
+        std::string url =
+            toCppString(urlMaybe.ToLocalChecked(), "contacts.set3");
+        session::ustring key =
+            toCppBuffer(keyMaybe.ToLocalChecked(), "contacts.set4");
 
         // we need to make sure to call the .set_url and .set_key so the
         // profile_pic instance takes ownership of those strings
@@ -314,18 +306,14 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::SetName) {
 
     auto first = info[0];
     assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first);
+    std::string sessionIdHexStr = toCppString(first, "contacts.setName");
 
     auto second = info[1];
     auto assertIsString(second);
     Nan::Utf8String name(second);
     std::string nameStr(*name);
 
-    auto contacts = to<session::config::Contacts>(info);
-    if (!contacts) {
-      throw std::invalid_argument("Contacts is null");
-      return;
-    }
+    auto contacts = getContactWrapperOrThrow(info);
 
     contacts->set_name(sessionIdHexStr, nameStr);
   });
@@ -337,7 +325,7 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::SetNickname) {
 
     auto first = info[0];
     assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first);
+    std::string sessionIdHexStr = toCppString(first, "contacts.setNickname");
 
     auto second = info[1];
     auto assertIsString(second);
@@ -360,17 +348,13 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::SetApproved) {
 
     auto first = info[0];
     assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first);
+    std::string sessionIdHexStr = toCppString(first, "contacts.setApproved");
 
     auto second = info[1];
     assertIsBoolean(second);
     bool approved = *(Nan::To<Boolean>(second).ToLocalChecked());
 
-    auto contacts = to<session::config::Contacts>(info);
-    if (!contacts) {
-      throw std::invalid_argument("Contacts is null");
-      return;
-    }
+    auto contacts = getContactWrapperOrThrow(info);
 
     contacts->set_approved(sessionIdHexStr, approved);
   });
@@ -382,7 +366,7 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::SetApprovedMe) {
 
     auto first = info[0];
     assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first);
+    std::string sessionIdHexStr = toCppString(first, "contacts.setApprovedMe");
 
     auto second = info[1];
     assertIsBoolean(second);
@@ -404,18 +388,13 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::SetBlocked) {
 
     auto first = info[0];
     assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first);
+    std::string sessionIdHexStr = toCppString(first, "contacts.setBlocked");
 
     auto second = info[1];
     assertIsBoolean(second);
     bool blocked = *(Nan::To<Boolean>(second).ToLocalChecked());
 
-    auto contacts = to<session::config::Contacts>(info);
-    if (!contacts) {
-      throw std::invalid_argument("Contacts is null");
-      return;
-    }
-
+    auto contacts = getContactWrapperOrThrow(info);
     contacts->set_blocked(sessionIdHexStr, blocked);
   });
 }
@@ -426,7 +405,8 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::SetProfilePicture) {
 
     auto first = info[0];
     assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first);
+    std::string sessionIdHexStr =
+        toCppString(first, "contacts.setProfilePicture");
 
     auto second = info[1];
     assertIsStringOrNull(second);
@@ -442,8 +422,8 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::SetProfilePicture) {
     if (!second.IsEmpty() && !third.IsEmpty() && !second->IsNullOrUndefined() &&
         !third->IsNullOrUndefined()) {
 
-      auto url = toCppString(second);
-      auto key = toCppBuffer(third);
+      auto url = toCppString(second, "contacts.setProfilePicture");
+      auto key = toCppBuffer(third, "contacts.setProfilePicture");
       profile_pic picDetails(url, key);
       contacts->set_profile_pic(sessionIdHexStr, picDetails);
     } else {
@@ -463,13 +443,9 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Erase) {
 
     auto first = info[0];
     assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first);
+    std::string sessionIdHexStr = toCppString(first, "contacts.erase");
 
-    auto contacts = to<session::config::Contacts>(info);
-    if (!contacts) {
-      throw std::invalid_argument("Contacts is null");
-      return;
-    }
+    auto contacts = getContactWrapperOrThrow(info);
 
     contacts->erase(sessionIdHexStr);
   });
