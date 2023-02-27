@@ -69,13 +69,23 @@ NAN_METHOD(ConfigBaseWrapperInsideWorker::Push) {
         Nan::ObjectWrap::Unwrap<ConfigBaseWrapperInsideWorker>(info.Holder());
     assertInfoLength(info, 0);
     auto context = Nan::GetCurrentContext();
-    auto [to_push, seqno] = obj->config->push();
+    auto [seqno, to_push, hashes] = obj->config->push();
 
     Local<Object> to_push_js = toJsBuffer(&to_push);
     Local<v8::Number> seqno_js = Nan::New<v8::Number>(seqno);
     Local<Object> to_return = Nan::New<Object>();
     auto result = to_return->Set(context, toJsString("data"), to_push_js);
     result = to_return->Set(context, toJsString("seqno"), seqno_js);
+
+    Local<Array> jsHashes = Nan::New<Array>(hashes.size());
+    int index = 0;
+
+    for (auto &hash : hashes) {
+      ignore_result(
+          jsHashes->Set(Nan::GetCurrentContext(), index, toJsString(hash)));
+      index++;
+    }
+    result = to_return->Set(context, toJsString("hashes"), jsHashes);
 
     info.GetReturnValue().Set(to_return);
   });
@@ -98,13 +108,16 @@ NAN_METHOD(ConfigBaseWrapperInsideWorker::ConfirmPushed) {
   tryOrWrapStdException([&]() {
     ConfigBaseWrapperInsideWorker *obj =
         Nan::ObjectWrap::Unwrap<ConfigBaseWrapperInsideWorker>(info.Holder());
-    assertInfoLength(info, 1);
+    assertInfoLength(info, 2);
     assertIsNumber(info[0]);
+    assertIsString(info[1]);
 
     auto seqno = info[0];
+    auto jsHash = info[1];
     int64_t seqNoInteger = toCppInteger(seqno, "ConfirmPushed", false);
+    std::string cppHash = toCppString(jsHash, "ConfirmPushed");
 
-    obj->config->confirm_pushed(seqNoInteger);
+    obj->config->confirm_pushed(seqNoInteger, cppHash);
   });
 }
 
@@ -117,14 +130,30 @@ NAN_METHOD(ConfigBaseWrapperInsideWorker::Merge) {
     Local<Array> asArray = info[0].As<Array>();
 
     uint32_t arrayLength = asArray->Length();
-    std::vector<session::ustring> conf_strs;
+    std::vector<std::pair<std::string, session::ustring>> conf_strs;
     conf_strs.reserve(arrayLength);
 
     for (uint32_t i = 0; i < asArray->Length(); i++) {
       Local<Value> item =
           asArray->Get(Nan::GetCurrentContext(), i).ToLocalChecked();
-      assertIsUInt8Array(item);
-      conf_strs.push_back(toCppBuffer(item, "base.merge"));
+      assertIsObject(item);
+      if (item.IsEmpty()) {
+        throw std::invalid_argument("Merge.item received empty");
+      }
+
+      Local<Object> itemObject = Nan::To<Object>(item).ToLocalChecked();
+
+      auto hash = Nan::Get(itemObject, toJsString("hash")).ToLocalChecked();
+      auto data = Nan::Get(itemObject, toJsString("data")).ToLocalChecked();
+      assertIsString(hash);
+      assertIsUInt8Array(data);
+
+      std::string hashCpp = toCppString(hash, "base.merge");
+      session::ustring dataCpp = toCppBuffer(hash, "base.merge");
+      std::pair<std::string, session::ustring> pair =
+          std::make_pair(hashCpp, dataCpp);
+
+      conf_strs.push_back(pair);
     }
 
     int accepted = obj->config->merge(conf_strs);
