@@ -43,7 +43,7 @@ declare module 'session_util_wrapper' {
     key: Uint8Array | null;
   };
 
-  export type PushConfigResult = { data: Uint8Array; seqno: number };
+  export type PushConfigResult = { data: Uint8Array; seqno: number; hashes: Array<string> };
 
   type MakeActionCall<A extends BaseConfigWrapper, B extends string> = [B, ...Parameters<A[B]>];
 
@@ -58,8 +58,8 @@ declare module 'session_util_wrapper' {
     needsPush: () => boolean;
     push: () => PushConfigResult;
     dump: () => Uint8Array;
-    confirmPushed: (seqno: number) => void;
-    merge: (toMerge: Array<Uint8Array>) => number;
+    confirmPushed: (seqno: number, hash: string) => void;
+    merge: (toMerge: Array<{ hash: string; data: Uint8Array }>) => number;
     storageNamespace: () => number;
   };
 
