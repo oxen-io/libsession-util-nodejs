@@ -25,11 +25,10 @@ private:
   static NAN_METHOD(New);
 
   // Communities related methods
-  static NAN_METHOD(GetCommunity);
+  static NAN_METHOD(GetCommunityByFullUrl);
   static NAN_METHOD(SetCommunityByFullUrl);
   static NAN_METHOD(GetAllCommunities);
-  static NAN_METHOD(SetCommunityPriority);
-  static NAN_METHOD(EraseCommunity);
+  static NAN_METHOD(EraseCommunityByFullUrl);
 
   static NAN_METHOD(BuildFullUrlFromDetails);
 
