@@ -149,7 +149,7 @@ NAN_METHOD(ConfigBaseWrapperInsideWorker::Merge) {
       assertIsUInt8Array(data);
 
       std::string hashCpp = toCppString(hash, "base.merge");
-      session::ustring dataCpp = toCppBuffer(hash, "base.merge");
+      session::ustring dataCpp = toCppBuffer(data, "base.merge");
       std::pair<std::string, session::ustring> pair =
           std::make_pair(hashCpp, dataCpp);
 

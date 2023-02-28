@@ -207,15 +207,20 @@ declare module 'session_util_wrapper' {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
 
     // Communities related methods
-    getCommunity: (baseUrl: string, room: string) => CommunityInfo | null;
+    /** Note: can have the pubkey argument set or not.  */
+    getCommunityByFullUrl: (fullUrlWithOrWithoutPubkey) => CommunityInfo | null;
 
     /**
-     * This will take care of duplicates and just return the existing one if one is already there matching it
+     * This will take care of duplicates and just return the existing one if one is already there matching it.
+     * Note: this needs the pubkey to be provided in the argument as it might need to create it.
      */
-    setCommunityByFullUrl: (fullUrl: string, priority: number) => CommunityInfo;
+    setCommunityByFullUrl: (fullUrlWithPubkey: string, priority: number) => CommunityInfo;
     getAllCommunities: () => Array<CommunityInfo>;
-    setCommunityPriority: (fullUrl: string, priority: number) => void;
-    eraseCommunity: (baseUrl: string, room: string) => void;
+
+    /**
+     * Note: can have the pubkey argument set or not.
+     */
+    eraseCommunityByFullUrl: (fullUrlWithOrWithoutPubkey: string) => void;
     buildFullUrlFromDetails: (baseUrl: string, roomId: string, pubkeyHex: string) => string;
 
     // Legacy groups related methods
@@ -226,20 +231,18 @@ declare module 'session_util_wrapper' {
 
   export class UserGroupsWrapperInsideWorker extends BaseConfigWrapperInsideWorker {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
-    public getCommunity: UserGroupsWrapper['getCommunity'];
+    public getCommunityByFullUrl: UserGroupsWrapper['getCommunityByFullUrl'];
     public setCommunityByFullUrl: UserGroupsWrapper['setCommunityByFullUrl'];
     public getAllCommunities: UserGroupsWrapper['getAllCommunities'];
-    public setCommunityPriority: UserGroupsWrapper['setCommunityPriority'];
-    public eraseCommunity: UserGroupsWrapper['eraseCommunity'];
+    public eraseCommunityByFullUrl: UserGroupsWrapper['eraseCommunityByFullUrl'];
     public buildFullUrlFromDetails: UserGroupsWrapper['buildFullUrlFromDetails'];
   }
 
   export type UserGroupsConfigActionsType =
     | ['init', Uint8Array, Uint8Array | null]
-    | MakeActionCall<UserGroupsWrapper, 'getCommunity'>
+    | MakeActionCall<UserGroupsWrapper, 'getCommunityByFullUrl'>
     | MakeActionCall<UserGroupsWrapper, 'setCommunityByFullUrl'>
     | MakeActionCall<UserGroupsWrapper, 'getAllCommunities'>
-    | MakeActionCall<UserGroupsWrapper, 'setCommunityPriority'>
-    | MakeActionCall<UserGroupsWrapper, 'eraseCommunity'>
+    | MakeActionCall<UserGroupsWrapper, 'eraseCommunityByFullUrl'>
     | MakeActionCall<UserGroupsWrapper, 'buildFullUrlFromDetails'>;
 }

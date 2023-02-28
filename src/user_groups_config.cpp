@@ -52,11 +52,10 @@ NAN_MODULE_INIT(UserGroupsWrapperInsideWorker::Init) {
   tpl->SetClassName(Nan::New("UserGroupsWrapperInsideWorker").ToLocalChecked());
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-  RegisterNANMethods(tpl, "getCommunity", GetCommunity);
+  RegisterNANMethods(tpl, "getCommunityByFullUrl", GetCommunityByFullUrl);
   RegisterNANMethods(tpl, "setCommunityByFullUrl", SetCommunityByFullUrl);
   RegisterNANMethods(tpl, "getAllCommunities", GetAllCommunities);
-  RegisterNANMethods(tpl, "setCommunityPriority", SetCommunityPriority);
-  RegisterNANMethods(tpl, "eraseCommunity", EraseCommunity);
+  RegisterNANMethods(tpl, "eraseCommunityByFullUrl", EraseCommunityByFullUrl);
   RegisterNANMethods(tpl, "buildFullUrlFromDetails", BuildFullUrlFromDetails);
 
   Nan::Set(target, Nan::New("UserGroupsWrapperInsideWorker").ToLocalChecked(),
@@ -102,19 +101,16 @@ NAN_METHOD(UserGroupsWrapperInsideWorker::New) {
  *             GETTERS
  * ============================== */
 
-NAN_METHOD(UserGroupsWrapperInsideWorker::GetCommunity) {
+NAN_METHOD(UserGroupsWrapperInsideWorker::GetCommunityByFullUrl) {
   tryOrWrapStdException([&]() {
-    assertInfoLength(info, 2);
+    assertInfoLength(info, 1);
     auto first = info[0];
     assertIsString(first);
-    std::string baseUrl = toCppString(first, "group.GetCommunity");
-
-    auto second = info[1];
-    assertIsString(second);
-    std::string room = toCppString(second, "group.GetCommunity2");
+    std::string fullUrl = toCppString(first, "group.GetCommunityByFullUrl");
 
     session::config::UserGroups *userGroups = getUserGroupsWrapperOrThrow(info);
-    auto found = userGroups->get_community(baseUrl, room);
+    // this will fail if the pubkey is not in the string but is not
+    auto found = userGroups->get_community(fullUrl);
 
     if (found) {
       info.GetReturnValue().Set(toJSCommunity(*found));
@@ -175,51 +171,20 @@ NAN_METHOD(UserGroupsWrapperInsideWorker::GetAllCommunities) {
 }
 
 /** ==============================
- *             SETTERS
- * ============================== */
-
-NAN_METHOD(UserGroupsWrapperInsideWorker::SetCommunityPriority) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 2);
-
-    auto first = info[0];
-    assertIsString(first);
-
-    auto second = info[1];
-    assertIsNumber(second);
-    std::string fullUrl = toCppString(first, "group.SetCommunityPriority");
-
-    int64_t priority =
-        toCppInteger(second, "group.SetCommunityPriority", false);
-
-    auto userGroups = getUserGroupsWrapperOrThrow(info);
-    auto found = userGroups->get_community(fullUrl);
-
-    if (found) {
-      found->priority = priority;
-      userGroups->set(*found);
-    }
-  });
-}
-
-/** ==============================
  *             ERASERS
  * ============================== */
 
-NAN_METHOD(UserGroupsWrapperInsideWorker::EraseCommunity) {
+NAN_METHOD(UserGroupsWrapperInsideWorker::EraseCommunityByFullUrl) {
   tryOrWrapStdException([&]() {
-    assertInfoLength(info, 2);
+    assertInfoLength(info, 1);
 
     auto first = info[0];
     assertIsString(first);
-    std::string baseUrl = toCppString(first, "group.EraseCommunity");
-
-    auto second = info[1];
-    assertIsString(second);
-    std::string room = toCppString(second, "group.EraseCommunity2");
+    std::string fullUrl = toCppString(first, "group.EraseCommunityByFullUrl");
+    auto [base, room, pubkey] = community::parse_full_url(fullUrl);
 
     auto userGroups = getUserGroupsWrapperOrThrow(info);
-    userGroups->erase_community(baseUrl, room);
+    userGroups->erase_community(base, room);
   });
 }
 
