@@ -198,7 +198,6 @@ declare module 'session_util_wrapper' {
     pubkeyHex: string;
     baseUrl: string;
     fullUrl: string;
-    roomNormalized: string;
     roomCasePreserved: string;
     priority: number;
   };

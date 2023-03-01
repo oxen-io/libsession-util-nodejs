@@ -33,9 +33,6 @@ Local<Object> toJSCommunity(const community_info community) {
   result = obj->Set(context, toJsString("baseUrl"),
                     toJsString(community.base_url()));
 
-  result = obj->Set(context, toJsString("roomNormalized"),
-                    toJsString(community.room_norm()));
-
   result = obj->Set(context, toJsString("roomCasePreserved"),
                     toJsString(community.room()));
 
