@@ -29,8 +29,11 @@ private:
   static NAN_METHOD(SetCommunityByFullUrl);
   static NAN_METHOD(GetAllCommunities);
   static NAN_METHOD(EraseCommunityByFullUrl);
-
   static NAN_METHOD(BuildFullUrlFromDetails);
 
   // Legacy groups related methods
+  static NAN_METHOD(GetLegacyGroup);
+  static NAN_METHOD(GetAllLegacyGroups);
+  static NAN_METHOD(SetLegacyGroup);
+  static NAN_METHOD(EraseLegacyGroup);
 };

@@ -212,6 +212,11 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
       throw std::invalid_argument("cppContact received empty");
     }
 
+    Contacts *contacts = to<Contacts>(info);
+    if (!contacts) {
+      return;
+    }
+
     Local<Object> contact = Nan::To<Object>(contactValue).ToLocalChecked();
 
     Nan::MaybeLocal<Value> sessionIdMaybe = Nan::Get(contact, toJsString("id"));
@@ -225,7 +230,7 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
     assertIsString(sessionId);
     std::string sessionIdStr = toCppString(sessionId, "contacts.set");
 
-    contact_info contactCpp(sessionIdStr);
+    contact_info contactCpp = contacts->get_or_construct(sessionIdStr);
 
     contactCpp.approved = toCppBoolean(
         (Nan::Get(contact, toJsString("approved"))).ToLocalChecked(),
@@ -243,9 +248,9 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
         toCppBoolean((Nan::Get(contact, toJsString("hidden"))).ToLocalChecked(),
                      "set.hidden");
 
-    contactCpp.priority = toCppInteger(
-        (Nan::Get(contact, toJsString("priority"))).ToLocalChecked(),
-        "set.priority", true);
+    contactCpp.priority =
+        toPriority((Nan::Get(contact, toJsString("priority"))).ToLocalChecked(),
+                   contactCpp.priority);
 
     auto name = Nan::Get(contact, toJsString("name"));
     if (!name.IsEmpty() && !name.ToLocalChecked()->IsNullOrUndefined()) {
@@ -287,13 +292,9 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
         // we need to make sure to call the .set_url and .set_key so the
         // profile_pic instance takes ownership of those strings
         contactCpp.profile_picture = profile_pic(url, key);
+        // TODO is this right?
         // contactCpp.profile_picture.set_key(key);
       }
-    }
-
-    Contacts *contacts = to<Contacts>(info);
-    if (!contacts) {
-      return;
     }
 
     contacts->set(contactCpp);
@@ -427,8 +428,8 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::SetProfilePicture) {
       profile_pic picDetails(url, key);
       contacts->set_profile_pic(sessionIdHexStr, picDetails);
     } else {
-      // profile_pic picDetails(nullptr, nullptr);
-      // contacts->set_profile_pic(sessionIdHexStr, picDetails);
+      profile_pic picDetails;
+      contacts->set_profile_pic(sessionIdHexStr, picDetails);
     }
   });
 }

@@ -13,6 +13,7 @@ using namespace oxenc::literals;
 using session::ustring;
 using session::ustring_view;
 
+using v8::Boolean;
 using v8::Local;
 using v8::Number;
 using v8::Object;
@@ -54,6 +55,9 @@ Local<Object> toJsBuffer(const ustring &x);
 Local<Object> toJsBuffer(const ustring_view *x);
 Local<Object> toJsBuffer(const ustring_view &x);
 Local<Number> toJsNumber(int x);
+Local<Number> toJsNumber(long int x);
+
+Local<Boolean> toJsBoolean(bool x);
 
 std::string printable(std::string_view x);
 std::string printable(session::ustring_view x);
@@ -64,3 +68,8 @@ std::string toCppDetailString(const Local<Value> val, std::string identifier);
 
 template <typename T>
 inline void ignore_result(const T & /* unused result */) {}
+
+/**
+ * Keep the current priority if a wrapper
+ */
+int64_t toPriority(Local<Value> x, int64_t currentPriority);
