@@ -99,7 +99,10 @@ Local<String> toJsString(std::string_view x) {
   return Nan::New<String>(x.data(), x.size()).ToLocalChecked();
 }
 
-Local<Number> toJsNumber(int x) { return Nan::New<Number>(x); }
+Local<Number> toJsNumber(const int x) { return Nan::New<Number>(x); }
+Local<Number> toJsNumber(const long int x) { return Nan::New<Number>(x); }
+
+Local<Boolean> toJsBoolean(bool x) { return Nan::New<Boolean>(x); }
 
 std::string toCppString(Local<Value> x, std::string identifier) {
   if (x->IsNullOrUndefined()) {
@@ -237,3 +240,12 @@ std::string printable(session::ustring_view x) {
 }
 
 std::string printable(const char *x, size_t n) { return printable({x, n}); }
+
+int64_t toPriority(Local<Value> x, int64_t currentPriority) {
+  auto newPriority = toCppInteger(x, "toPriority", true);
+  if (newPriority > 0) {
+    // keep the existing priority if it is already set
+    return max(currentPriority, (int64_t)1);
+  }
+  return 0;
+}
