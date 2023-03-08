@@ -9,6 +9,7 @@
 #include "base.hpp"
 #include "community.hpp"
 #include "namespaces.hpp"
+#include "notify.hpp"
 
 extern "C" {
 struct ugroups_legacy_group_info;
@@ -31,6 +32,8 @@ namespace session::config {
 ///         disabled.  (Note that legacy groups only support expire after-read)
 ///     h - hidden: 1 if the conversation has been removed from the conversation list, omitted if
 ///         visible.
+///     @ - notification setting (int).  Omitted = use default setting; 1 = all, 2 = disabled, 3 =
+///         mentions-only.
 ///     + - the conversation priority, for pinned messages.  Omitted means not pinned; otherwise an
 ///         integer value >0, where a higher priority means the conversation is meant to appear
 ///         earlier in the pinned conversation list.
@@ -64,6 +67,7 @@ struct legacy_group_info {
     bool hidden = false;  // true if the conversation is hidden from the convo list
     int priority = 0;     // The priority; 0 means unpinned, larger means pinned higher (i.e.
                           // higher priority conversations come first).
+    notify_mode notifications = notify_mode::defaulted;  // When the user wants notifications
 
     /// Constructs a new legacy group info from an id (which must look like a session_id).  Throws
     /// if id is invalid.
@@ -121,6 +125,8 @@ struct community_info : community {
 
     int priority = 0;  // The priority; 0 means unpinned, larger means pinned higher (i.e.
                        // higher priority conversations come first).
+
+    notify_mode notifications = notify_mode::defaulted;  // When the user wants notifications
 
   private:
     void load(const dict& info_dict);

@@ -5,6 +5,7 @@ extern "C" {
 #endif
 
 #include "base.h"
+#include "notify.h"
 #include "util.h"
 
 // Maximum length of a group name, in bytes
@@ -29,6 +30,7 @@ typedef struct ugroups_legacy_group_info {
     bool hidden;                 // true if hidden from the convo list
     int priority;  // pinned message priority; 0 = unpinned, larger means pinned higher (i.e. higher
                    // priority conversations come first).
+    CONVO_NOTIFY_MODE notifications;  // When the user wants notifications
 
     // For members use the ugroups_legacy_group_members and associated calls.
 
@@ -45,6 +47,7 @@ typedef struct ugroups_community_info {
 
     int priority;  // pinned message priority; 0 = unpinned, larger means pinned higher (i.e. higher
                    // priority conversations come first).
+    CONVO_NOTIFY_MODE notifications;  // When the user wants notifications
 } ugroups_community_info;
 
 int user_groups_init(

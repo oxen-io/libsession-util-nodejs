@@ -336,25 +336,25 @@ NAN_METHOD(UserGroupsWrapperInsideWorker::SetLegacyGroup) {
     assertIsString(sessionId);
     std::string sessionIdStr = toCppString(sessionId, "legacyGroup.set");
 
-    legacy_group_info legacyGroupCpp =
+    legacy_group_info legacyGroupInWrapper =
         userGroups->get_or_construct_legacy_group(sessionIdStr);
 
     // TODO desktop does not understand what is a `hidden` legacy group
     // currently. So better not override whatever anyone else is setting here
-    // legacyGroupCpp.hidden = toCppBoolean(
+    // legacyGroupInWrapper.hidden = toCppBoolean(
     //     (Nan::Get(legacyGroup, toJsString("hidden"))).ToLocalChecked(),
     //     "set.hidden");
 
-    legacyGroupCpp.priority = toPriority(
+    legacyGroupInWrapper.priority = toPriority(
         (Nan::Get(legacyGroup, toJsString("priority"))).ToLocalChecked(),
-        legacyGroupCpp.priority);
+        legacyGroupInWrapper.priority);
 
     auto name = Nan::Get(legacyGroup, toJsString("name"));
     if (!name.IsEmpty() && !name.ToLocalChecked()->IsNullOrUndefined()) {
       // We need to store it as a string and not directly the  string_view
       // otherwise it gets garbage collected
       auto nameStr = toCppString(name.ToLocalChecked(), "legacyGroup.set1");
-      legacyGroupCpp.name = nameStr;
+      legacyGroupInWrapper.name = nameStr;
     }
 
     auto encPubkey = Nan::Get(legacyGroup, toJsString("encPubkey"));
@@ -363,7 +363,7 @@ NAN_METHOD(UserGroupsWrapperInsideWorker::SetLegacyGroup) {
 
       auto enc_pubkey =
           toCppBuffer(encPubkey.ToLocalChecked(), "legacyGroup.set1");
-      legacyGroupCpp.enc_pubkey = enc_pubkey;
+      legacyGroupInWrapper.enc_pubkey = enc_pubkey;
     }
 
     auto encSeckey = Nan::Get(legacyGroup, toJsString("encSeckey"));
@@ -372,7 +372,7 @@ NAN_METHOD(UserGroupsWrapperInsideWorker::SetLegacyGroup) {
 
       auto enc_seckey =
           toCppBuffer(encSeckey.ToLocalChecked(), "legacyGroup.set2");
-      legacyGroupCpp.enc_seckey = enc_seckey;
+      legacyGroupInWrapper.enc_seckey = enc_seckey;
     }
 
     auto disappearingTimerSeconds =
@@ -380,50 +380,83 @@ NAN_METHOD(UserGroupsWrapperInsideWorker::SetLegacyGroup) {
     if (!disappearingTimerSeconds.IsEmpty() &&
         !disappearingTimerSeconds.ToLocalChecked()->IsNullOrUndefined()) {
 
-      legacyGroupCpp.disappearing_timer = std::chrono::seconds(toCppInteger(
-          disappearingTimerSeconds.ToLocalChecked(), "legacyGroup.set3", true));
+      legacyGroupInWrapper.disappearing_timer = std::chrono::seconds(
+          toCppInteger(disappearingTimerSeconds.ToLocalChecked(),
+                       "legacyGroup.set3", true));
     } else {
-      legacyGroupCpp.disappearing_timer = std::chrono::seconds(0);
+      legacyGroupInWrapper.disappearing_timer = std::chrono::seconds(0);
     }
-
     // TODO members with set_members ?
-    std::unordered_set<std::string> unseen;
-    for (auto &[sid, admin] : legacyGroupCpp.members())
-      unseen.insert(sid);
 
-    auto membersFromJS = Nan::Get(legacyGroup, toJsString("members"));
-    if (!membersFromJS.IsEmpty() &&
-        !membersFromJS.ToLocalChecked()->IsNullOrUndefined() &&
-        membersFromJS.ToLocalChecked()->IsArray()) {
+    auto membersJS = Nan::Get(legacyGroup, toJsString("members"));
 
-      Local<Array> memberAsArray =
-          Local<Array>::Cast(membersFromJS.ToLocalChecked());
-      for (unsigned int i = 0; i < memberAsArray->Length(); i++) {
-        Local<Value> item =
-            memberAsArray->Get(Nan::GetCurrentContext(), i).ToLocalChecked();
-        assertIsObject(item);
-        if (item.IsEmpty()) {
-          throw std::invalid_argument("legacy group members received empty");
-        }
-        Local<Object> itemObject = Nan::To<Object>(item).ToLocalChecked();
+    if (membersJS.IsEmpty() ||
+        membersJS.ToLocalChecked()->IsNullOrUndefined()) {
+      throw std::invalid_argument(
+          "set legacy group members must be a defined array");
+    }
+    assertIsArray(membersJS.ToLocalChecked());
 
-        Local<Value> pubkeyHexMember =
-            Nan::Get(itemObject, toJsString("pubkeyHex")).ToLocalChecked();
-        Local<Value> isAdminMember =
-            Nan::Get(itemObject, toJsString("isAdmin")).ToLocalChecked();
+    Local<Array> membersJSAsArray = membersJS.ToLocalChecked().As<Array>();
+    uint32_t arrayLength = membersJSAsArray->Length();
+    std::vector<std::pair<std::string, bool>> membersToAddOrUpdate;
+    membersToAddOrUpdate.reserve(arrayLength);
 
-        bool isAdmin = toCppBoolean(isAdminMember, "isAdmin setLegacygroup");
-        std::string pubkeyHex =
-            toCppString(pubkeyHexMember, "pubkeyHex setLegacygroup");
-        legacyGroupCpp.insert(pubkeyHex, isAdmin);
-        unseen.erase(pubkeyHex);
+    /**
+     * `inWrapperButNotInJsAnymore` holds the sessionId of the members currently
+     * stored in the wrapper's group before we do any change. Then, while
+     * iterating in the ones set from the JS, we also remove them from
+     * inWrapperButNotInJsAnymore. After that step, the one still part of the
+     * inWrapperButNotInJsAnymore, are the ones which are in the wrapper, but
+     * not anymore in the JS side, hence those are the ones we have to remove.
+     */
+    std::unordered_set<std::string> inWrapperButNotInJsAnymore;
+    for (auto &[sid, admin] : legacyGroupInWrapper.members())
+      inWrapperButNotInJsAnymore.insert(sid);
+
+    for (uint32_t i = 0; i < membersJSAsArray->Length(); i++) {
+      Local<Value> item =
+          membersJSAsArray->Get(Nan::GetCurrentContext(), i).ToLocalChecked();
+      assertIsObject(item);
+      if (item.IsEmpty()) {
+        throw std::invalid_argument("setLegacyGroup.item received empty");
       }
+
+      Local<Object> itemObject = Nan::To<Object>(item).ToLocalChecked();
+
+      auto pubkeyHex =
+          Nan::Get(itemObject, toJsString("pubkeyHex")).ToLocalChecked();
+      auto isAdmin =
+          Nan::Get(itemObject, toJsString("isAdmin")).ToLocalChecked();
+      assertIsString(pubkeyHex);
+      assertIsBoolean(isAdmin);
+
+      std::string pubkeyHexCpp = toCppString(pubkeyHex, "setLegacyGroup");
+      bool isAdminCpp = toCppBoolean(isAdmin, "setLegacyGroup");
+      std::pair<std::string, bool> memberPair =
+          std::make_pair(pubkeyHexCpp, isAdminCpp);
+
+      membersToAddOrUpdate.push_back(memberPair);
     }
 
-    for (const auto &sid : unseen)
-      legacyGroupCpp.erase(sid);
+    for (auto &member : membersToAddOrUpdate) {
+      // This updates or add an entry for them, leaving them unchanged otherwise
+      legacyGroupInWrapper.insert(member.first, member.second);
+      inWrapperButNotInJsAnymore.erase(member.first);
+    }
 
-    userGroups->set(legacyGroupCpp);
+    // at this point we updated members which should already be there or added
+    // them into legacyGroupInWrapper from membersJSAsArray
+
+    // now we need to iterate over all the members in legacyGroupInWrapper which
+    // are not in membersToAddOrUpdate
+
+    std::vector<std::string> membersToRemove;
+    for (auto &sid : inWrapperButNotInJsAnymore) {
+      legacyGroupInWrapper.erase(sid);
+    }
+
+    userGroups->set(legacyGroupInWrapper);
     info.GetReturnValue().Set(Nan::Null());
 
     return;
