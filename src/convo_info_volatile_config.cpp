@@ -89,11 +89,13 @@ NAN_MODULE_INIT(ConvoInfoVolatileWrapperInsideWorker::Init) {
   RegisterNANMethods(tpl, "getLegacyGroup", GetLegacyGroup);
   RegisterNANMethods(tpl, "getAllLegacyGroups", GetAllLegacyGroups);
   RegisterNANMethods(tpl, "setLegacyGroup", SetLegacyGroup);
+  RegisterNANMethods(tpl, "eraseLegacyGroup", EraseLegacyGroup);
 
   // communities related methods
   RegisterNANMethods(tpl, "getCommunity", GetCommunity);
   RegisterNANMethods(tpl, "getAllCommunities", GetAllCommunities);
   RegisterNANMethods(tpl, "setCommunityByFullUrl", SetCommunityByFullUrl);
+  RegisterNANMethods(tpl, "eraseCommunityByFullUrl", EraseCommunityByFullUrl);
 
   Nan::Set(target,
            Nan::New("ConvoInfoVolatileWrapperInsideWorker").ToLocalChecked(),
@@ -298,6 +300,23 @@ NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::SetLegacyGroup) {
   });
 }
 
+NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::EraseLegacyGroup) {
+  tryOrWrapStdException([&]() {
+    assertInfoLength(info, 1);
+    assertIsString(info[0]);
+
+    std::string toRemove = toCppString(info[0], __FUNCTION__);
+
+    session::config::ConvoInfoVolatile *convoInfoVolatile =
+        getConvoInfoVolatileWrapperOrThrow(info);
+    bool removed = convoInfoVolatile->erase_legacy_group(toRemove);
+
+    info.GetReturnValue().Set(toJsBoolean(removed));
+
+    return;
+  });
+}
+
 /**
  * =================================================
  * ================== Communities ==================
@@ -378,5 +397,21 @@ NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::SetCommunityByFullUrl) {
     info.GetReturnValue().Set(Nan::Null());
 
     return;
+  });
+}
+
+NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::EraseCommunityByFullUrl) {
+  tryOrWrapStdException([&]() {
+    assertInfoLength(info, 1);
+
+    auto first = info[0];
+    assertIsString(first);
+    std::string fullUrl =
+        toCppString(first, "infoVolatile.EraseCommunityByFullUrl");
+    auto [base, room, pubkey] = community::parse_full_url(fullUrl);
+
+    session::config::ConvoInfoVolatile *convoVolatileInfo =
+        getConvoInfoVolatileWrapperOrThrow(info);
+    convoVolatileInfo->erase_community(base, room);
   });
 }
