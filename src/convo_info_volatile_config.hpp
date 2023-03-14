@@ -35,11 +35,11 @@ private:
   static NAN_METHOD(GetLegacyGroup);
   static NAN_METHOD(GetAllLegacyGroups);
   static NAN_METHOD(SetLegacyGroup);
-
-  // TODO erase?
+  static NAN_METHOD(EraseLegacyGroup);
 
   // communities related methods
   static NAN_METHOD(GetCommunity);
   static NAN_METHOD(GetAllCommunities);
   static NAN_METHOD(SetCommunityByFullUrl);
+  static NAN_METHOD(EraseCommunityByFullUrl);
 };
