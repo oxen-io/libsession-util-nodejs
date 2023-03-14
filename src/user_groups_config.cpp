@@ -385,7 +385,44 @@ NAN_METHOD(UserGroupsWrapperInsideWorker::SetLegacyGroup) {
     } else {
       legacyGroupCpp.disappearing_timer = std::chrono::seconds(0);
     }
-    // TODO members
+
+    // TODO members with set_members ?
+    std::unordered_set<std::string> unseen;
+    for (auto &[sid, admin] : legacyGroupCpp.members())
+      unseen.insert(sid);
+
+    auto membersFromJS = Nan::Get(legacyGroup, toJsString("members"));
+    if (!membersFromJS.IsEmpty() &&
+        !membersFromJS.ToLocalChecked()->IsNullOrUndefined() &&
+        membersFromJS.ToLocalChecked()->IsArray()) {
+
+      Local<Array> memberAsArray =
+          Local<Array>::Cast(membersFromJS.ToLocalChecked());
+      for (unsigned int i = 0; i < memberAsArray->Length(); i++) {
+        Local<Value> item =
+            memberAsArray->Get(Nan::GetCurrentContext(), i).ToLocalChecked();
+        assertIsObject(item);
+        if (item.IsEmpty()) {
+          throw std::invalid_argument("legacy group members received empty");
+        }
+        Local<Object> itemObject = Nan::To<Object>(item).ToLocalChecked();
+
+        Local<Value> pubkeyHexMember =
+            Nan::Get(itemObject, toJsString("pubkeyHex")).ToLocalChecked();
+        Local<Value> isAdminMember =
+            Nan::Get(itemObject, toJsString("isAdmin")).ToLocalChecked();
+
+        bool isAdmin = toCppBoolean(isAdminMember, "isAdmin setLegacygroup");
+        std::string pubkeyHex =
+            toCppString(pubkeyHexMember, "pubkeyHex setLegacygroup");
+        legacyGroupCpp.insert(pubkeyHex, isAdmin);
+        unseen.erase(pubkeyHex);
+      }
+    }
+
+    for (const auto &sid : unseen)
+      legacyGroupCpp.erase(sid);
+
     userGroups->set(legacyGroupCpp);
     info.GetReturnValue().Set(Nan::Null());
 
