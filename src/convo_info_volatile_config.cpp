@@ -275,7 +275,7 @@ NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::SetLegacyGroup) {
     assertInfoLength(info, 3);
     auto first = info[0];
     assertIsString(first);
-
+    // TODO notification
     auto second = info[1];
     assertIsNumber(second);
 
