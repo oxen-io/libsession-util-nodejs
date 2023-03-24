@@ -49,8 +49,7 @@ toJSConvoVolatileLegacyGroup(const convo::legacy_group info_legacy) {
   auto result = obj->Set(context, toJsString("pubkeyHex"),
                          toJsString(info_legacy.id)); // in hex
 
-  result =
-      obj->Set(context, toJsString("unread"), toJsBoolean(info_legacy.unread));
+  result = obj->Set(context, toJsString("."), toJsBoolean(info_legacy.unread));
 
   result = obj->Set(context, toJsString("lastRead"),
                     toJsNumber(info_legacy.last_read));
@@ -64,6 +63,12 @@ Local<Object> toJSConvoVolatileCommunity(const convo::community info_comm) {
 
   auto result = obj->Set(context, toJsString("fullUrlWithPubkey"),
                          toJsString(info_comm.full_url()));
+
+  result = obj->Set(context, toJsString("baseUrl"),
+                    toJsString(info_comm.base_url()));
+
+  result = obj->Set(context, toJsString("roomCasePreserved"),
+                    toJsString(info_comm.room()));
 
   result =
       obj->Set(context, toJsString("unread"), toJsBoolean(info_comm.unread));
@@ -369,33 +374,40 @@ NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::GetAllCommunities) {
   });
 }
 
+// TODO maybe make the setXXX   return the update value so we avoid having to
+// fetch again updated values from the renderer
+
 NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::SetCommunityByFullUrl) {
   tryOrWrapStdException([&]() {
     assertInfoLength(info, 3);
-    auto first = info[0];
+    Local<Value> first = info[0];
     assertIsString(first);
 
-    auto second = info[1];
+    Local<Value> second = info[1];
     assertIsNumber(second);
 
-    auto third = info[2];
+    Local<Value> third = info[2];
     assertIsBoolean(third);
 
-    session::config::ConvoInfoVolatile *convoVolatileInfo =
+    session::config::ConvoInfoVolatile *convos =
         getConvoInfoVolatileWrapperOrThrow(info);
 
-    auto createdOrFound = convoVolatileInfo->get_or_construct_community(
-        toCppString(first, "convoInfo.SetCommunityByFullUrl1"));
+    std::string communityFullUrl =
+        toCppString(first, "convoInfo.SetCommunityByFullUrl1");
 
-    createdOrFound.last_read =
+    session::config::convo::community og =
+        convos->get_or_construct_community(communityFullUrl);
+
+    og.last_read =
         toCppInteger(second, "convoInfo.SetCommunityByFullUrl2", false);
-    createdOrFound.unread =
-        toCppBoolean(third, "convoInfo.SetCommunityByFullUrl3");
 
-    convoVolatileInfo->set(createdOrFound);
+    og.unread = toCppBoolean(third, "convoInfo.SetCommunityByFullUrl3");
 
+    // Note: we only keep the messages read when their timestamp is not older
+    // than 30 days or so (see libsession util PRUNE constant). so this `set()`
+    // here might actually not create an entry
+    convos->set(og);
     info.GetReturnValue().Set(Nan::Null());
-
     return;
   });
 }

@@ -285,14 +285,18 @@ declare module 'session_util_wrapper' {
 
   export type ConvoVolatileType = '1o1' | UserGroupsType;
 
-  type BaseConvoInfoVolatile = {
+  export type BaseConvoInfoVolatile = {
     lastRead: number; // defaults to 0, unixTimestamp in ms
     unread: boolean; // defaults to false
   };
 
   type ConvoInfoVolatile1o1 = BaseConvoInfoVolatile & { pubkeyHex: string };
   type ConvoInfoVolatileLegacyGroup = BaseConvoInfoVolatile & { pubkeyHex: string };
-  type ConvoInfoVolatileCommunity = BaseConvoInfoVolatile & { fullUrlWithPubkey: string };
+  type ConvoInfoVolatileCommunity = BaseConvoInfoVolatile & {
+    fullUrlWithPubkey: string;
+    baseUrl: string;
+    roomCasePreserved: string;
+  };
   // type ConvoInfoVolatileCommunity = BaseConvoInfoVolatile & { pubkeyHex: string }; // we need a `set` with the full url but maybe not for the `get`
 
   type ConvoInfoVolatileWrapper = BaseConfigWrapper & {
