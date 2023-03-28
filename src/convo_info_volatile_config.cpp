@@ -213,15 +213,8 @@ NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::Set1o1) {
     auto lastReadTimestampFromJs =
         toCppInteger(second, "convoInfo.Set1o1_2", false);
 
-    // TODO to we want to keep doing this?
-    if (createdOrFound.last_read == 0 || lastReadTimestampFromJs != 0) {
-      // If we try to set 0 as last unread timestamp, but the value in the
-      // wrapper is not 0, keep it. This is to take care of the case where we
-      // have a convo without messages locally (and so no last read timestamp,
-      // hence the 0) but the wrapper has one already set. We want to keep the
-      // last read already set
-      createdOrFound.last_read = lastReadTimestampFromJs;
-    }
+    createdOrFound.last_read =
+        std::max(createdOrFound.last_read, lastReadTimestampFromJs);
 
     createdOrFound.unread = toCppBoolean(third, "convoInfo.Set1o1_3");
 
@@ -307,15 +300,8 @@ NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::SetLegacyGroup) {
     auto lastReadTimestampFromJs =
         toCppInteger(second, "convoInfo.SetLegacyGroup2", false);
 
-    // TODO to we want to keep doing this?
-    if (createdOrFound.last_read == 0 || lastReadTimestampFromJs != 0) {
-      // If we try to set 0 as last unread timestamp, but the value in the
-      // wrapper is not 0, keep it. This is to take care of the case where we
-      // have a convo without messages locally (and so no last read timestamp,
-      // hence the 0) but the wrapper has one already set. We want to keep the
-      // last read already set
-      createdOrFound.last_read = lastReadTimestampFromJs;
-    }
+    createdOrFound.last_read =
+        std::max(createdOrFound.last_read, lastReadTimestampFromJs);
     createdOrFound.unread = toCppBoolean(third, "convoInfo.SetLegacyGroup3");
 
     convoVolatileInfo->set(createdOrFound);
@@ -422,15 +408,8 @@ NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::SetCommunityByFullUrl) {
     auto lastReadTimestampFromJs =
         toCppInteger(second, "convoInfo.SetCommunityByFullUrl2", false);
 
-    // TODO to we want to keep doing this?
-    if (createdOrFound.last_read == 0 || lastReadTimestampFromJs != 0) {
-      // If we try to set 0 as last unread timestamp, but the value in the
-      // wrapper is not 0, keep it. This is to take care of the case where we
-      // have a convo without messages locally (and so no last read timestamp,
-      // hence the 0) but the wrapper has one already set. We want to keep the
-      // last read already set
-      createdOrFound.last_read = lastReadTimestampFromJs;
-    }
+    createdOrFound.last_read =
+        std::max(createdOrFound.last_read, lastReadTimestampFromJs);
 
     createdOrFound.unread =
         toCppBoolean(third, "convoInfo.SetCommunityByFullUrl3");
