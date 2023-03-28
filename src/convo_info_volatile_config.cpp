@@ -210,8 +210,19 @@ NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::Set1o1) {
     auto createdOrFound = convoVolatileInfo->get_or_construct_1to1(
         toCppString(first, "convoInfo.Set1o1"));
 
-    createdOrFound.last_read =
+    auto lastReadTimestampFromJs =
         toCppInteger(second, "convoInfo.Set1o1_2", false);
+
+    // TODO to we want to keep doing this?
+    if (createdOrFound.last_read == 0 || lastReadTimestampFromJs != 0) {
+      // If we try to set 0 as last unread timestamp, but the value in the
+      // wrapper is not 0, keep it. This is to take care of the case where we
+      // have a convo without messages locally (and so no last read timestamp,
+      // hence the 0) but the wrapper has one already set. We want to keep the
+      // last read already set
+      createdOrFound.last_read = lastReadTimestampFromJs;
+    }
+
     createdOrFound.unread = toCppBoolean(third, "convoInfo.Set1o1_3");
 
     convoVolatileInfo->set(createdOrFound);
@@ -293,8 +304,18 @@ NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::SetLegacyGroup) {
     auto createdOrFound = convoVolatileInfo->get_or_construct_legacy_group(
         toCppString(first, "convoInfo.SetLegacyGroup1"));
 
-    createdOrFound.last_read =
+    auto lastReadTimestampFromJs =
         toCppInteger(second, "convoInfo.SetLegacyGroup2", false);
+
+    // TODO to we want to keep doing this?
+    if (createdOrFound.last_read == 0 || lastReadTimestampFromJs != 0) {
+      // If we try to set 0 as last unread timestamp, but the value in the
+      // wrapper is not 0, keep it. This is to take care of the case where we
+      // have a convo without messages locally (and so no last read timestamp,
+      // hence the 0) but the wrapper has one already set. We want to keep the
+      // last read already set
+      createdOrFound.last_read = lastReadTimestampFromJs;
+    }
     createdOrFound.unread = toCppBoolean(third, "convoInfo.SetLegacyGroup3");
 
     convoVolatileInfo->set(createdOrFound);
@@ -395,18 +416,29 @@ NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::SetCommunityByFullUrl) {
     std::string communityFullUrl =
         toCppString(first, "convoInfo.SetCommunityByFullUrl1");
 
-    session::config::convo::community og =
+    session::config::convo::community createdOrFound =
         convos->get_or_construct_community(communityFullUrl);
 
-    og.last_read =
+    auto lastReadTimestampFromJs =
         toCppInteger(second, "convoInfo.SetCommunityByFullUrl2", false);
 
-    og.unread = toCppBoolean(third, "convoInfo.SetCommunityByFullUrl3");
+    // TODO to we want to keep doing this?
+    if (createdOrFound.last_read == 0 || lastReadTimestampFromJs != 0) {
+      // If we try to set 0 as last unread timestamp, but the value in the
+      // wrapper is not 0, keep it. This is to take care of the case where we
+      // have a convo without messages locally (and so no last read timestamp,
+      // hence the 0) but the wrapper has one already set. We want to keep the
+      // last read already set
+      createdOrFound.last_read = lastReadTimestampFromJs;
+    }
+
+    createdOrFound.unread =
+        toCppBoolean(third, "convoInfo.SetCommunityByFullUrl3");
 
     // Note: we only keep the messages read when their timestamp is not older
     // than 30 days or so (see libsession util PRUNE constant). so this `set()`
     // here might actually not create an entry
-    convos->set(og);
+    convos->set(createdOrFound);
     info.GetReturnValue().Set(Nan::Null());
     return;
   });
