@@ -82,12 +82,6 @@ NAN_MODULE_INIT(ContactsConfigWrapperInsideWorker::Init) {
   RegisterNANMethods(tpl, "getOrConstruct", GetOrConstruct);
   RegisterNANMethods(tpl, "getAll", GetAll);
   RegisterNANMethods(tpl, "set", Set);
-  RegisterNANMethods(tpl, "setName", SetName);
-  RegisterNANMethods(tpl, "setNickname", SetNickname);
-  RegisterNANMethods(tpl, "setApproved", SetApproved);
-  RegisterNANMethods(tpl, "setApprovedMe", SetApprovedMe);
-  RegisterNANMethods(tpl, "setProfilePicture", SetProfilePicture);
-  RegisterNANMethods(tpl, "setBlocked", SetBlocked);
   RegisterNANMethods(tpl, "erase", Erase);
 
   Nan::Set(target,
@@ -289,148 +283,11 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
         session::ustring key =
             toCppBuffer(keyMaybe.ToLocalChecked(), "contacts.set4");
 
-        // we need to make sure to call the .set_url and .set_key so the
-        // profile_pic instance takes ownership of those strings
         contactCpp.profile_picture = profile_pic(url, key);
-        // TODO is this right?
-        // contactCpp.profile_picture.set_key(key);
       }
     }
 
     contacts->set(contactCpp);
-  });
-}
-
-NAN_METHOD(ContactsConfigWrapperInsideWorker::SetName) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 2);
-
-    auto first = info[0];
-    assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first, "contacts.setName");
-
-    auto second = info[1];
-    auto assertIsString(second);
-    Nan::Utf8String name(second);
-    std::string nameStr(*name);
-
-    auto contacts = getContactWrapperOrThrow(info);
-
-    contacts->set_name(sessionIdHexStr, nameStr);
-  });
-}
-
-NAN_METHOD(ContactsConfigWrapperInsideWorker::SetNickname) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 2);
-
-    auto first = info[0];
-    assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first, "contacts.setNickname");
-
-    auto second = info[1];
-    auto assertIsString(second);
-    Nan::Utf8String nickname(second);
-    std::string nicknameStr(*nickname);
-
-    auto contacts = to<session::config::Contacts>(info);
-    if (!contacts) {
-      throw std::invalid_argument("Contacts is null");
-      return;
-    }
-
-    contacts->set_nickname(sessionIdHexStr, nicknameStr);
-  });
-}
-
-NAN_METHOD(ContactsConfigWrapperInsideWorker::SetApproved) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 2);
-
-    auto first = info[0];
-    assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first, "contacts.setApproved");
-
-    auto second = info[1];
-    assertIsBoolean(second);
-    bool approved = *(Nan::To<Boolean>(second).ToLocalChecked());
-
-    auto contacts = getContactWrapperOrThrow(info);
-
-    contacts->set_approved(sessionIdHexStr, approved);
-  });
-}
-
-NAN_METHOD(ContactsConfigWrapperInsideWorker::SetApprovedMe) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 2);
-
-    auto first = info[0];
-    assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first, "contacts.setApprovedMe");
-
-    auto second = info[1];
-    assertIsBoolean(second);
-    bool approvedMe = *(Nan::To<Boolean>(second).ToLocalChecked());
-
-    auto contacts = to<session::config::Contacts>(info);
-    if (!contacts) {
-      throw std::invalid_argument("Contacts is null");
-      return;
-    }
-
-    contacts->set_approved_me(sessionIdHexStr, approvedMe);
-  });
-}
-
-NAN_METHOD(ContactsConfigWrapperInsideWorker::SetBlocked) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 2);
-
-    auto first = info[0];
-    assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first, "contacts.setBlocked");
-
-    auto second = info[1];
-    assertIsBoolean(second);
-    bool blocked = *(Nan::To<Boolean>(second).ToLocalChecked());
-
-    auto contacts = getContactWrapperOrThrow(info);
-    contacts->set_blocked(sessionIdHexStr, blocked);
-  });
-}
-
-NAN_METHOD(ContactsConfigWrapperInsideWorker::SetProfilePicture) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 3);
-
-    auto first = info[0];
-    assertIsString(first);
-    std::string sessionIdHexStr =
-        toCppString(first, "contacts.setProfilePicture");
-
-    auto second = info[1];
-    assertIsStringOrNull(second);
-
-    auto third = info[2];
-    assertIsUInt8ArrayOrNull(third);
-
-    auto contacts = to<session::config::Contacts>(info);
-    if (!contacts) {
-      throw std::invalid_argument("Contacts is null");
-      return;
-    }
-    if (!second.IsEmpty() && !third.IsEmpty() && !second->IsNullOrUndefined() &&
-        !third->IsNullOrUndefined()) {
-
-      auto url = toCppString(second, "contacts.setProfilePicture");
-      auto key = toCppBuffer(third, "contacts.setProfilePicture");
-      profile_pic picDetails(url, key);
-      contacts->set_profile_pic(sessionIdHexStr, picDetails);
-    } else {
-      profile_pic picDetails;
-      contacts->set_profile_pic(sessionIdHexStr, picDetails);
-    }
   });
 }
 

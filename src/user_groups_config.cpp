@@ -386,7 +386,6 @@ NAN_METHOD(UserGroupsWrapperInsideWorker::SetLegacyGroup) {
     } else {
       legacyGroupInWrapper.disappearing_timer = std::chrono::seconds(0);
     }
-    // TODO members with set_members ?
 
     auto membersJS = Nan::Get(legacyGroup, toJsString("members"));
 

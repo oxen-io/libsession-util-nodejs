@@ -27,11 +27,5 @@ private:
   static NAN_METHOD(GetOrConstruct);
   static NAN_METHOD(GetAll);
   static NAN_METHOD(Set);
-  static NAN_METHOD(SetName);
-  static NAN_METHOD(SetNickname);
-  static NAN_METHOD(SetApproved);
-  static NAN_METHOD(SetApprovedMe);
-  static NAN_METHOD(SetBlocked);
-  static NAN_METHOD(SetProfilePicture);
   static NAN_METHOD(Erase);
 };
