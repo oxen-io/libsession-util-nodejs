@@ -135,12 +135,6 @@ declare module 'session_util_wrapper' {
     get: (pubkeyHex: string) => ContactInfo | null;
     getOrConstruct: (pubkeyHex: string) => ContactInfo;
     set: (contact: ContactInfo) => void;
-    setName: (pubkeyHex: string, name: string) => void;
-    setNickname: (pubkeyHex: string, nickname: string) => void;
-    setApproved: (pubkeyHex: string, approved: boolean) => void;
-    setApprovedMe: (pubkeyHex: string, approvedMe: boolean) => void;
-    setBlocked: (pubkeyHex: string, blocked: boolean) => void;
-    setProfilePicture: (pubkeyHex: string, url: string, key: Uint8Array) => void;
     getAll: () => Array<ContactInfo>;
     erase: (pubkeyHex: string) => void;
   };
@@ -164,12 +158,6 @@ declare module 'session_util_wrapper' {
     public get: ContactsWrapper['get'];
     public getOrConstruct: ContactsWrapper['getOrConstruct'];
     public set: ContactsWrapper['set'];
-    public setName: ContactsWrapper['setName'];
-    public setNickname: ContactsWrapper['setNickname'];
-    public setApproved: ContactsWrapper['setApproved'];
-    public setApprovedMe: ContactsWrapper['setApprovedMe'];
-    public setBlocked: ContactsWrapper['setBlocked'];
-    public setProfilePicture: ContactsWrapper['setProfilePicture'];
     public getAll: ContactsWrapper['getAll'];
     public erase: ContactsWrapper['erase'];
   }
@@ -179,12 +167,6 @@ declare module 'session_util_wrapper' {
     | MakeActionCall<ContactsWrapper, 'get'>
     | MakeActionCall<ContactsWrapper, 'getOrConstruct'>
     | MakeActionCall<ContactsWrapper, 'set'>
-    | MakeActionCall<ContactsWrapper, 'setName'>
-    | MakeActionCall<ContactsWrapper, 'setNickname'>
-    | MakeActionCall<ContactsWrapper, 'setApproved'>
-    | MakeActionCall<ContactsWrapper, 'setApprovedMe'>
-    | MakeActionCall<ContactsWrapper, 'setBlocked'>
-    | MakeActionCall<ContactsWrapper, 'setProfilePicture'>
     | MakeActionCall<ContactsWrapper, 'getAll'>
     | MakeActionCall<ContactsWrapper, 'erase'>;
 
@@ -330,7 +312,7 @@ declare module 'session_util_wrapper' {
     public get1o1: ConvoInfoVolatileWrapper['get1o1'];
     public getAll1o1: ConvoInfoVolatileWrapper['getAll1o1'];
     public set1o1: ConvoInfoVolatileWrapper['set1o1'];
-    //TODO erase contact but not NOTE to self?
+    // No way to erase contacts atm (we just hide them so keep the convo volatile info)
 
     // legacy-groups related methods
     public getLegacyGroup: ConvoInfoVolatileWrapper['getLegacyGroup'];
