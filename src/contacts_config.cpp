@@ -79,7 +79,6 @@ NAN_MODULE_INIT(ContactsConfigWrapperInsideWorker::Init) {
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
   RegisterNANMethods(tpl, "get", Get);
-  RegisterNANMethods(tpl, "getOrConstruct", GetOrConstruct);
   RegisterNANMethods(tpl, "getAll", GetAll);
   RegisterNANMethods(tpl, "set", Set);
   RegisterNANMethods(tpl, "erase", Erase);
@@ -143,23 +142,6 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Get) {
     } else {
       info.GetReturnValue().Set(Nan::Null());
     }
-
-    return;
-  });
-}
-
-NAN_METHOD(ContactsConfigWrapperInsideWorker::GetOrConstruct) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 1);
-    auto first = info[0];
-    assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first, "contacts.getOrConstruct");
-
-    auto contacts = getContactWrapperOrThrow(info);
-
-    auto contact = contacts->get_or_construct(sessionIdHexStr);
-
-    info.GetReturnValue().Set(toJSContact(contact));
 
     return;
   });

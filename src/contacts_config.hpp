@@ -24,7 +24,6 @@ private:
 
   static NAN_METHOD(New);
   static NAN_METHOD(Get);
-  static NAN_METHOD(GetOrConstruct);
   static NAN_METHOD(GetAll);
   static NAN_METHOD(Set);
   static NAN_METHOD(Erase);
