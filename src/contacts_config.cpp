@@ -3,6 +3,7 @@
 #include "oxenc/hex.h"
 #include "session/types.hpp"
 
+#include "session/config/expiring.hpp"
 #include <iostream>
 #include <optional>
 
@@ -14,7 +15,12 @@ using session::config::contact_info;
 using session::config::profile_pic;
 
 using session::config::Contacts;
+using session::config::expiration_mode;
 using namespace std;
+
+const string disappearAfterRead = "disappearAfterRead";
+const string disappearAfterSend = "disappearAfterSend";
+const string off = "off";
 
 session::config::Contacts *
 getContactWrapperOrThrow(const Nan::FunctionCallbackInfo<v8::Value> &info) {
@@ -58,6 +64,26 @@ Local<Object> toJSContact(const contact_info contact) {
                     Nan::New<Boolean>(contact.hidden));
   result = obj->Set(context, toJsString("priority"),
                     Nan::New<Number>(contact.priority));
+
+  // 0=off, 1=disappearAfterSend, 2=disappearAfterRead
+  switch (contact.exp_mode) {
+  case expiration_mode::none:
+    result = obj->Set(context, toJsString("expirationMode"), toJsString(off));
+    break;
+  case expiration_mode::after_read:
+    result = obj->Set(context, toJsString("expirationMode"),
+                      toJsString(disappearAfterRead));
+    break;
+  case expiration_mode::after_send:
+    result = obj->Set(context, toJsString("expirationMode"),
+                      toJsString(disappearAfterSend));
+    break;
+  default:
+    throw std::invalid_argument("invalid expiration mode");
+  }
+
+  result = obj->Set(context, toJsString("expirationTimerSeconds"),
+                    toJsNumber(contact.exp_timer.count()));
 
   if (contact.profile_picture) {
     Local<Object> profilePic = Nan::New<Object>();
@@ -245,8 +271,25 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
       contactCpp.set_nickname(nicknameStr);
     }
 
-    auto picMaybe = Nan::Get(contact, toJsString("profilePicture"));
+    auto expMode = Nan::Get(contact, toJsString("expirationMode"));
+    auto expTimer = Nan::Get(contact, toJsString("expirationTimerSeconds"));
 
+    if (expMode.IsEmpty() && expTimer.IsEmpty()) {
+      throw std::invalid_argument(
+          "expirationMode or expirationTimerSeconds is empty");
+    }
+    auto expModeCpp =
+        toCppString(expMode.ToLocalChecked(), "contacts.setExpMode");
+    auto expTimerCpp =
+        toCppInteger(expTimer.ToLocalChecked(), "contacts.setExpTimer", false);
+
+    contactCpp.exp_mode =
+        expModeCpp == disappearAfterRead   ? expiration_mode::after_read
+        : expModeCpp == disappearAfterSend ? expiration_mode::after_send
+                                           : expiration_mode::none;
+    contactCpp.exp_timer = std::chrono::seconds(expTimerCpp);
+
+    auto picMaybe = Nan::Get(contact, toJsString("profilePicture"));
     if (!picMaybe.IsEmpty() &&
         !picMaybe.ToLocalChecked()->IsNullOrUndefined()) {
       auto pic = picMaybe.ToLocalChecked();
