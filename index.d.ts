@@ -133,7 +133,6 @@ declare module 'session_util_wrapper' {
   type ContactsWrapper = BaseConfigWrapper & {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
     get: (pubkeyHex: string) => ContactInfo | null;
-    getOrConstruct: (pubkeyHex: string) => ContactInfo;
     set: (contact: ContactInfo) => void;
     getAll: () => Array<ContactInfo>;
     erase: (pubkeyHex: string) => void;
@@ -156,7 +155,6 @@ declare module 'session_util_wrapper' {
   export class ContactsConfigWrapperInsideWorker extends BaseConfigWrapperInsideWorker {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
     public get: ContactsWrapper['get'];
-    public getOrConstruct: ContactsWrapper['getOrConstruct'];
     public set: ContactsWrapper['set'];
     public getAll: ContactsWrapper['getAll'];
     public erase: ContactsWrapper['erase'];
@@ -165,7 +163,6 @@ declare module 'session_util_wrapper' {
   export type ContactsConfigActionsType =
     | ['init', Uint8Array, Uint8Array | null]
     | MakeActionCall<ContactsWrapper, 'get'>
-    | MakeActionCall<ContactsWrapper, 'getOrConstruct'>
     | MakeActionCall<ContactsWrapper, 'set'>
     | MakeActionCall<ContactsWrapper, 'getAll'>
     | MakeActionCall<ContactsWrapper, 'erase'>;
