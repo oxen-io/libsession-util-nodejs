@@ -150,6 +150,8 @@ declare module 'session_util_wrapper' {
     blocked?: boolean;
     hidden: boolean;
     priority: number;
+    expirationMode: 'off' | 'disappearAfterRead' | 'disappearAfterSend'; // the same as defined in the disappearingBranch
+    expirationTimerSeconds: number;
   };
 
   export class ContactsConfigWrapperInsideWorker extends BaseConfigWrapperInsideWorker {
