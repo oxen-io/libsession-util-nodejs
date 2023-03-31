@@ -24,13 +24,15 @@ typedef struct contacts_contact {
     bool approved;
     bool approved_me;
     bool blocked;
-    bool hidden;
 
     int priority;
     CONVO_NOTIFY_MODE notifications;
+    int64_t mute_until;
 
     CONVO_EXPIRATION_MODE exp_mode;
     int exp_seconds;
+
+    int64_t created;  // unix timestamp (seconds)
 
 } contacts_contact;
 
