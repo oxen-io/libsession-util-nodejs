@@ -148,11 +148,11 @@ declare module 'session_util_wrapper' {
     approved?: boolean;
     approvedMe?: boolean;
     blocked?: boolean;
-    hidden: boolean;
-    priority: number;
+    priority: number; // -1 means hidden, 0 means normal, > 1 means pinned
     expirationMode: 'off' | 'disappearAfterRead' | 'disappearAfterSend'; // the same as defined in the disappearingBranch
     expirationTimerSeconds: number;
   };
+
 
   export class ContactsConfigWrapperInsideWorker extends BaseConfigWrapperInsideWorker {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
@@ -182,7 +182,7 @@ declare module 'session_util_wrapper' {
     baseUrl: string;
     fullUrl: string;
     roomCasePreserved: string;
-    priority: number;
+    priority: number; // -1 means hidden, 0 means normal, > 0 means pinned. We currently don't support hidden communities on the client though
   };
 
   export type LegacyGroupMemberInfo = {
@@ -196,8 +196,7 @@ declare module 'session_util_wrapper' {
     encPubkey: Uint8Array; // bytes (32 or empty)
     encSeckey: Uint8Array; // bytes (32 or empty)
     disappearingTimerSeconds: number; // in seconds, 0 == disabled.
-    hidden: boolean; // true if the conversation is hidden from the convo list
-    priority: number; // The priority; 0 means unpinned, larger means pinned higher (i.e. higher priority conversations come first).
+    priority: number; // -1 means hidden, 0 means normal, > 1 means pinned. We currently don't support hidden groups on the client though
     members: Array<LegacyGroupMemberInfo>;
   };
 

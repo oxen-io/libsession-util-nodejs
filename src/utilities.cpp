@@ -247,5 +247,9 @@ int64_t toPriority(Local<Value> x, int64_t currentPriority) {
     // keep the existing priority if it is already set
     return max(currentPriority, (int64_t)1);
   }
-  return 0;
+
+  // newPriority being < 0 means that that conversation is hidden (and so
+  // unpinned)
+
+  return newPriority;
 }
