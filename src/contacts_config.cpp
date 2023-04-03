@@ -60,8 +60,6 @@ Local<Object> toJSContact(const contact_info contact) {
                     Nan::New<Boolean>(contact.approved_me));
   result = obj->Set(context, toJsString("blocked"),
                     Nan::New<Boolean>(contact.blocked));
-  result = obj->Set(context, toJsString("hidden"),
-                    Nan::New<Boolean>(contact.hidden));
   result = obj->Set(context, toJsString("priority"),
                     Nan::New<Number>(contact.priority));
 
@@ -246,13 +244,11 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
         (Nan::Get(contact, toJsString("blocked"))).ToLocalChecked(),
         "set.blocked");
 
-    contactCpp.hidden =
-        toCppBoolean((Nan::Get(contact, toJsString("hidden"))).ToLocalChecked(),
-                     "set.hidden");
-
-    contactCpp.priority =
+    auto priorityCpp =
         toPriority((Nan::Get(contact, toJsString("priority"))).ToLocalChecked(),
                    contactCpp.priority);
+
+    contactCpp.priority = priorityCpp;
 
     auto name = Nan::Get(contact, toJsString("name"));
     if (!name.IsEmpty() && !name.ToLocalChecked()->IsNullOrUndefined()) {

@@ -70,8 +70,6 @@ Local<Object> toJSLegacyGroup(const legacy_group_info legacy_group) {
                     toJsBuffer(legacy_group.enc_seckey));
   result = obj->Set(context, toJsString("disappearingTimerSeconds"),
                     toJsNumber(legacy_group.disappearing_timer.count()));
-  result =
-      obj->Set(context, toJsString("hidden"), toJsBoolean(legacy_group.hidden));
   result = obj->Set(context, toJsString("priority"),
                     toJsNumber(legacy_group.priority));
 
@@ -341,13 +339,11 @@ NAN_METHOD(UserGroupsWrapperInsideWorker::SetLegacyGroup) {
 
     // TODO desktop does not understand what is a `hidden` legacy group
     // currently. So better not override whatever anyone else is setting here
-    // legacyGroupInWrapper.hidden = toCppBoolean(
-    //     (Nan::Get(legacyGroup, toJsString("hidden"))).ToLocalChecked(),
-    //     "set.hidden");
 
-    legacyGroupInWrapper.priority = toPriority(
+    auto priority = toPriority(
         (Nan::Get(legacyGroup, toJsString("priority"))).ToLocalChecked(),
         legacyGroupInWrapper.priority);
+    legacyGroupInWrapper.priority = priority;
 
     auto name = Nan::Get(legacyGroup, toJsString("name"));
     if (!name.IsEmpty() && !name.ToLocalChecked()->IsNullOrUndefined()) {
