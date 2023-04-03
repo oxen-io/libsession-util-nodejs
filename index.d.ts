@@ -133,26 +133,36 @@ declare module 'session_util_wrapper' {
   type ContactsWrapper = BaseConfigWrapper & {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
     get: (pubkeyHex: string) => ContactInfo | null;
-    set: (contact: ContactInfo) => void;
+    set: (contact: ContactInfoSet) => void;
     getAll: () => Array<ContactInfo>;
     erase: (pubkeyHex: string) => void;
   };
 
   export type ContactsWrapperActionsCalls = MakeWrapperActionCalls<ContactsWrapper>;
 
-  export type ContactInfo = {
+  type ContactInfoShared = {
     id: string;
     name?: string;
     nickname?: string;
     profilePicture?: ProfilePicture;
-    approved?: boolean;
-    approvedMe?: boolean;
-    blocked?: boolean;
     priority: number; // -1 means hidden, 0 means normal, > 1 means pinned
     expirationMode: 'off' | 'disappearAfterRead' | 'disappearAfterSend'; // the same as defined in the disappearingBranch
     expirationTimerSeconds: number;
   };
 
+  export type ContactInfoSet = ContactInfoShared & {
+    approved?: boolean;
+    approvedMe?: boolean;
+    blocked?: boolean;
+    createdAtSeconds?: number; // actually only a read property. It cannot be set to the wrapper and is set to now() if not already set.
+  };
+
+  export type ContactInfo = ContactInfoShared & {
+    approved: boolean;
+    approvedMe: boolean;
+    blocked: boolean;
+    createdAtSeconds: number; // actually only a read property. It cannot be set to the wrapper and is set to now() if not already set.
+  };
 
   export class ContactsConfigWrapperInsideWorker extends BaseConfigWrapperInsideWorker {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
@@ -198,6 +208,7 @@ declare module 'session_util_wrapper' {
     disappearingTimerSeconds: number; // in seconds, 0 == disabled.
     priority: number; // -1 means hidden, 0 means normal, > 1 means pinned. We currently don't support hidden groups on the client though
     members: Array<LegacyGroupMemberInfo>;
+    joinedAtSeconds: number; // equivalent to the lastJoinedTimestamp in Session desktop but in seconds rather than MS
   };
 
   type UserGroupsWrapper = BaseConfigWrapper & {

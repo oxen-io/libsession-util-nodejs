@@ -72,6 +72,8 @@ Local<Object> toJSLegacyGroup(const legacy_group_info legacy_group) {
                     toJsNumber(legacy_group.disappearing_timer.count()));
   result = obj->Set(context, toJsString("priority"),
                     toJsNumber(legacy_group.priority));
+  result = obj->Set(context, toJsString("joinedAtSeconds"),
+                    toJsNumber(legacy_group.joined_at));
 
   auto length = legacy_group.members().size();
 
@@ -337,13 +339,18 @@ NAN_METHOD(UserGroupsWrapperInsideWorker::SetLegacyGroup) {
     legacy_group_info legacyGroupInWrapper =
         userGroups->get_or_construct_legacy_group(sessionIdStr);
 
-    // TODO desktop does not understand what is a `hidden` legacy group
-    // currently. So better not override whatever anyone else is setting here
-
     auto priority = toPriority(
         (Nan::Get(legacyGroup, toJsString("priority"))).ToLocalChecked(),
         legacyGroupInWrapper.priority);
     legacyGroupInWrapper.priority = priority;
+
+    auto newJoinedAtSeconds = toCppInteger(
+        (Nan::Get(legacyGroup, toJsString("joinedAtSeconds"))).ToLocalChecked(),
+        "legacyGroupInWrapper.joined_at", false);
+    // I guess we want the lastJoinedAt as being the max of the two (it is the
+    // `last` one afterall)
+    legacyGroupInWrapper.joined_at =
+        std::max(newJoinedAtSeconds, legacyGroupInWrapper.joined_at);
 
     auto name = Nan::Get(legacyGroup, toJsString("name"));
     if (!name.IsEmpty() && !name.ToLocalChecked()->IsNullOrUndefined()) {

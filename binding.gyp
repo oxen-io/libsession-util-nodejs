@@ -7,7 +7,10 @@
         "<!(node -e \"require('nan')\")",
         "<(module_root_dir)/include/"
         ],
-      "libraries": [ "<(module_root_dir)/lib/libsession-util.a"],
+      "libraries": [
+        "-lsession-util",
+        "-L<(module_root_dir)/lib/"
+      ],
       "cflags_cc": [
         "-std=c++17",
         "-fexceptions",

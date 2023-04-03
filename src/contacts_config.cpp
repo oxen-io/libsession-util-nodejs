@@ -62,6 +62,8 @@ Local<Object> toJSContact(const contact_info contact) {
                     Nan::New<Boolean>(contact.blocked));
   result = obj->Set(context, toJsString("priority"),
                     Nan::New<Number>(contact.priority));
+  result = obj->Set(context, toJsString("createdAtSeconds"),
+                    Nan::New<Number>(contact.created));
 
   // 0=off, 1=disappearAfterSend, 2=disappearAfterRead
   switch (contact.exp_mode) {
@@ -231,6 +233,13 @@ NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
     std::string sessionIdStr = toCppString(sessionId, "contacts.set");
 
     contact_info contactCpp = contacts->get_or_construct(sessionIdStr);
+
+    if (contactCpp.created == 0) {
+      auto duration = std::chrono::system_clock::now().time_since_epoch();
+      auto seconds =
+          std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+      contactCpp.created = seconds;
+    }
 
     contactCpp.approved = toCppBoolean(
         (Nan::Get(contact, toJsString("approved"))).ToLocalChecked(),
