@@ -9,7 +9,9 @@
         ],
       "libraries": [
         "-lsession-util",
-        "-L<(module_root_dir)/lib/"
+        "-L<(module_root_dir)/lib/mac/",
+        "-L<(module_root_dir)/lib/win/amd64",
+        "-L<(module_root_dir)/lib/linux/amd64"
       ],
       "cflags_cc": [
         "-std=c++17",
@@ -24,6 +26,7 @@
       "xcode_settings": {
         "OTHER_CFLAGS": [
           "-std=c++17",
+          "-Wno-c++11-narrowing",
           "-fexceptions",
           "-frtti",
         ],

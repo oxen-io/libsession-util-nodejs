@@ -68,12 +68,13 @@ Local<Object> toJSLegacyGroup(const legacy_group_info legacy_group) {
                     toJsBuffer(legacy_group.enc_pubkey));
   result = obj->Set(context, toJsString("encSeckey"),
                     toJsBuffer(legacy_group.enc_seckey));
-  result = obj->Set(context, toJsString("disappearingTimerSeconds"),
-                    toJsNumber(legacy_group.disappearing_timer.count()));
+  result =
+      obj->Set(context, toJsString("disappearingTimerSeconds"),
+               toJsNumber((long int)legacy_group.disappearing_timer.count()));
   result = obj->Set(context, toJsString("priority"),
                     toJsNumber(legacy_group.priority));
   result = obj->Set(context, toJsString("joinedAtSeconds"),
-                    toJsNumber(legacy_group.joined_at));
+                    toJsNumber((long int)legacy_group.joined_at));
 
   auto length = legacy_group.members().size();
 

@@ -83,7 +83,7 @@ Local<Object> toJSContact(const contact_info contact) {
   }
 
   result = obj->Set(context, toJsString("expirationTimerSeconds"),
-                    toJsNumber(contact.exp_timer.count()));
+                    toJsNumber((int)contact.exp_timer.count()));
 
   if (contact.profile_picture) {
     Local<Object> profilePic = Nan::New<Object>();

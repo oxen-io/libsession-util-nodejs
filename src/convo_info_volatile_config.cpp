@@ -35,8 +35,8 @@ Local<Object> toJSConvoVolatile1o1(const convo::one_to_one info_1o1) {
   result =
       obj->Set(context, toJsString("unread"), toJsBoolean(info_1o1.unread));
 
-  result =
-      obj->Set(context, toJsString("lastRead"), toJsNumber(info_1o1.last_read));
+  result = obj->Set(context, toJsString("lastRead"),
+                    toJsNumber((long int)info_1o1.last_read));
 
   return obj;
 }
@@ -49,10 +49,11 @@ toJSConvoVolatileLegacyGroup(const convo::legacy_group info_legacy) {
   auto result = obj->Set(context, toJsString("pubkeyHex"),
                          toJsString(info_legacy.id)); // in hex
 
-  result = obj->Set(context, toJsString("."), toJsBoolean(info_legacy.unread));
+  result =
+      obj->Set(context, toJsString("unread"), toJsBoolean(info_legacy.unread));
 
   result = obj->Set(context, toJsString("lastRead"),
-                    toJsNumber(info_legacy.last_read));
+                    toJsNumber((long int)info_legacy.last_read));
 
   return obj;
 }
@@ -74,7 +75,7 @@ Local<Object> toJSConvoVolatileCommunity(const convo::community info_comm) {
       obj->Set(context, toJsString("unread"), toJsBoolean(info_comm.unread));
 
   result = obj->Set(context, toJsString("lastRead"),
-                    toJsNumber(info_comm.last_read));
+                    toJsNumber((long int)info_comm.last_read));
 
   return obj;
 }
