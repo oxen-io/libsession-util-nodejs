@@ -1,10 +1,8 @@
 #pragma once
 
-#include <oxenc/hex.h>
+// #include <oxenc/hex.h>
 #include <string_view>
 
-using namespace std::literals;
-using namespace oxenc::literals;
 #include <nan.h>
 
 #include "session/types.hpp"

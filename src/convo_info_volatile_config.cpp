@@ -1,6 +1,5 @@
 #include "convo_info_volatile_config.hpp"
 #include "base_config.hpp"
-#include "oxenc/hex.h"
 #include "session/config/convo_info_volatile.hpp"
 #include "session/types.hpp"
 

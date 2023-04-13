@@ -1,6 +1,4 @@
 #include "utilities.hpp"
-#include "base_config.hpp"
-#include "oxenc/hex.h"
 #include <iostream>
 
 using v8::Local;
@@ -114,7 +112,7 @@ std::string toCppString(Local<Value> x, std::string identifier) {
     auto asStr = Nan::To<String>(x).ToLocalChecked();
 
     Nan::Utf8String xUtf(x);
-    std::string xStr{*xUtf, asStr->Length()};
+    std::string xStr{*xUtf, static_cast<unsigned long int>(asStr->Length())};
     return xStr;
   }
 
@@ -216,30 +214,6 @@ bool toCppBoolean(Local<Value> x, std::string identifier) {
 
   throw std::invalid_argument(errorMsg);
 }
-
-std::string printable(std::string_view x) {
-  std::string p;
-  for (auto c : x) {
-    if (c >= 0x20 && c <= 0x7e)
-      p += c;
-    else
-      p += "\\x" + oxenc::to_hex(&c, &c + 1);
-  }
-  return p;
-}
-
-std::string printable(session::ustring_view x) {
-  std::string p;
-  for (auto c : x) {
-    if (c >= 0x20 && c <= 0x7e)
-      p += c;
-    else
-      p += "\\x" + oxenc::to_hex(&c, &c + 1);
-  }
-  return p;
-}
-
-std::string printable(const char *x, size_t n) { return printable({x, n}); }
 
 int64_t toPriority(Local<Value> x, int64_t currentPriority) {
   auto newPriority = toCppInteger(x, "toPriority", true);

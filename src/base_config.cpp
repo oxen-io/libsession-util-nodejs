@@ -8,9 +8,6 @@
 #include <oxenc/hex.h>
 #include <string_view>
 
-using namespace std::literals;
-using namespace oxenc::literals;
-
 using std::cerr;
 
 using v8::Array;

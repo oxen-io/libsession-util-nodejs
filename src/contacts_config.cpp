@@ -1,6 +1,5 @@
 #include "contacts_config.hpp"
 #include "base_config.hpp"
-#include "oxenc/hex.h"
 #include "session/types.hpp"
 
 #include "session/config/expiring.hpp"

@@ -1,6 +1,5 @@
 #include "user_config.hpp"
 #include "base_config.hpp"
-#include "oxenc/hex.h"
 #include <iostream>
 
 using v8::Local;
