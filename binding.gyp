@@ -3,41 +3,62 @@
     {
       "target_name": "session_util_wrapper",
       "sources": [ "src/utilities.cpp", "src/base_config.cpp", "src/user_config.cpp", "src/contacts_config.cpp", "src/user_groups_config.cpp", "src/convo_info_volatile_config.cpp", "src/addon.cpp" ],
+      "defines": [ "_STL_COMPILER_PREPROCESSOR=1", "NOMINMAX=1" ],
       "include_dirs" : [
         "<!(node -e \"require('nan')\")",
         "<(module_root_dir)/include/"
         ],
       "libraries": [
-        "-lsession-util",
-        "-L<(module_root_dir)/lib/mac/",
-        "-L<(module_root_dir)/lib/win/amd64",
-        "-L<(module_root_dir)/lib/linux/amd64"
+        "C:/Users/audri/libsession-util-nodejs/lib/win/amd64/session-util.lib"
       ],
       "cflags_cc": [
         "-std=c++17",
-        "-fexceptions",
-        "-frtti",
+        "-fno-exceptions"
       ],
       "cflags": [
         "-std=c++17",
-        "-fexceptions",
-        "-frtti",
+        "-fno-exceptions"
       ],
+      "conditions": [
+        ['OS=="win"',
+          {
+            "configurations": {
+              "Debug": {
+                "msvs_settings": {
+                  "VCCLCompilerTool": {
+                    "RuntimeTypeInfo": "true",
+                  },
+                }
+              },
+              "Release": {
+                "VCCLCompilerTool": {
+                    "RuntimeTypeInfo": "true",
+                  },
+                },
+              },
+            },
+          ],
+    ],
       "xcode_settings": {
         "OTHER_CFLAGS": [
           "-std=c++17",
           "-Wno-c++11-narrowing",
-          "-fexceptions",
-          "-frtti",
+          "-fno-exceptions",
+          "-frtti"
+        ]
+      },
+      "msvs_settings": {
+        "VCCLCompilerTool": {
+          "AdditionalOptions": [
+            "/Zc:__cplusplus",
+            "-std:c++17",
+            "/GR"
+
         ],
-      },
-      "msbuild_settings": {
-        "ClCompile": {
-            "LanguageStandard": "stdcpp17"
+        "RuntimeTypeInfo": "true",
+        "DebugInformationFormat": 1,
+        "ExceptionHandling": 1
         }
-      },
-      'msvs_settings': {
-        'VCCLCompilerTool': { "ExceptionHandling": 1, 'AdditionalOptions': [ '-std:c++17' ] }
       }
     }
   ]
