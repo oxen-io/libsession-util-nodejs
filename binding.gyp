@@ -7,12 +7,6 @@
         "<!(node -e \"require('nan')\")",
         "<(module_root_dir)/include/"
         ],
-      "libraries": [
-        "-lsession-util",
-        "-L<(module_root_dir)/lib/mac/",
-        "-L<(module_root_dir)/lib/win/amd64",
-        "-L<(module_root_dir)/lib/linux/amd64"
-      ],
       "cflags_cc": [
         "-std=c++17",
         "-fexceptions",
@@ -22,6 +16,26 @@
         "-std=c++17",
         "-fexceptions",
         "-frtti",
+      ],
+      'conditions': [
+        ['OS == "mac"', {
+          "libraries": [
+            "-lsession-util",
+            "-L<(module_root_dir)/lib/mac/",
+          ],
+        }, {}],
+        ['OS == "linux"', {
+          "libraries": [
+            "-lsession-util",
+            "-L<(module_root_dir)/lib/linux/amd64"
+          ],
+        }, {}],
+        ['OS == "win"', {
+          "libraries": [
+            "-lsession-util",
+            "-L<(module_root_dir)/lib/win/amd64",
+          ],
+        }, {}],
       ],
       "xcode_settings": {
         "OTHER_CFLAGS": [

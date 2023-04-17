@@ -114,7 +114,7 @@ std::string toCppString(Local<Value> x, std::string identifier) {
     auto asStr = Nan::To<String>(x).ToLocalChecked();
 
     Nan::Utf8String xUtf(x);
-    std::string xStr{*xUtf, asStr->Length()};
+    std::string xStr{*xUtf, static_cast<long unsigned int>(asStr->Length())};
     return xStr;
   }
 
