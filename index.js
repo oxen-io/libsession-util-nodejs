@@ -1,3 +1,3 @@
-var session_util_wrapper = require('./build/Release/session_util_wrapper.node');
+var libsession_util_nodejs = require('./build/Release/libsession_util_nodejs.node');
 
-module.exports = session_util_wrapper;
+module.exports = libsession_util_nodejs;

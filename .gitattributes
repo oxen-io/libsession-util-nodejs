@@ -1,0 +1,6 @@
+.circleci export-ignore
+.github export-ignore
+libsession-util/external/libsodium-internal/test export-ignore
+libsession-util/external/zstd/doc export-ignore
+libsession-util/tests export-ignore
+libsession-util/external/oxen-encoding/tests export-ignore

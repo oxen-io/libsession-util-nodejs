@@ -1,4 +1,4 @@
-declare module 'session_util_wrapper' {
+declare module 'libsession_util_nodejs' {
   /**
    * This is quite a complex setup, but so far I didn't find an easier way to describe what we want to do with the wrappers and have strong typings.
    *
