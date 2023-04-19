@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(libsession-util-nodejs LANGUAGES CXX)
+project(libsession_util_nodejs LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

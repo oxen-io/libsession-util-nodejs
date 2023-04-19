@@ -11,4 +11,4 @@ void InitAll(v8::Local<v8::Object> exports) {
   ConvoInfoVolatileWrapperInsideWorker::Init(exports);
 }
 
-NODE_MODULE(session_util_wrapper, InitAll)
+NODE_MODULE(libsession_util_nodejs, InitAll)
