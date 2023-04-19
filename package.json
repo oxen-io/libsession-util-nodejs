@@ -9,11 +9,14 @@
     "email": "team@oxen.io"
   },
   "scripts": {
+    "preinstall": "git submodule update --init --recursive",
     "install": "cmake-js compile"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "clang-format": "^1.8.0",
+    "cmake-js": "^7.2.1"
+  },
   "dependencies": {
-    "cmake-js": "^7.2.1",
     "nan": "^2.17.0"
   },
   "typings": "index.d.ts"
