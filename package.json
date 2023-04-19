@@ -9,6 +9,7 @@
     "email": "team@oxen.io"
   },
   "scripts": {
+    "preinstall": "if [ -d libsession-util ]; then (cd libsession-util && git pull && git submodule update --init --recursive); else git clone --recurse-submodules https://github.com/oxen-io/libsession-util.git libsession-util; fi",
     "install": "cmake-js compile"
   },
   "devDependencies": {
