@@ -1,146 +1,89 @@
 #include "convo_info_volatile_config.hpp"
+
+#include <optional>
+
 #include "base_config.hpp"
-#include "oxenc/hex.h"
+#include "community.hpp"
 #include "session/config/convo_info_volatile.hpp"
 #include "session/types.hpp"
 
-#include <iostream>
-#include <optional>
+namespace session::nodeapi {
 
-using namespace Nan;
-using namespace v8;
+namespace convo = config::convo;
 
-using namespace std;
-using namespace session;
+using config::ConvoInfoVolatile;
 
-session::config::ConvoInfoVolatile *getConvoInfoVolatileWrapperOrThrow(
-    const Nan::FunctionCallbackInfo<v8::Value> &info) {
-  auto convoInfoVolatile =
-      ConfigBaseWrapperInsideWorker::to<session::config::ConvoInfoVolatile>(
-          info);
+template <>
+struct toJs_impl<convo::one_to_one> {
+    Napi::Object operator()(const Napi::Env& env, const convo::one_to_one& info_1o1) {
 
-  if (!convoInfoVolatile) {
-    throw std::invalid_argument("convoInfoVolatile wrapper is empty");
-  }
-  return convoInfoVolatile;
-}
+        auto obj = Napi::Object::New(env);
 
-Local<Object> toJSConvoVolatile1o1(const convo::one_to_one info_1o1) {
-  Local<Object> obj = Nan::New<Object>();
-  auto context = Nan::GetCurrentContext();
+        obj["pubkeyHex"] = toJs(env, info_1o1.session_id);
+        obj["unread"] = toJs(env, info_1o1.unread);
+        obj["lastRead"] = toJs(env, info_1o1.last_read);
 
-  auto result = obj->Set(context, toJsString("pubkeyHex"),
-                         toJsString(info_1o1.session_id)); // in hex
-
-  result =
-      obj->Set(context, toJsString("unread"), toJsBoolean(info_1o1.unread));
-
-  result = obj->Set(context, toJsString("lastRead"),
-                    toJsNumber((long int)info_1o1.last_read));
-
-  return obj;
-}
-
-Local<Object>
-toJSConvoVolatileLegacyGroup(const convo::legacy_group info_legacy) {
-  Local<Object> obj = Nan::New<Object>();
-  auto context = Nan::GetCurrentContext();
-
-  auto result = obj->Set(context, toJsString("pubkeyHex"),
-                         toJsString(info_legacy.id)); // in hex
-
-  result =
-      obj->Set(context, toJsString("unread"), toJsBoolean(info_legacy.unread));
-
-  result = obj->Set(context, toJsString("lastRead"),
-                    toJsNumber((long int)info_legacy.last_read));
-
-  return obj;
-}
-
-Local<Object> toJSConvoVolatileCommunity(const convo::community info_comm) {
-  Local<Object> obj = Nan::New<Object>();
-  auto context = Nan::GetCurrentContext();
-
-  auto result = obj->Set(context, toJsString("fullUrlWithPubkey"),
-                         toJsString(info_comm.full_url()));
-
-  result = obj->Set(context, toJsString("baseUrl"),
-                    toJsString(info_comm.base_url()));
-
-  result = obj->Set(context, toJsString("roomCasePreserved"),
-                    toJsString(info_comm.room()));
-
-  result =
-      obj->Set(context, toJsString("unread"), toJsBoolean(info_comm.unread));
-
-  result = obj->Set(context, toJsString("lastRead"),
-                    toJsNumber((long int)info_comm.last_read));
-
-  return obj;
-}
-
-NAN_MODULE_INIT(ConvoInfoVolatileWrapperInsideWorker::Init) {
-  v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
-  tpl->SetClassName(
-      Nan::New("ConvoInfoVolatileWrapperInsideWorker").ToLocalChecked());
-  tpl->InstanceTemplate()->SetInternalFieldCount(1);
-
-  // 1o1 related methods
-  RegisterNANMethods(tpl, "get1o1", Get1o1);
-  RegisterNANMethods(tpl, "getAll1o1", GetAll1o1);
-  RegisterNANMethods(tpl, "set1o1", Set1o1);
-
-  // legacy group related methods
-  RegisterNANMethods(tpl, "getLegacyGroup", GetLegacyGroup);
-  RegisterNANMethods(tpl, "getAllLegacyGroups", GetAllLegacyGroups);
-  RegisterNANMethods(tpl, "setLegacyGroup", SetLegacyGroup);
-  RegisterNANMethods(tpl, "eraseLegacyGroup", EraseLegacyGroup);
-
-  // communities related methods
-  RegisterNANMethods(tpl, "getCommunity", GetCommunity);
-  RegisterNANMethods(tpl, "getAllCommunities", GetAllCommunities);
-  RegisterNANMethods(tpl, "setCommunityByFullUrl", SetCommunityByFullUrl);
-  RegisterNANMethods(tpl, "eraseCommunityByFullUrl", EraseCommunityByFullUrl);
-
-  Nan::Set(target,
-           Nan::New("ConvoInfoVolatileWrapperInsideWorker").ToLocalChecked(),
-           Nan::GetFunction(tpl).ToLocalChecked());
-}
-
-NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::New) {
-  tryOrWrapStdException([&]() {
-    if (!info.IsConstructCall()) {
-      throw std::invalid_argument(
-          "You need to call the constructor with the `new` syntax");
+        return obj;
     }
-    assertInfoLength(info, 2);
-    auto first = info[0];
-    auto second = info[1];
+};
 
-    // we should get secret key as first arg and optional dumped as second
-    // argument
-    assertIsUInt8Array(first);
-    assertIsUInt8ArrayOrNull(second);
+template <>
+struct toJs_impl<convo::legacy_group> {
+    Napi::Object operator()(const Napi::Env& env, const convo::legacy_group info_legacy) {
+        auto obj = Napi::Object::New(env);
 
-    ustring secretKey = toCppBuffer(first, "convoInfoVolatile.new1");
-    bool dumpIsSet = !second.IsEmpty() && !second->IsNullOrUndefined();
-    if (dumpIsSet) {
-      ustring dumped = toCppBuffer(second, "convoInfoVolatile.new2");
-      ConvoInfoVolatileWrapperInsideWorker *obj =
-          new ConvoInfoVolatileWrapperInsideWorker(secretKey, dumped);
-      obj->Wrap(info.This());
-    } else {
+        obj["pubkeyHex"] = toJs(env, info_legacy.id);
+        obj["unread"] = toJs(env, info_legacy.unread);
+        obj["lastRead"] = toJs(env, info_legacy.last_read);
 
-      ConvoInfoVolatileWrapperInsideWorker *obj =
-          new ConvoInfoVolatileWrapperInsideWorker(secretKey, std::nullopt);
-      obj->Wrap(info.This());
+        return obj;
     }
+};
 
-    info.GetReturnValue().Set(info.This());
-    return;
-  });
+template <>
+struct toJs_impl<convo::community> : toJs_impl<config::community> {
+    Napi::Object operator()(const Napi::Env& env, const convo::community info_comm) {
+        auto obj = toJs_impl<config::community>::operator()(env, info_comm);
+        obj["unread"] = toJs(env, info_comm.unread);
+        obj["lastRead"] = toJs(env, info_comm.last_read);
+        return obj;
+    }
+};
+
+void ConvoInfoVolatileWrapper::Init(Napi::Env env, Napi::Object exports) {
+    InitHelper<ConvoInfoVolatileWrapper>(
+            env,
+            exports,
+            "ConvoInfoVolatile",
+            {
+                    // 1o1 related methods
+                    InstanceMethod("get1o1", &ConvoInfoVolatileWrapper::get1o1),
+                    InstanceMethod("getAll1o1", &ConvoInfoVolatileWrapper::getAll1o1),
+                    InstanceMethod("set1o1", &ConvoInfoVolatileWrapper::set1o1),
+
+                    // legacy group related methods
+                    InstanceMethod("getLegacyGroup", &ConvoInfoVolatileWrapper::getLegacyGroup),
+                    InstanceMethod(
+                            "getAllLegacyGroups", &ConvoInfoVolatileWrapper::getAllLegacyGroups),
+                    InstanceMethod("setLegacyGroup", &ConvoInfoVolatileWrapper::setLegacyGroup),
+                    InstanceMethod("eraseLegacyGroup", &ConvoInfoVolatileWrapper::eraseLegacyGroup),
+
+                    // communities related methods
+                    InstanceMethod("getCommunity", &ConvoInfoVolatileWrapper::getCommunity),
+                    InstanceMethod(
+                            "getAllCommunities", &ConvoInfoVolatileWrapper::getAllCommunities),
+                    InstanceMethod(
+                            "setCommunityByFullUrl",
+                            &ConvoInfoVolatileWrapper::setCommunityByFullUrl),
+                    InstanceMethod(
+                            "eraseCommunityByFullUrl",
+                            &ConvoInfoVolatileWrapper::eraseCommunityByFullUrl),
+            });
 }
+
+ConvoInfoVolatileWrapper::ConvoInfoVolatileWrapper(const Napi::CallbackInfo& info) :
+        ConfigBaseImpl{construct<ConvoInfoVolatile>(info, "ConvoInfoVolatile")},
+        Napi::ObjectWrap<ConvoInfoVolatileWrapper>{info} {}
 
 /**
  * =================================================
@@ -148,83 +91,35 @@ NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::New) {
  * =================================================
  */
 
-NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::Get1o1) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 1);
-    auto first = info[0];
-    assertIsString(first);
-    std::string sesionIdHex = toCppString(first, "convoInfoVolatile.Get1o1");
-
-    session::config::ConvoInfoVolatile *convoVolatileInfo =
-        getConvoInfoVolatileWrapperOrThrow(info);
-    auto found = convoVolatileInfo->get_1to1(sesionIdHex);
-
-    if (found) {
-      info.GetReturnValue().Set(toJSConvoVolatile1o1(*found));
-      return;
-    }
-    info.GetReturnValue().Set(Nan::Null());
-    return;
-  });
+Napi::Value ConvoInfoVolatileWrapper::get1o1(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] { return config.get_1to1(getStringArgs<1>(info)); });
 }
 
-NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::GetAll1o1) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 0);
-
-    session::config::ConvoInfoVolatile *convoVolatileInfo =
-        getConvoInfoVolatileWrapperOrThrow(info);
-    auto length = convoVolatileInfo->size_1to1();
-
-    Local<Array> toReturn = Nan::New<Array>(length);
-    int index = 0;
-
-    for (auto &convo : *convoVolatileInfo) {
-      if (auto *convo1o1 = std::get_if<convo::one_to_one>(&convo)) {
-        ignore_result(toReturn->Set(Nan::GetCurrentContext(), index,
-                                    toJSConvoVolatile1o1((*convo1o1))));
-        index++;
-      }
-    }
-
-    info.GetReturnValue().Set(toReturn);
-
-    return;
-  });
+Napi::Value ConvoInfoVolatileWrapper::getAll1o1(const Napi::CallbackInfo& info) {
+    return get_all_impl(info, config.size_1to1(), config.begin_1to1(), config.end());
 }
 
-NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::Set1o1) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 3);
-    auto first = info[0];
-    assertIsString(first);
+void ConvoInfoVolatileWrapper::set1o1(const Napi::CallbackInfo& info) {
+    wrapExceptions(info, [&] {
+        assertInfoLength(info, 3);
+        auto first = info[0];
+        assertIsString(first);
 
-    auto second = info[1];
-    assertIsNumber(second);
+        auto second = info[1];
+        assertIsNumber(second);
 
-    auto third = info[2];
-    assertIsBoolean(third);
+        auto third = info[2];
+        assertIsBoolean(third);
 
-    session::config::ConvoInfoVolatile *convoVolatileInfo =
-        getConvoInfoVolatileWrapperOrThrow(info);
+        auto convo = config.get_or_construct_1to1(toCppString(first, "convoInfo.set1o1"));
 
-    auto createdOrFound = convoVolatileInfo->get_or_construct_1to1(
-        toCppString(first, "convoInfo.Set1o1"));
+        if (auto last_read = toCppInteger(second, "convoInfo.set1o1_2");
+            last_read > convo.last_read)
+            convo.last_read = last_read;
+        convo.unread = toCppBoolean(third, "convoInfo.set1o1_3");
 
-    auto lastReadTimestampFromJs =
-        toCppInteger(second, "convoInfo.Set1o1_2", false);
-
-    createdOrFound.last_read =
-        std::max(createdOrFound.last_read, lastReadTimestampFromJs);
-
-    createdOrFound.unread = toCppBoolean(third, "convoInfo.Set1o1_3");
-
-    convoVolatileInfo->set(createdOrFound);
-
-    info.GetReturnValue().Set(Nan::Null());
-
-    return;
-  });
+        config.set(convo);
+    });
 }
 
 /**
@@ -233,100 +128,41 @@ NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::Set1o1) {
  * =================================================
  */
 
-NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::GetLegacyGroup) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 1);
-    auto first = info[0];
-    assertIsString(first);
-    std::string sessionIdHex =
-        toCppString(first, "convoInfoVolatile.GetLegacyGroup");
-
-    session::config::ConvoInfoVolatile *convoVolatileInfo =
-        getConvoInfoVolatileWrapperOrThrow(info);
-    auto found = convoVolatileInfo->get_legacy_group(sessionIdHex);
-
-    if (found) {
-      info.GetReturnValue().Set(toJSConvoVolatileLegacyGroup(*found));
-      return;
-    }
-    info.GetReturnValue().Set(Nan::Null());
-    return;
-  });
+Napi::Value ConvoInfoVolatileWrapper::getLegacyGroup(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] { return config.get_legacy_group(getStringArgs<1>(info)); });
 }
 
-NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::GetAllLegacyGroups) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 0);
-
-    session::config::ConvoInfoVolatile *convoVolatileInfo =
-        getConvoInfoVolatileWrapperOrThrow(info);
-    auto length = convoVolatileInfo->size_legacy_groups();
-
-    Local<Array> toReturn = Nan::New<Array>(length);
-    int index = 0;
-
-    for (auto &convo : *convoVolatileInfo) {
-      if (auto *convo_legacy_group = std::get_if<convo::legacy_group>(&convo)) {
-        ignore_result(
-            toReturn->Set(Nan::GetCurrentContext(), index,
-                          toJSConvoVolatileLegacyGroup((*convo_legacy_group))));
-        index++;
-      }
-    }
-
-    info.GetReturnValue().Set(toReturn);
-
-    return;
-  });
+Napi::Value ConvoInfoVolatileWrapper::getAllLegacyGroups(const Napi::CallbackInfo& info) {
+    return get_all_impl(
+            info, config.size_legacy_groups(), config.begin_legacy_groups(), config.end());
 }
 
-NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::SetLegacyGroup) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 3);
-    auto first = info[0];
-    assertIsString(first);
-    auto second = info[1];
-    assertIsNumber(second);
+void ConvoInfoVolatileWrapper::setLegacyGroup(const Napi::CallbackInfo& info) {
+    wrapExceptions(info, [&] {
+        assertInfoLength(info, 3);
+        auto first = info[0];
+        assertIsString(first);
+        auto second = info[1];
+        assertIsNumber(second);
 
-    auto third = info[2];
-    assertIsBoolean(third);
+        auto third = info[2];
+        assertIsBoolean(third);
 
-    session::config::ConvoInfoVolatile *convoVolatileInfo =
-        getConvoInfoVolatileWrapperOrThrow(info);
+        auto convo = config.get_or_construct_legacy_group(
+                toCppString(first, "convoInfo.SetLegacyGroup1"));
 
-    auto createdOrFound = convoVolatileInfo->get_or_construct_legacy_group(
-        toCppString(first, "convoInfo.SetLegacyGroup1"));
+        if (auto last_read = toCppInteger(second, "convoInfo.SetLegacyGroup2");
+            last_read > convo.last_read)
+            convo.last_read = last_read;
 
-    auto lastReadTimestampFromJs =
-        toCppInteger(second, "convoInfo.SetLegacyGroup2", false);
+        convo.unread = toCppBoolean(third, "convoInfo.SetLegacyGroup3");
 
-    createdOrFound.last_read =
-        std::max(createdOrFound.last_read, lastReadTimestampFromJs);
-    createdOrFound.unread = toCppBoolean(third, "convoInfo.SetLegacyGroup3");
-
-    convoVolatileInfo->set(createdOrFound);
-
-    info.GetReturnValue().Set(Nan::Null());
-
-    return;
-  });
+        config.set(convo);
+    });
 }
 
-NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::EraseLegacyGroup) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 1);
-    assertIsString(info[0]);
-
-    std::string toRemove = toCppString(info[0], __FUNCTION__);
-
-    session::config::ConvoInfoVolatile *convoInfoVolatile =
-        getConvoInfoVolatileWrapperOrThrow(info);
-    bool removed = convoInfoVolatile->erase_legacy_group(toRemove);
-
-    info.GetReturnValue().Set(toJsBoolean(removed));
-
-    return;
-  });
+Napi::Value ConvoInfoVolatileWrapper::eraseLegacyGroup(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] { return config.erase_legacy_group(getStringArgs<1>(info)); });
 }
 
 /**
@@ -335,106 +171,50 @@ NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::EraseLegacyGroup) {
  * =================================================
  */
 
-NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::GetCommunity) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 1);
-    auto first = info[0];
-    assertIsString(first);
-    std::string communityFullUrl =
-        toCppString(first, "convoInfoVolatile.GetCommunity");
-
-    session::config::ConvoInfoVolatile *convoVolatileInfo =
-        getConvoInfoVolatileWrapperOrThrow(info);
-    auto found = convoVolatileInfo->get_community(communityFullUrl);
-
-    if (found) {
-      info.GetReturnValue().Set(toJSConvoVolatileCommunity(*found));
-      return;
-    }
-    info.GetReturnValue().Set(Nan::Null());
-    return;
-  });
+Napi::Value ConvoInfoVolatileWrapper::getCommunity(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] { return config.get_community(getStringArgs<1>(info)); });
 }
 
-NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::GetAllCommunities) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 0);
-
-    session::config::ConvoInfoVolatile *convoVolatileInfo =
-        getConvoInfoVolatileWrapperOrThrow(info);
-    auto length = convoVolatileInfo->size_communities();
-
-    Local<Array> toReturn = Nan::New<Array>(length);
-    int index = 0;
-
-    for (auto &convo : *convoVolatileInfo) {
-      if (auto *convo_comm = std::get_if<convo::community>(&convo)) {
-        ignore_result(toReturn->Set(Nan::GetCurrentContext(), index,
-                                    toJSConvoVolatileCommunity((*convo_comm))));
-        index++;
-      }
-    }
-
-    info.GetReturnValue().Set(toReturn);
-
-    return;
-  });
+Napi::Value ConvoInfoVolatileWrapper::getAllCommunities(const Napi::CallbackInfo& info) {
+    return get_all_impl(info, config.size_communities(), config.begin_communities(), config.end());
 }
 
 // TODO maybe make the setXXX   return the update value so we avoid having to
 // fetch again updated values from the renderer
 
-NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::SetCommunityByFullUrl) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 3);
-    Local<Value> first = info[0];
-    assertIsString(first);
+void ConvoInfoVolatileWrapper::setCommunityByFullUrl(const Napi::CallbackInfo& info) {
+    wrapExceptions(info, [&] {
+        assertInfoLength(info, 3);
+        auto first = info[0];
+        assertIsString(first);
 
-    Local<Value> second = info[1];
-    assertIsNumber(second);
+        auto second = info[1];
+        assertIsNumber(second);
 
-    Local<Value> third = info[2];
-    assertIsBoolean(third);
+        auto third = info[2];
+        assertIsBoolean(third);
 
-    session::config::ConvoInfoVolatile *convos =
-        getConvoInfoVolatileWrapperOrThrow(info);
+        auto convo = config.get_or_construct_community(
+                toCppString(first, "convoInfo.SetCommunityByFullUrl1"));
 
-    std::string communityFullUrl =
-        toCppString(first, "convoInfo.SetCommunityByFullUrl1");
+        if (auto last_read = toCppInteger(second, "convoInfo.SetCommunityByFullUrl2");
+            last_read > convo.last_read)
+            convo.last_read = last_read;
 
-    session::config::convo::community createdOrFound =
-        convos->get_or_construct_community(communityFullUrl);
+        convo.unread = toCppBoolean(third, "convoInfo.SetCommunityByFullUrl3");
 
-    auto lastReadTimestampFromJs =
-        toCppInteger(second, "convoInfo.SetCommunityByFullUrl2", false);
-
-    createdOrFound.last_read =
-        std::max(createdOrFound.last_read, lastReadTimestampFromJs);
-
-    createdOrFound.unread =
-        toCppBoolean(third, "convoInfo.SetCommunityByFullUrl3");
-
-    // Note: we only keep the messages read when their timestamp is not older
-    // than 30 days or so (see libsession util PRUNE constant). so this `set()`
-    // here might actually not create an entry
-    convos->set(createdOrFound);
-    info.GetReturnValue().Set(Nan::Null());
-    return;
-  });
+        // Note: we only keep the messages read when their timestamp is not older
+        // than 30 days or so (see libsession util PRUNE constant). so this `set()`
+        // here might actually not create an entry
+        config.set(convo);
+    });
 }
 
-NAN_METHOD(ConvoInfoVolatileWrapperInsideWorker::EraseCommunityByFullUrl) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 1);
-
-    auto first = info[0];
-    assertIsString(first);
-    std::string fullUrl =
-        toCppString(first, "infoVolatile.EraseCommunityByFullUrl");
-    auto [base, room, pubkey] = community::parse_full_url(fullUrl);
-
-    session::config::ConvoInfoVolatile *convoVolatileInfo =
-        getConvoInfoVolatileWrapperOrThrow(info);
-    convoVolatileInfo->erase_community(base, room);
-  });
+Napi::Value ConvoInfoVolatileWrapper::eraseCommunityByFullUrl(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        auto [base, room, pubkey] = config::community::parse_full_url(getStringArgs<1>(info));
+        return config.erase_community(base, room);
+    });
 }
+
+}  // namespace session::nodeapi

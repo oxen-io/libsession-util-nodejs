@@ -1,45 +1,38 @@
 #pragma once
 
-#include <nan.h>
+#include <napi.h>
 
 #include "base_config.hpp"
-
 #include "session/config/convo_info_volatile.hpp"
 
-using namespace session;
-using namespace session::config;
-using namespace std;
+namespace session::nodeapi {
 
-class ConvoInfoVolatileWrapperInsideWorker
-    : public ConfigBaseWrapperInsideWorker {
-public:
-  static NAN_MODULE_INIT(Init);
+class ConvoInfoVolatileWrapper : public ConfigBaseImpl,
+                                 public Napi::ObjectWrap<ConvoInfoVolatileWrapper> {
+  public:
+    static void Init(Napi::Env env, Napi::Object exports);
 
-private:
-  explicit ConvoInfoVolatileWrapperInsideWorker(ustring_view ed25519_secretkey,
-                                                optional<ustring_view> dumped) {
-    tryOrWrapStdException([&]() {
-      initWithConfig(new ConvoInfoVolatile(ed25519_secretkey, dumped));
-    });
-  }
+    explicit ConvoInfoVolatileWrapper(const Napi::CallbackInfo& info);
 
-  // creation of the wrapper
-  static NAN_METHOD(New);
+  private:
+    config::ConvoInfoVolatile& config{get_config<config::ConvoInfoVolatile>()};
 
-  // 1o1 related methods
-  static NAN_METHOD(Get1o1);
-  static NAN_METHOD(GetAll1o1);
-  static NAN_METHOD(Set1o1);
+    // 1o1 related methods
+    Napi::Value get1o1(const Napi::CallbackInfo& info);
+    Napi::Value getAll1o1(const Napi::CallbackInfo& info);
+    void set1o1(const Napi::CallbackInfo& info);
 
-  // legacy group related methods
-  static NAN_METHOD(GetLegacyGroup);
-  static NAN_METHOD(GetAllLegacyGroups);
-  static NAN_METHOD(SetLegacyGroup);
-  static NAN_METHOD(EraseLegacyGroup);
+    // legacy group related methods
+    Napi::Value getLegacyGroup(const Napi::CallbackInfo& info);
+    Napi::Value getAllLegacyGroups(const Napi::CallbackInfo& info);
+    void setLegacyGroup(const Napi::CallbackInfo& info);
+    Napi::Value eraseLegacyGroup(const Napi::CallbackInfo& info);
 
-  // communities related methods
-  static NAN_METHOD(GetCommunity);
-  static NAN_METHOD(GetAllCommunities);
-  static NAN_METHOD(SetCommunityByFullUrl);
-  static NAN_METHOD(EraseCommunityByFullUrl);
+    // communities related methods
+    Napi::Value getCommunity(const Napi::CallbackInfo& info);
+    Napi::Value getAllCommunities(const Napi::CallbackInfo& info);
+    void setCommunityByFullUrl(const Napi::CallbackInfo& info);
+    Napi::Value eraseCommunityByFullUrl(const Napi::CallbackInfo& info);
 };
+
+}  // namespace session::nodeapi

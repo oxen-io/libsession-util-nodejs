@@ -1,340 +1,146 @@
 #include "contacts_config.hpp"
-#include "base_config.hpp"
-#include "oxenc/hex.h"
-#include "session/types.hpp"
 
-#include "session/config/expiring.hpp"
-#include <iostream>
 #include <optional>
 
-using namespace Nan;
-using namespace v8;
+#include "profile_pic.hpp"
+#include "session/config/expiring.hpp"
+#include "session/types.hpp"
 
-using session::ustring;
-using session::config::contact_info;
-using session::config::profile_pic;
+namespace session::nodeapi {
 
-using session::config::Contacts;
-using session::config::expiration_mode;
-using namespace std;
+using config::contact_info;
 
-const string disappearAfterRead = "disappearAfterRead";
-const string disappearAfterSend = "disappearAfterSend";
-const string off = "off";
+using config::Contacts;
+using config::expiration_mode;
 
-session::config::Contacts *
-getContactWrapperOrThrow(const Nan::FunctionCallbackInfo<v8::Value> &info) {
-  auto contacts =
-      ConfigBaseWrapperInsideWorker::to<session::config::Contacts>(info);
+using namespace std::literals;
 
-  if (!contacts) {
-    throw std::invalid_argument("contacts wrapper is empty");
-  }
-  return contacts;
-}
-
-Local<Object> toJSContact(const contact_info contact) {
-  Local<Object> obj = Nan::New<Object>();
-  auto context = Nan::GetCurrentContext();
-
-  auto result = obj->Set(context, toJsString("id"),
-                         toJsString(contact.session_id)); // in hex
-
-  if (!contact.name.empty()) {
-    result = obj->Set(context, toJsString("name"), toJsString(contact.name));
-
-  } else {
-    result = obj->Set(context, toJsString("name"), Nan::Null());
-  }
-
-  if (!contact.nickname.empty()) {
-    result =
-        obj->Set(context, toJsString("nickname"), toJsString(contact.nickname));
-  } else {
-    result = obj->Set(context, toJsString("nickname"), Nan::Null());
-  }
-
-  result = obj->Set(context, toJsString("approved"),
-                    Nan::New<Boolean>(contact.approved));
-  result = obj->Set(context, toJsString("approvedMe"),
-                    Nan::New<Boolean>(contact.approved_me));
-  result = obj->Set(context, toJsString("blocked"),
-                    Nan::New<Boolean>(contact.blocked));
-  result = obj->Set(context, toJsString("priority"),
-                    Nan::New<Number>(contact.priority));
-  result = obj->Set(context, toJsString("createdAtSeconds"),
-                    Nan::New<Number>(contact.created));
-
-  // 0=off, 1=disappearAfterSend, 2=disappearAfterRead
-  switch (contact.exp_mode) {
-  case expiration_mode::none:
-    result = obj->Set(context, toJsString("expirationMode"), toJsString(off));
-    break;
-  case expiration_mode::after_read:
-    result = obj->Set(context, toJsString("expirationMode"),
-                      toJsString(disappearAfterRead));
-    break;
-  case expiration_mode::after_send:
-    result = obj->Set(context, toJsString("expirationMode"),
-                      toJsString(disappearAfterSend));
-    break;
-  default:
-    throw std::invalid_argument("invalid expiration mode");
-  }
-
-  result = obj->Set(context, toJsString("expirationTimerSeconds"),
-                    toJsNumber((int)contact.exp_timer.count()));
-
-  if (contact.profile_picture) {
-    Local<Object> profilePic = Nan::New<Object>();
-    result = profilePic->Set(context, toJsString("url"),
-                             toJsString(contact.profile_picture.url));
-    result = profilePic->Set(context, toJsString("key"),
-                             toJsBuffer(contact.profile_picture.key));
-
-    result = obj->Set(context, toJsString("profilePicture"), profilePic);
-  }
-
-  return obj;
-}
-
-NAN_MODULE_INIT(ContactsConfigWrapperInsideWorker::Init) {
-  v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
-  tpl->SetClassName(
-      Nan::New("ContactsConfigWrapperInsideWorker").ToLocalChecked());
-  tpl->InstanceTemplate()->SetInternalFieldCount(1);
-
-  RegisterNANMethods(tpl, "get", Get);
-  RegisterNANMethods(tpl, "getAll", GetAll);
-  RegisterNANMethods(tpl, "set", Set);
-  RegisterNANMethods(tpl, "erase", Erase);
-
-  Nan::Set(target,
-           Nan::New("ContactsConfigWrapperInsideWorker").ToLocalChecked(),
-           Nan::GetFunction(tpl).ToLocalChecked());
-}
-
-NAN_METHOD(ContactsConfigWrapperInsideWorker::New) {
-  tryOrWrapStdException([&]() {
-    if (info.IsConstructCall()) {
-      assertInfoLength(info, 2);
-      auto first = info[0];
-      auto second = info[1];
-
-      // we should get secret key as first arg and optional dumped as second
-      // argument
-      assertIsUInt8Array(first);
-      assertIsUInt8ArrayOrNull(second);
-
-      ustring secretKey = toCppBuffer(first, "contacts.new");
-      bool dumpIsSet = !second.IsEmpty() && !second->IsNullOrUndefined();
-      if (dumpIsSet) {
-        ustring dumped = toCppBuffer(second, "contacts.new");
-        ContactsConfigWrapperInsideWorker *obj =
-            new ContactsConfigWrapperInsideWorker(secretKey, dumped);
-        obj->Wrap(info.This());
-      } else {
-
-        ContactsConfigWrapperInsideWorker *obj =
-            new ContactsConfigWrapperInsideWorker(secretKey, std::nullopt);
-        obj->Wrap(info.This());
-      }
-
-      info.GetReturnValue().Set(info.This());
-      return;
-    } else {
-      throw std::invalid_argument(
-          "You need to call the constructor with the `new` syntax");
+inline constexpr std::string_view expiration_mode_string(expiration_mode mode) {
+    switch (mode) {
+        case expiration_mode::none: return "off"sv;
+        case expiration_mode::after_read: return "disappearAfterRead"sv;
+        case expiration_mode::after_send: return "disappearAfterSend"sv;
     }
-  });
+    // Don't do this via a default case so that the above will start warning about unhandled cases
+    // if a newer libsession-util adds a new expiration mode value.
+    throw std::logic_error{"Internal error: unhandled expiration mode!"};
 }
+
+inline constexpr expiration_mode expiration_mode_from_string(std::string_view mode) {
+    if (mode == "disappearAfterRead"sv)
+        return expiration_mode::after_read;
+    if (mode == "disappearAfterSend"sv)
+        return expiration_mode::after_send;
+    return expiration_mode::none;
+}
+
+template <>
+struct toJs_impl<contact_info> {
+    Napi::Object operator()(const Napi::Env& env, const contact_info& contact) {
+        auto obj = Napi::Object::New(env);
+
+        obj["id"] = toJs(env, contact.session_id);
+        obj["name"] = toJs(env, maybe_string(contact.name));
+        obj["nickname"] = toJs(env, maybe_string(contact.nickname));
+        obj["approved"] = toJs(env, contact.approved);
+        obj["approvedMe"] = toJs(env, contact.approved_me);
+        obj["blocked"] = toJs(env, contact.blocked);
+        obj["priority"] = toJs(env, contact.priority);
+        obj["createdAtSeconds"] = toJs(env, contact.created);
+        obj["expirationMode"] = toJs(env, expiration_mode_string(contact.exp_mode));
+        obj["expirationTimerSeconds"] = toJs(env, contact.exp_timer.count());
+        obj["profilePicture"] = object_from_profile_pic(env, contact.profile_picture);
+
+        return obj;
+    }
+};
+
+void ContactsConfigWrapper::Init(Napi::Env env, Napi::Object exports) {
+    InitHelper<ContactsConfigWrapper>(
+            env,
+            exports,
+            "ContactsConfig",
+            {
+                    InstanceMethod("get", &ContactsConfigWrapper::get),
+                    InstanceMethod("getAll", &ContactsConfigWrapper::getAll),
+                    InstanceMethod("set", &ContactsConfigWrapper::set),
+                    InstanceMethod("erase", &ContactsConfigWrapper::erase),
+            });
+}
+
+ContactsConfigWrapper::ContactsConfigWrapper(const Napi::CallbackInfo& info) :
+        ConfigBaseImpl{construct<Contacts>(info, "ContactsConfig")},
+        Napi::ObjectWrap<ContactsConfigWrapper>{info} {}
 
 /** ==============================
  *             GETTERS
  * ============================== */
 
-NAN_METHOD(ContactsConfigWrapperInsideWorker::Get) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 1);
-    auto first = info[0];
-    assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first, "contacts.get");
-    auto contacts = getContactWrapperOrThrow(info);
-
-    optional<contact_info> contact = contacts->get(sessionIdHexStr);
-
-    if (contact) {
-      info.GetReturnValue().Set(toJSContact(*contact));
-    } else {
-      info.GetReturnValue().Set(Nan::Null());
-    }
-
-    return;
-  });
+Napi::Value ContactsConfigWrapper::get(const Napi::CallbackInfo& info) {
+    auto env = info.Env();
+    return wrapResult(env, [&] { return config.get(getStringArgs<1>(info)); });
 }
 
-NAN_METHOD(ContactsConfigWrapperInsideWorker::GetAll) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 0);
-    auto contacts = to<session::config::Contacts>(info);
+Napi::Value ContactsConfigWrapper::getAll(const Napi::CallbackInfo& info) {
+    auto env = info.Env();
+    return wrapExceptions(env, [&] {
+        assertInfoLength(info, 0);
 
-    if (!contacts) {
-      info.GetReturnValue().Set(Nan::Null());
-      return;
-    }
-
-    auto length = contacts->size();
-
-    Local<Array> allContacts = Nan::New<Array>(length);
-    int index = 0;
-    for (auto &contact : *contacts) {
-      ignore_result(allContacts->Set(Nan::GetCurrentContext(), index,
-                                     toJSContact((contact))));
-      index++;
-    }
-
-    info.GetReturnValue().Set(allContacts);
-
-    return;
-  });
+        auto contacts = Napi::Array::New(env, config.size());
+        size_t i = 0;
+        for (const auto& contact : config)
+            contacts[i++] = toJs(env, contact);
+        return contacts;
+    });
 }
 
 /** ==============================
  *             SETTERS
  * ============================== */
 
-NAN_METHOD(ContactsConfigWrapperInsideWorker::Set) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 1);
+void ContactsConfigWrapper::set(const Napi::CallbackInfo& info) {
+    wrapExceptions(info, [&] {
+        assertInfoLength(info, 1);
 
-    auto contactValue = info[0];
-    assertIsObject(contactValue);
+        auto arg = info[0];
+        assertIsObject(arg);
+        auto obj = arg.As<Napi::Object>();
 
-    if (contactValue.IsEmpty()) {
-      throw std::invalid_argument("cppContact received empty");
-    }
+        if (obj.IsEmpty())
+            throw std::invalid_argument("cppContact received empty");
 
-    Contacts *contacts = to<Contacts>(info);
-    if (!contacts) {
-      return;
-    }
+        auto contact = config.get_or_construct(toCppString(obj.Get("id"), "contacts.set, id"));
 
-    Local<Object> contact = Nan::To<Object>(contactValue).ToLocalChecked();
+        if (contact.created == 0)
+            contact.created = unix_timestamp_now();
 
-    Nan::MaybeLocal<Value> sessionIdMaybe = Nan::Get(contact, toJsString("id"));
+        if (auto name = maybeNonemptyString(obj.Get("name"), "contacts.set name"))
+            contact.set_name(std::move(*name));
+        if (auto nickname = maybeNonemptyString(obj.Get("nickname"), "contacts.set nickname"))
+            contact.set_nickname(std::move(*nickname));
 
-    if (sessionIdMaybe.IsEmpty() ||
-        sessionIdMaybe.ToLocalChecked()->IsNullOrUndefined()) {
-      throw std::invalid_argument("SessionID is empty");
-    }
+        contact.approved = toCppBoolean(obj.Get("approved"), "contacts.set approved");
+        contact.approved_me = toCppBoolean(obj.Get("approvedMe"), "contacts.set approvedMe");
+        contact.blocked = toCppBoolean(obj.Get("blocked"), "contacts.set blocked");
+        contact.priority = toPriority(obj.Get("priority"), contact.priority);
 
-    Local<Value> sessionId = sessionIdMaybe.ToLocalChecked();
-    assertIsString(sessionId);
-    std::string sessionIdStr = toCppString(sessionId, "contacts.set");
+        contact.exp_mode = expiration_mode_from_string(
+                toCppString(obj.Get("expirationMode"), "contacts.set expirationMode"));
+        contact.exp_timer = std::chrono::seconds{toCppInteger(
+                obj.Get("expirationTimerSeconds"), "contacts.set expirationTimerSeconds")};
+        if (auto pic = obj.Get("profilePicture"); !pic.IsUndefined())
+            contact.profile_picture = profile_pic_from_object(pic);
 
-    contact_info contactCpp = contacts->get_or_construct(sessionIdStr);
-
-    if (contactCpp.created == 0) {
-      auto duration = std::chrono::system_clock::now().time_since_epoch();
-      auto seconds =
-          std::chrono::duration_cast<std::chrono::seconds>(duration).count();
-      contactCpp.created = seconds;
-    }
-
-    contactCpp.approved = toCppBoolean(
-        (Nan::Get(contact, toJsString("approved"))).ToLocalChecked(),
-        "set.approved");
-
-    contactCpp.approved_me = toCppBoolean(
-        (Nan::Get(contact, toJsString("approvedMe"))).ToLocalChecked(),
-        "set.approvedMe");
-
-    contactCpp.blocked = toCppBoolean(
-        (Nan::Get(contact, toJsString("blocked"))).ToLocalChecked(),
-        "set.blocked");
-
-    auto priorityCpp =
-        toPriority((Nan::Get(contact, toJsString("priority"))).ToLocalChecked(),
-                   contactCpp.priority);
-
-    contactCpp.priority = priorityCpp;
-
-    auto name = Nan::Get(contact, toJsString("name"));
-    if (!name.IsEmpty() && !name.ToLocalChecked()->IsNullOrUndefined()) {
-      // We need to store it as a string and not directly the  string_view
-      // otherwise it gets garbage collected
-      auto nameStr = toCppString(name.ToLocalChecked(), "contacts.set1");
-      contactCpp.set_name(nameStr);
-    }
-    auto nickname = Nan::Get(contact, toJsString("nickname"));
-    if (!nickname.IsEmpty() &&
-        !nickname.ToLocalChecked()->IsNullOrUndefined()) {
-      // We need to store it as a string and not directly the  string_view
-      // otherwise it gets garbage collected
-      auto nicknameStr =
-          toCppString(nickname.ToLocalChecked(), "contacts.set2");
-      contactCpp.set_nickname(nicknameStr);
-    }
-
-    auto expMode = Nan::Get(contact, toJsString("expirationMode"));
-    auto expTimer = Nan::Get(contact, toJsString("expirationTimerSeconds"));
-
-    if (expMode.IsEmpty() && expTimer.IsEmpty()) {
-      throw std::invalid_argument(
-          "expirationMode or expirationTimerSeconds is empty");
-    }
-    auto expModeCpp =
-        toCppString(expMode.ToLocalChecked(), "contacts.setExpMode");
-    auto expTimerCpp =
-        toCppInteger(expTimer.ToLocalChecked(), "contacts.setExpTimer", false);
-
-    contactCpp.exp_mode =
-        expModeCpp == disappearAfterRead   ? expiration_mode::after_read
-        : expModeCpp == disappearAfterSend ? expiration_mode::after_send
-                                           : expiration_mode::none;
-    contactCpp.exp_timer = std::chrono::seconds(expTimerCpp);
-
-    auto picMaybe = Nan::Get(contact, toJsString("profilePicture"));
-    if (!picMaybe.IsEmpty() &&
-        !picMaybe.ToLocalChecked()->IsNullOrUndefined()) {
-      auto pic = picMaybe.ToLocalChecked();
-
-      assertIsObject(pic);
-
-      auto picObject = Nan::To<Object>(pic).ToLocalChecked();
-      auto urlMaybe = Nan::Get(picObject, toJsString("url"));
-      auto keyMaybe = Nan::Get(picObject, toJsString("key"));
-
-      if (!urlMaybe.IsEmpty() && !keyMaybe.IsEmpty() &&
-          !urlMaybe.ToLocalChecked()->IsNullOrUndefined() &&
-          !keyMaybe.ToLocalChecked()->IsNullOrUndefined()) {
-        std::string url =
-            toCppString(urlMaybe.ToLocalChecked(), "contacts.set3");
-        session::ustring key =
-            toCppBuffer(keyMaybe.ToLocalChecked(), "contacts.set4");
-
-        contactCpp.profile_picture = profile_pic(url, key);
-      }
-    }
-
-    contacts->set(contactCpp);
-  });
+        config.set(contact);
+    });
 }
 
 /** ==============================
  *             ERASERS
  * ============================== */
 
-NAN_METHOD(ContactsConfigWrapperInsideWorker::Erase) {
-  tryOrWrapStdException([&]() {
-    assertInfoLength(info, 1);
-
-    auto first = info[0];
-    assertIsString(first);
-    std::string sessionIdHexStr = toCppString(first, "contacts.erase");
-
-    auto contacts = getContactWrapperOrThrow(info);
-
-    contacts->erase(sessionIdHexStr);
-  });
+Napi::Value ContactsConfigWrapper::erase(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] { return config.erase(getStringArgs<1>(info)); });
 }
+
+}  // namespace session::nodeapi
