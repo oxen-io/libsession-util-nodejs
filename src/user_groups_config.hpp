@@ -21,7 +21,7 @@ class UserGroupsWrapper : public ConfigBaseImpl, public Napi::ObjectWrap<UserGro
     void setCommunityByFullUrl(const Napi::CallbackInfo& info);
     Napi::Value getAllCommunities(const Napi::CallbackInfo& info);
     Napi::Value eraseCommunityByFullUrl(const Napi::CallbackInfo& info);
-    static Napi::Value buildFullUrlFromDetails(const Napi::CallbackInfo& info);
+    Napi::Value buildFullUrlFromDetails(const Napi::CallbackInfo& info);
 
     // Legacy groups related methods
     Napi::Value getLegacyGroup(const Napi::CallbackInfo& info);

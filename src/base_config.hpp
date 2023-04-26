@@ -48,10 +48,9 @@ class ConfigBaseImpl {
             if (prop.utf8name)
                 seen.emplace(prop.utf8name);
 
-        properties.push_back(T::InstanceAccessor("needsDump", &T::needsDump, nullptr));
-        properties.push_back(T::InstanceAccessor("needsPush", &T::needsPush, nullptr));
-        properties.push_back(
-                T::InstanceAccessor("storageNamespace", &T::storageNamespace, nullptr));
+        properties.push_back(T::InstanceMethod("needsDump", &T::needsDump));
+        properties.push_back(T::InstanceMethod("needsPush", &T::needsPush));
+        properties.push_back(T::InstanceMethod("storageNamespace", &T::storageNamespace));
 
         properties.push_back(T::InstanceMethod("push", &T::push));
         properties.push_back(T::InstanceMethod("dump", &T::dump));

@@ -12,12 +12,13 @@ void UserConfigWrapper::Init(Napi::Env env, Napi::Object exports) {
     InitHelper<UserConfigWrapper>(
             env,
             exports,
-            "UserConfig",
+            "UserConfigWrapperNode",
             {
-                    InstanceAccessor(
-                            "name", &UserConfigWrapper::getName, &UserConfigWrapper::setName),
-                    InstanceMethod("getProfilePicture", &UserConfigWrapper::getProfilePicture),
-                    InstanceMethod("setProfilePicture", &UserConfigWrapper::setProfilePicture),
+                    // TODO make those getUserInfo and setUserInfo instead
+                    // InstanceMethod("getName", &UserConfigWrapper::getName),
+                    // InstanceMethod("setName", &UserConfigWrapper::setName),
+                    // InstanceMethod("getProfilePicture", &UserConfigWrapper::getProfilePicture),
+                    // InstanceMethod("setProfilePicture", &UserConfigWrapper::setProfilePicture),
             });
 }
 

@@ -73,7 +73,7 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<BaseConfigWrapper, 'merge'>
     | MakeActionCall<BaseConfigWrapper, 'storageNamespace'>;
 
-  export abstract class BaseConfigWrapperInsideWorker {
+  export abstract class BaseConfigWrapperNode {
     public needsDump: BaseConfigWrapper['needsDump'];
     public needsPush: BaseConfigWrapper['needsPush'];
     public push: BaseConfigWrapper['push'];
@@ -104,7 +104,7 @@ declare module 'libsession_util_nodejs' {
   /**
    * To be used inside the web worker only (calls are synchronous and won't work asynchrously)
    */
-  export class UserConfigWrapperInsideWorker extends BaseConfigWrapperInsideWorker {
+  export class UserConfigWrapperNode extends BaseConfigWrapperNode {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
     public getName: UserConfigWrapper['getName'];
     public setName: UserConfigWrapper['setName'];
@@ -164,7 +164,7 @@ declare module 'libsession_util_nodejs' {
     createdAtSeconds: number; // actually only a read property. It cannot be set to the wrapper and is set to now() if not already set.
   };
 
-  export class ContactsConfigWrapperInsideWorker extends BaseConfigWrapperInsideWorker {
+  export class ContactsConfigWrapperNode extends BaseConfigWrapperNode {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
     public get: ContactsWrapper['get'];
     public set: ContactsWrapper['set'];
@@ -240,7 +240,7 @@ declare module 'libsession_util_nodejs' {
 
   export type UserGroupsWrapperActionsCalls = MakeWrapperActionCalls<UserGroupsWrapper>;
 
-  export class UserGroupsWrapperInsideWorker extends BaseConfigWrapperInsideWorker {
+  export class UserGroupsWrapperNode extends BaseConfigWrapperNode {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
     // communities related methods
     public getCommunityByFullUrl: UserGroupsWrapper['getCommunityByFullUrl'];
@@ -315,7 +315,7 @@ declare module 'libsession_util_nodejs' {
     ConvoInfoVolatileWrapper
   >;
 
-  export class ConvoInfoVolatileWrapperInsideWorker extends BaseConfigWrapperInsideWorker {
+  export class ConvoInfoVolatileWrapperNode extends BaseConfigWrapperNode {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
     // 1o1 related methods
     public get1o1: ConvoInfoVolatileWrapper['get1o1'];

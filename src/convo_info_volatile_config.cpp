@@ -54,7 +54,7 @@ void ConvoInfoVolatileWrapper::Init(Napi::Env env, Napi::Object exports) {
     InitHelper<ConvoInfoVolatileWrapper>(
             env,
             exports,
-            "ConvoInfoVolatile",
+            "ConvoInfoVolatileWrapperNode",
             {
                     // 1o1 related methods
                     InstanceMethod("get1o1", &ConvoInfoVolatileWrapper::get1o1),

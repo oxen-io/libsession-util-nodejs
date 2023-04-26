@@ -58,7 +58,7 @@ void UserGroupsWrapper::Init(Napi::Env env, Napi::Object exports) {
     InitHelper<UserGroupsWrapper>(
             env,
             exports,
-            "UserGroups",
+            "UserGroupsWrapperNode",
             {
                     // Communities related methods
                     InstanceMethod(
@@ -68,7 +68,7 @@ void UserGroupsWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod("getAllCommunities", &UserGroupsWrapper::getAllCommunities),
                     InstanceMethod(
                             "eraseCommunityByFullUrl", &UserGroupsWrapper::eraseCommunityByFullUrl),
-                    StaticMethod(
+                    InstanceMethod(
                             "buildFullUrlFromDetails", &UserGroupsWrapper::buildFullUrlFromDetails),
 
                     // Legacy groups related methods
@@ -78,6 +78,10 @@ void UserGroupsWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod("eraseLegacyGroup", &UserGroupsWrapper::eraseLegacyGroup),
             });
 }
+
+UserGroupsWrapper::UserGroupsWrapper(const Napi::CallbackInfo& info) :
+        ConfigBaseImpl{construct<UserGroups>(info, "UserGroups")},
+        Napi::ObjectWrap<UserGroupsWrapper>{info} {}
 
 /**
  * =================================================
