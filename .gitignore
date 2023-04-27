@@ -1,4 +1,7 @@
-build/
-.vscode/
-node_modules/
-*.tar.gz
+/build/
+/.vscode/
+/node_modules/
+/*.tar.gz
+/package-lock.json
+/compile_commands.json
+/.cache

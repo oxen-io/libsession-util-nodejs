@@ -1,255 +1,171 @@
 #include "utilities.hpp"
-#include "base_config.hpp"
-#include "oxenc/hex.h"
-#include <iostream>
 
-using v8::Local;
-using v8::Object;
-using v8::String;
-using v8::Uint8Array;
-using v8::Value;
+#include <oxenc/hex.h>
 
-using session::ustring;
-using session::ustring_view;
-using namespace std;
+namespace session::nodeapi {
 
-void assertInfoLength(const Nan::FunctionCallbackInfo<Value> &info,
-                      const int expected) {
-  if (info.Length() != expected) {
-    auto errorMsg = "Invalid number of arguments";
-    throw std::invalid_argument(errorMsg);
-  }
+static void checkOrThrow(bool condition, const char* msg) {
+    if (!condition)
+        throw std::invalid_argument{msg};
 }
 
-void assertInfoMinLength(const Nan::FunctionCallbackInfo<Value> &info,
-                         const int minLength) {
-  if (info.Length() < minLength) {
-    auto errorMsg = "Invalid number of min length arguments";
-
-    throw std::invalid_argument(errorMsg);
-  }
+void assertInfoLength(const Napi::CallbackInfo& info, const int expected) {
+    checkOrThrow(info.Length() == expected, "Invalid number of arguments");
 }
 
-void assertIsStringOrNull(const Local<Value> val) {
-  if (!val->IsString() && !val->IsNull()) {
-    auto errorMsg = "Wrong arguments: expected string or null";
-
-    throw std::invalid_argument(errorMsg);
-  }
+void assertInfoMinLength(const Napi::CallbackInfo& info, const int minLength) {
+    checkOrThrow(info.Length() < minLength, "Invalid number of min length arguments");
 }
 
-void assertIsNumber(const Local<Value> val) {
-  if (!val->IsNumber() || val.IsEmpty() || val->IsNullOrUndefined()) {
-    auto errorMsg = "Wrong arguments: expected number";
-
-    throw std::invalid_argument(errorMsg);
-  }
+void assertIsStringOrNull(const Napi::Value& val) {
+    checkOrThrow(val.IsString() || val.IsNull(), "Wrong arguments: expected string or null");
 }
 
-void assertIsArray(const Local<Value> val) {
-  if (!val->IsArray()) {
-    auto errorMsg = "Wrong arguments: expected array";
-
-    throw std::invalid_argument(errorMsg);
-  }
+void assertIsNumber(const Napi::Value& val) {
+    checkOrThrow(
+            val.IsNumber() && !val.IsEmpty() && !val.IsNull() && !val.IsUndefined(),
+            "Wrong arguments: expected number");
 }
 
-void assertIsObject(const Local<Value> val) {
-  if (!val->IsObject() || val.IsEmpty() || val->IsNullOrUndefined()) {
-    auto errorMsg = "Wrong arguments: expected object";
-
-    throw std::invalid_argument(errorMsg);
-  }
+void assertIsArray(const Napi::Value& val) {
+    checkOrThrow(val.IsArray(), "Wrong arguments: expected array");
 }
 
-void assertIsUInt8ArrayOrNull(const Local<Value> val) {
-  if (!val->IsUint8Array() && !val->IsNull()) {
-    auto errorMsg = "Wrong arguments: expected uint8Array or null";
-
-    throw std::invalid_argument(errorMsg);
-  }
+void assertIsObject(const Napi::Value& val) {
+    checkOrThrow(
+            val.IsObject() && !val.IsEmpty() && !val.IsNull() && !val.IsUndefined(),
+            "Wrong arguments: expected object");
 }
 
-void assertIsUInt8Array(const Local<Value> val) {
-  if (!val->IsUint8Array()) {
-    auto errorMsg = "assertIsUInt8Array: Wrong arguments: expected uint8Array";
-
-    throw std::invalid_argument(errorMsg);
-  }
+static bool IsUint8Array(const Napi::Value& val) {
+    return val.IsTypedArray() && val.As<Napi::TypedArray>().TypedArrayType() == napi_uint8_array;
 }
 
-void assertIsString(const Local<Value> val) {
-  if (!val->IsString()) {
-    auto errorMsg = "assertIsString: Wrong arguments: expected string";
-
-    throw std::invalid_argument(errorMsg);
-  }
+void assertIsUInt8ArrayOrNull(const Napi::Value& val) {
+    checkOrThrow(val.IsNull() || IsUint8Array(val), "Wrong arguments: expected uint8Array or null");
 }
 
-void assertIsBoolean(const Local<Value> val) {
-  if (!val->IsBoolean()) {
-    auto errorMsg = "assertIsBoolean: Wrong arguments: expected boolean";
-
-    throw std::invalid_argument(errorMsg);
-  }
+void assertIsUInt8Array(const Napi::Value& val) {
+    checkOrThrow(IsUint8Array(val), "Wrong arguments: expected Buffer");
 }
 
-Local<String> toJsString(std::string_view x) {
-
-  return Nan::New<String>(x.data(), x.size()).ToLocalChecked();
+void assertIsString(const Napi::Value& val) {
+    checkOrThrow(val.IsString(), "Wrong arguments: expected string");
 }
 
-Local<Number> toJsNumber(const int x) { return Nan::New<Number>(x); }
-Local<Number> toJsNumber(const long int x) { return Nan::New<Number>(x); }
-
-Local<Boolean> toJsBoolean(bool x) { return Nan::New<Boolean>(x); }
-
-std::string toCppString(Local<Value> x, std::string identifier) {
-  if (x->IsNullOrUndefined()) {
-    throw std::invalid_argument(
-        "toCppString called with null or undefined with identifier: " +
-        identifier);
-  }
-  if (x->IsString()) {
-    auto asStr = Nan::To<String>(x).ToLocalChecked();
-
-    Nan::Utf8String xUtf(x);
-    std::string xStr{*xUtf, static_cast<long unsigned int>(asStr->Length())};
-    return xStr;
-  }
-
-  if (x->IsUint8Array()) {
-    auto aUint8Array = x.As<Uint8Array>();
-
-    std::string xStr;
-    xStr.resize(aUint8Array->Length());
-    aUint8Array->CopyContents(xStr.data(), xStr.size());
-    return xStr;
-  }
-
-  auto errorMsg = "toCppString unsupported type with identifier: " + identifier;
-
-  throw std::invalid_argument(errorMsg);
+void assertIsBoolean(const Napi::Value& val) {
+    checkOrThrow(val.IsBoolean(), "Wrong arguments: expected boolean");
 }
 
-session::ustring toCppBuffer(Local<Value> x, std::string identifier) {
-  if (x->IsNullOrUndefined()) {
-    throw std::invalid_argument(
-        "toCppBuffer called with null or undefined with identifier: " +
-        identifier);
-  }
+std::string toCppString(Napi::Value x, const std::string& identifier) {
+    if (x.IsNull() || x.IsUndefined()) {
+        throw std::invalid_argument{
+                "toCppString called with null or undefined with identifier: " + identifier};
+    }
+    if (x.IsString())
+        return x.As<Napi::String>().Utf8Value();
 
-  if (x->IsUint8Array()) {
-    auto aUint8Array = x.As<Uint8Array>();
+    if (x.IsBuffer()) {
+        auto buf = x.As<Napi::Buffer<char>>();
+        return {buf.Data(), buf.Length()};
+    }
 
-    session::ustring xStr;
-    xStr.resize(aUint8Array->Length());
-    aUint8Array->CopyContents(xStr.data(), xStr.size());
-
-    return xStr;
-  }
-
-  auto errorMsg = "toCppBuffer unsupported type with identifier: " + identifier;
-
-  throw std::invalid_argument(errorMsg);
+    throw std::invalid_argument{"toCppString unsupported type with identifier: " + identifier};
 }
 
-Local<Object> toJsBuffer(const ustring *x) {
-  auto buf =
-      Nan::CopyBuffer((const char *)x->data(), x->size()).ToLocalChecked();
-  return buf;
+std::optional<std::string> maybeNonemptyString(Napi::Value x, const std::string& identifier) {
+    if (x.IsNull() || x.IsUndefined())
+        return std::nullopt;
+    if (x.IsString()) {
+        auto str = x.As<Napi::String>().Utf8Value();
+        if (str.empty())
+            return std::nullopt;
+        return str;
+    }
+
+    throw std::invalid_argument{"maybeNonemptyString with invalid type, called from " + identifier};
 }
 
-Local<Object> toJsBuffer(const ustring &x) {
-  auto buf = Nan::CopyBuffer((const char *)x.data(), x.size()).ToLocalChecked();
-  return buf;
+// Converts to a ustring_view that views directly into the Uint8Array data of `x`.  Throws if x is
+// not a Uint8Array.  The view must not be used beyond the lifetime of `x`.
+ustring_view toCppBufferView(Napi::Value x, const std::string& identifier) {
+    if (x.IsNull() || x.IsUndefined())
+        throw std::invalid_argument(
+                "toCppBuffer called with null or undefined with identifier: " + identifier);
+
+    if (!IsUint8Array(x))
+        throw std::invalid_argument{"toCppBuffer unsupported type with identifier: " + identifier};
+
+    auto u8Array = x.As<Napi::Uint8Array>();
+    return {u8Array.Data(), u8Array.ByteLength()};
 }
 
-Local<Object> toJsBuffer(const ustring_view *x) {
-  auto buf =
-      Nan::CopyBuffer((const char *)x->data(), x->size()).ToLocalChecked();
-  return buf;
+ustring toCppBuffer(Napi::Value x, const std::string& identifier) {
+    return ustring{toCppBufferView(x, std::move(identifier))};
 }
 
-Local<Object> toJsBuffer(const ustring_view &x) {
-  auto buf = Nan::CopyBuffer((const char *)x.data(), x.size()).ToLocalChecked();
-  return buf;
+std::optional<ustring> maybeNonemptyBuffer(Napi::Value x, const std::string& identifier) {
+    if (x.IsNull() || x.IsUndefined())
+        return std::nullopt;
+
+    std::optional<ustring> buf{toCppBuffer(x, identifier)};
+    if (buf->empty())
+        buf.reset();
+    return buf;
 }
 
-std::string toCppDetailString(const Local<Value> val, std::string identifier) {
-  auto context = Nan::GetCurrentContext();
+int64_t toCppInteger(Napi::Value x, const std::string& identifier, bool allowUndefined) {
+    if (allowUndefined && (x.IsNull() || x.IsUndefined()))
+        return 0;
+    if (x.IsNumber())
+        return x.As<Napi::Number>().Int64Value();
 
-  return toCppString(val->ToDetailString(context).ToLocalChecked(), identifier);
+    throw std::invalid_argument{"Unsupported type for "s + identifier + ": expected a number"};
 }
 
-int64_t toCppInteger(Local<Value> x, std::string identifier,
-                     bool allowUndefined) {
+bool toCppBoolean(Napi::Value x, const std::string& identifier) {
+    if (x.IsNull() || x.IsUndefined())
+        return false;
 
-  if (allowUndefined && x->IsNullOrUndefined()) {
-    return 0;
-  }
-  if (x->IsNumber()) {
-    auto asNumber = x.As<v8::Number>();
-    return asNumber->Value();
-  }
+    if (x.IsBoolean() || x.IsNumber())
+        return x.ToBoolean();
 
-  std::string errorMsg =
-      "toCppInteger unsupported type with identifier: " + identifier +
-      " and detailString: " + toCppDetailString(x, "toCppInteger");
-
-  throw std::invalid_argument(errorMsg);
-}
-
-bool toCppBoolean(Local<Value> x, std::string identifier) {
-
-  if (x->IsNullOrUndefined()) {
-    return false;
-  }
-
-  if (x->IsBoolean() || x->IsNumber()) {
-    return x.As<v8::Boolean>()->Value();
-  }
-
-  std::string errorMsg =
-      "toCppBoolean unsupported type with identifier: " + identifier +
-      " and detailString: " + toCppDetailString(x, "toCppBoolean");
-
-  throw std::invalid_argument(errorMsg);
+    throw std::invalid_argument{"Unsupported type for "s + identifier + ": expected a boolean"};
 }
 
 std::string printable(std::string_view x) {
-  std::string p;
-  for (auto c : x) {
-    if (c >= 0x20 && c <= 0x7e)
-      p += c;
-    else
-      p += "\\x" + oxenc::to_hex(&c, &c + 1);
-  }
-  return p;
+    std::string p;
+    for (auto c : x) {
+        if (c >= 0x20 && c <= 0x7e)
+            p += c;
+        else
+            p += "\\x" + oxenc::to_hex(&c, &c + 1);
+    }
+    return p;
 }
 
-std::string printable(session::ustring_view x) {
-  std::string p;
-  for (auto c : x) {
-    if (c >= 0x20 && c <= 0x7e)
-      p += c;
-    else
-      p += "\\x" + oxenc::to_hex(&c, &c + 1);
-  }
-  return p;
+std::string printable(const char* x, size_t n) {
+    return printable(std::string_view{x, n});
 }
 
-std::string printable(const char *x, size_t n) { return printable({x, n}); }
-
-int64_t toPriority(Local<Value> x, int64_t currentPriority) {
-  auto newPriority = toCppInteger(x, "toPriority", true);
-  if (newPriority > 0) {
-    // keep the existing priority if it is already set
-    return max(currentPriority, (int64_t)1);
-  }
-
-  // newPriority being < 0 means that that conversation is hidden (and so
-  // unpinned)
-
-  return newPriority;
+std::string printable(ustring_view x) {
+    return printable(reinterpret_cast<const char*>(x.data()), x.size());
 }
+
+int64_t toPriority(Napi::Value x, int64_t currentPriority) {
+    auto newPriority = toCppInteger(x, "toPriority", true);
+    if (newPriority > 0)
+        // keep the existing priority if it is already set
+        return std::max<int64_t>(currentPriority, 1);
+
+    // newPriority being < 0 means that that conversation is hidden (and so
+    // unpinned)
+    return newPriority;
+}
+
+int64_t unix_timestamp_now() {
+    using namespace std::chrono;
+    return duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+}
+
+}  // namespace session::nodeapi

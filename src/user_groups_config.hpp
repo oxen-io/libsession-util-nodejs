@@ -1,39 +1,33 @@
 #pragma once
 
-#include <nan.h>
+#include <napi.h>
 
 #include "base_config.hpp"
-
 #include "session/config/user_groups.hpp"
 
-using namespace session;
-using namespace session::config;
-using namespace std;
+namespace session::nodeapi {
 
-class UserGroupsWrapperInsideWorker : public ConfigBaseWrapperInsideWorker {
-public:
-  static NAN_MODULE_INIT(Init);
+class UserGroupsWrapper : public ConfigBaseImpl, public Napi::ObjectWrap<UserGroupsWrapper> {
+  public:
+    static void Init(Napi::Env env, Napi::Object exports);
 
-private:
-  explicit UserGroupsWrapperInsideWorker(ustring_view ed25519_secretkey,
-                                         optional<ustring_view> dumped) {
-    tryOrWrapStdException(
-        [&]() { initWithConfig(new UserGroups(ed25519_secretkey, dumped)); });
-  }
+    explicit UserGroupsWrapper(const Napi::CallbackInfo& info);
 
-  // creation of the wrapper
-  static NAN_METHOD(New);
+  private:
+    config::UserGroups& config{get_config<config::UserGroups>()};
 
-  // Communities related methods
-  static NAN_METHOD(GetCommunityByFullUrl);
-  static NAN_METHOD(SetCommunityByFullUrl);
-  static NAN_METHOD(GetAllCommunities);
-  static NAN_METHOD(EraseCommunityByFullUrl);
-  static NAN_METHOD(BuildFullUrlFromDetails);
+    // Communities related methods
+    Napi::Value getCommunityByFullUrl(const Napi::CallbackInfo& info);
+    void setCommunityByFullUrl(const Napi::CallbackInfo& info);
+    Napi::Value getAllCommunities(const Napi::CallbackInfo& info);
+    Napi::Value eraseCommunityByFullUrl(const Napi::CallbackInfo& info);
+    static Napi::Value buildFullUrlFromDetails(const Napi::CallbackInfo& info);
 
-  // Legacy groups related methods
-  static NAN_METHOD(GetLegacyGroup);
-  static NAN_METHOD(GetAllLegacyGroups);
-  static NAN_METHOD(SetLegacyGroup);
-  static NAN_METHOD(EraseLegacyGroup);
+    // Legacy groups related methods
+    Napi::Value getLegacyGroup(const Napi::CallbackInfo& info);
+    Napi::Value getAllLegacyGroups(const Napi::CallbackInfo& info);
+    void setLegacyGroup(const Napi::CallbackInfo& info);
+    Napi::Value eraseLegacyGroup(const Napi::CallbackInfo& info);
 };
+
+}  // namespace session::nodeapi

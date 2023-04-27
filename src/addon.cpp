@@ -1,14 +1,19 @@
+#include <napi.h>
+
 #include "contacts_config.hpp"
 #include "convo_info_volatile_config.hpp"
 #include "user_config.hpp"
 #include "user_groups_config.hpp"
-#include <nan.h>
 
-void InitAll(v8::Local<v8::Object> exports) {
-  ContactsConfigWrapperInsideWorker::Init(exports);
-  UserGroupsWrapperInsideWorker::Init(exports);
-  UserConfigWrapperInsideWorker::Init(exports);
-  ConvoInfoVolatileWrapperInsideWorker::Init(exports);
+Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
+    using namespace session::nodeapi;
+
+    UserConfigWrapper::Init(env, exports);
+    ContactsConfigWrapper::Init(env, exports);
+    UserGroupsWrapper::Init(env, exports);
+    ConvoInfoVolatileWrapper::Init(env, exports);
+
+    return exports;
 }
 
-NODE_MODULE(libsession_util_nodejs, InitAll)
+NODE_API_MODULE(libsession_util_nodejs, InitAll);

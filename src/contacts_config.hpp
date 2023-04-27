@@ -1,30 +1,26 @@
 #pragma once
 
-#include <nan.h>
+#include <napi.h>
 
 #include "base_config.hpp"
-
 #include "session/config/contacts.hpp"
 
-using session::ustring_view;
+namespace session::nodeapi {
 
-using std::optional;
+class ContactsConfigWrapper : public ConfigBaseImpl,
+                              public Napi::ObjectWrap<ContactsConfigWrapper> {
+  public:
+    static void Init(Napi::Env env, Napi::Object exports);
 
-class ContactsConfigWrapperInsideWorker : public ConfigBaseWrapperInsideWorker {
-public:
-  static NAN_MODULE_INIT(Init);
+    explicit ContactsConfigWrapper(const Napi::CallbackInfo& info);
 
-private:
-  explicit ContactsConfigWrapperInsideWorker(ustring_view ed25519_secretkey,
-                                             optional<ustring_view> dumped) {
-    tryOrWrapStdException([&]() {
-      initWithConfig(new session::config::Contacts(ed25519_secretkey, dumped));
-    });
-  }
+  private:
+    config::Contacts& config{get_config<config::Contacts>()};
 
-  static NAN_METHOD(New);
-  static NAN_METHOD(Get);
-  static NAN_METHOD(GetAll);
-  static NAN_METHOD(Set);
-  static NAN_METHOD(Erase);
+    Napi::Value get(const Napi::CallbackInfo& info);
+    Napi::Value getAll(const Napi::CallbackInfo& info);
+    void set(const Napi::CallbackInfo& info);
+    Napi::Value erase(const Napi::CallbackInfo& info);
 };
+
+}  // namespace session::nodeapi
