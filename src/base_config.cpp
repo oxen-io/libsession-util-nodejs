@@ -21,6 +21,10 @@ Napi::Value ConfigBaseImpl::storageNamespace(const Napi::CallbackInfo& info) {
     });
 }
 
+Napi::Value ConfigBaseImpl::currentHashes(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] { return (get_config<ConfigBase>().current_hashes()); });
+}
+
 Napi::Value ConfigBaseImpl::push(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&]() {
         assertInfoLength(info, 0);

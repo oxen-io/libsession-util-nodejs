@@ -61,6 +61,7 @@ declare module 'libsession_util_nodejs' {
     confirmPushed: (seqno: number, hash: string) => void;
     merge: (toMerge: Array<{ hash: string; data: Uint8Array }>) => number;
     storageNamespace: () => number;
+    currentHashes: () => Array<string>;
   };
 
   type MakeActionsCall<A extends BaseConfigWrapper, B extends string> = [B, ...Parameters<A[B]>];
@@ -71,7 +72,8 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<BaseConfigWrapper, 'dump'>
     | MakeActionCall<BaseConfigWrapper, 'confirmPushed'>
     | MakeActionCall<BaseConfigWrapper, 'merge'>
-    | MakeActionCall<BaseConfigWrapper, 'storageNamespace'>;
+    | MakeActionCall<BaseConfigWrapper, 'storageNamespace'>
+    | MakeActionCall<BaseConfigWrapper, 'currentHashes'>;
 
   export abstract class BaseConfigWrapperNode {
     public needsDump: BaseConfigWrapper['needsDump'];
@@ -81,6 +83,7 @@ declare module 'libsession_util_nodejs' {
     public confirmPushed: BaseConfigWrapper['confirmPushed'];
     public merge: BaseConfigWrapper['merge'];
     public storageNamespace: BaseConfigWrapper['storageNamespace'];
+    public currentHashes: BaseConfigWrapper['currentHashes'];
   }
 
   export type BaseWrapperActionsCalls = MakeWrapperActionCalls<BaseConfigWrapper>;
