@@ -80,9 +80,9 @@ Napi::Value ConfigBaseImpl::merge(const Napi::CallbackInfo& info) {
             assertIsString(hash);
             assertIsUInt8Array(data);
 
-            conf_strs[0].first = toCppString(hash, "base.merge");
+            conf_strs[i].first = toCppString(hash, "base.merge");
             auto u8_data = data.As<Napi::Uint8Array>();
-            conf_strs[1].second = {u8_data.Data(), u8_data.ByteLength()};
+            conf_strs[i].second = {u8_data.Data(), u8_data.ByteLength()};
         }
 
         return get_config<ConfigBase>().merge(conf_strs);
