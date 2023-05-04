@@ -65,7 +65,8 @@ Napi::Value ConfigBaseImpl::merge(const Napi::CallbackInfo& info) {
         assertIsArray(info[0]);
         Napi::Array asArray = info[0].As<Napi::Array>();
 
-        std::vector<std::pair<std::string, ustring_view>> conf_strs(asArray.Length());
+        std::vector<std::pair<std::string, ustring_view>> conf_strs;
+        conf_strs.reserve(asArray.Length());
 
         for (uint32_t i = 0; i < asArray.Length(); i++) {
             Napi::Value item = asArray[i];
@@ -74,15 +75,9 @@ Napi::Value ConfigBaseImpl::merge(const Napi::CallbackInfo& info) {
                 throw std::invalid_argument("Merge.item received empty");
 
             Napi::Object itemObject = item.As<Napi::Object>();
-
-            auto hash = itemObject.Get("hash");
-            auto data = itemObject.Get("data");
-            assertIsString(hash);
-            assertIsUInt8Array(data);
-
-            conf_strs[i].first = toCppString(hash, "base.merge");
-            auto u8_data = data.As<Napi::Uint8Array>();
-            conf_strs[i].second = {u8_data.Data(), u8_data.ByteLength()};
+            conf_strs.emplace_back(
+                    toCppString(itemObject.Get("hash"), "base.merge"),
+                    toCppBufferView(itemObject.Get("data"), "base.merge"));
         }
 
         return get_config<ConfigBase>().merge(conf_strs);
