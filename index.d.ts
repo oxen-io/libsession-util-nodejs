@@ -188,11 +188,14 @@ declare module 'libsession_util_nodejs' {
 
   export type UserGroupsType = 'Community' | 'LegacyGroup';
 
-  export type CommunityInfo = {
-    pubkeyHex: string;
+  export type CommunityDetails = {
+    fullUrlWithPubkey: string;
     baseUrl: string;
-    fullUrl: string;
     roomCasePreserved: string;
+  };
+
+  export type CommunityInfo = CommunityDetails & {
+    pubkeyHex: string;
     priority: number; // -1 means hidden, 0 means normal, > 0 means pinned. We currently don't support hidden communities on the client though
   };
 
