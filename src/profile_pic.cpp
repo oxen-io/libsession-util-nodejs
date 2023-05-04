@@ -5,10 +5,7 @@
 
 namespace session::nodeapi {
 
-Napi::Value object_from_profile_pic(const Napi::Env& env, const config::profile_pic& pic) {
-    if (!pic)
-        return env.Null();
-
+Napi::Object object_from_profile_pic(const Napi::Env& env, const config::profile_pic& pic) {
     auto obj = Napi::Object::New(env);
     if (pic) {
         obj["url"] = toJs(env, pic.url);
@@ -21,7 +18,7 @@ Napi::Value object_from_profile_pic(const Napi::Env& env, const config::profile_
 }
 
 config::profile_pic profile_pic_from_object(Napi::Value val) {
-    if (val.IsNull())
+    if (val.IsNull() || val.IsUndefined())
         return {};
     if (!val.IsObject())
         throw std::invalid_argument{"profilePicture must be null or Object"};
@@ -33,7 +30,7 @@ config::profile_pic profile_pic_from_object(Napi::Value val) {
     if (url.IsUndefined() || key.IsUndefined())
         throw std::invalid_argument{"profilePicture: url and key must both be present"};
 
-    if (url.IsNull() || key.IsNull())
+    if (url.IsNull() || key.IsNull() || url.IsUndefined() || key.IsUndefined())
         return {};
 
     assertIsString(url);

@@ -32,6 +32,7 @@ class ConfigBaseImpl {
     Napi::Value needsDump(const Napi::CallbackInfo& info);
     Napi::Value needsPush(const Napi::CallbackInfo& info);
     Napi::Value storageNamespace(const Napi::CallbackInfo& info);
+    Napi::Value currentHashes(const Napi::CallbackInfo& info);
 
     Napi::Value push(const Napi::CallbackInfo& info);
     Napi::Value dump(const Napi::CallbackInfo& info);
@@ -48,10 +49,10 @@ class ConfigBaseImpl {
             if (prop.utf8name)
                 seen.emplace(prop.utf8name);
 
-        properties.push_back(T::InstanceAccessor("needsDump", &T::needsDump, nullptr));
-        properties.push_back(T::InstanceAccessor("needsPush", &T::needsPush, nullptr));
-        properties.push_back(
-                T::InstanceAccessor("storageNamespace", &T::storageNamespace, nullptr));
+        properties.push_back(T::InstanceMethod("needsDump", &T::needsDump));
+        properties.push_back(T::InstanceMethod("needsPush", &T::needsPush));
+        properties.push_back(T::InstanceMethod("storageNamespace", &T::storageNamespace));
+        properties.push_back(T::InstanceMethod("currentHashes", &T::currentHashes));
 
         properties.push_back(T::InstanceMethod("push", &T::push));
         properties.push_back(T::InstanceMethod("dump", &T::dump));

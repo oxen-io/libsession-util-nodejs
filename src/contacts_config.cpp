@@ -59,7 +59,7 @@ void ContactsConfigWrapper::Init(Napi::Env env, Napi::Object exports) {
     InitHelper<ContactsConfigWrapper>(
             env,
             exports,
-            "ContactsConfig",
+            "ContactsConfigWrapperNode",
             {
                     InstanceMethod("get", &ContactsConfigWrapper::get),
                     InstanceMethod("getAll", &ContactsConfigWrapper::getAll),
