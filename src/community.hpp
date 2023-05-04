@@ -11,6 +11,7 @@ struct toJs_impl<config::community> {
         obj["fullUrlWithPubkey"] = toJs(env, info_comm.full_url());
         obj["baseUrl"] = toJs(env, info_comm.base_url());
         obj["roomCasePreserved"] = toJs(env, info_comm.room());
+        obj["pubkeyHex"] = toJs(env, info_comm.pubkey());
 
         return obj;
     }
