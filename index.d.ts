@@ -287,11 +287,8 @@ declare module 'libsession_util_nodejs' {
 
   type ConvoInfoVolatile1o1 = BaseConvoInfoVolatile & { pubkeyHex: string };
   type ConvoInfoVolatileLegacyGroup = BaseConvoInfoVolatile & { pubkeyHex: string };
-  type ConvoInfoVolatileCommunity = BaseConvoInfoVolatile & {
-    fullUrlWithPubkey: string;
-    baseUrl: string;
-    roomCasePreserved: string;
-  };
+  type ConvoInfoVolatileCommunity = BaseConvoInfoVolatile & CommunityDetails;
+
   // type ConvoInfoVolatileCommunity = BaseConvoInfoVolatile & { pubkeyHex: string }; // we need a `set` with the full url but maybe not for the `get`
 
   type ConvoInfoVolatileWrapper = BaseConfigWrapper & {

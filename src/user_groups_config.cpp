@@ -20,6 +20,8 @@ struct toJs_impl<community_info> : toJs_impl<config::community> {
     Napi::Object operator()(const Napi::Env& env, const community_info& info_comm) {
         auto obj = toJs_impl<config::community>::operator()(env, info_comm);
         obj["priority"] = toJs(env, info_comm.priority);
+        obj["plop"] = toJs(env, info_comm.priority);
+
         return obj;
     }
 };
