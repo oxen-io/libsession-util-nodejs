@@ -93,10 +93,12 @@ declare module 'libsession_util_nodejs' {
 
   type UserConfigWrapper = BaseConfigWrapper & {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
-    getName: () => string;
-    setName: (name: string) => void;
-    getProfilePicture: () => ProfilePicture;
-    setProfilePicture: (url: string, key: Uint8Array) => void;
+    getUserInfo: () => { name: string; priority: number; url: string; key: Uint8Array };
+    setUserInfo: (
+      name: string,
+      priority: number,
+      profilePic: { url: string; key: Uint8Array } | null
+    ) => void;
   };
 
   export type UserConfigWrapperActionsCalls = MakeWrapperActionCalls<UserConfigWrapper>;
@@ -106,10 +108,8 @@ declare module 'libsession_util_nodejs' {
    */
   export class UserConfigWrapperNode extends BaseConfigWrapperNode {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
-    public getName: UserConfigWrapper['getName'];
-    public setName: UserConfigWrapper['setName'];
-    public getProfilePicture: UserConfigWrapper['getProfilePicture'];
-    public setProfilePicture: UserConfigWrapper['setProfilePicture'];
+    public getUserInfo: UserConfigWrapper['getUserInfo'];
+    public setUserInfo: UserConfigWrapper['setUserInfo'];
   }
 
   /**
@@ -119,10 +119,8 @@ declare module 'libsession_util_nodejs' {
    */
   export type UserConfigActionsType =
     | ['init', Uint8Array, Uint8Array | null]
-    | MakeActionCall<UserConfigWrapper, 'getName'>
-    | MakeActionCall<UserConfigWrapper, 'setName'>
-    | MakeActionCall<UserConfigWrapper, 'getProfilePicture'>
-    | MakeActionCall<UserConfigWrapper, 'setProfilePicture'>;
+    | MakeActionCall<UserConfigWrapper, 'getUserInfo'>
+    | MakeActionCall<UserConfigWrapper, 'setUserInfo'>;
 
   /**
    *
@@ -311,9 +309,8 @@ declare module 'libsession_util_nodejs' {
     eraseCommunityByFullUrl: (fullUrlWithOrWithoutPubkey: string) => void;
   };
 
-  export type ConvoInfoVolatileWrapperActionsCalls = MakeWrapperActionCalls<
-    ConvoInfoVolatileWrapper
-  >;
+  export type ConvoInfoVolatileWrapperActionsCalls =
+    MakeWrapperActionCalls<ConvoInfoVolatileWrapper>;
 
   export class ConvoInfoVolatileWrapperNode extends BaseConfigWrapperNode {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
