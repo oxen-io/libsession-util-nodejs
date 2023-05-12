@@ -298,6 +298,7 @@ declare module 'libsession_util_nodejs' {
     get1o1: (pubkeyHex: string) => ConvoInfoVolatile1o1 | null;
     getAll1o1: () => Array<ConvoInfoVolatile1o1>;
     set1o1: (pubkeyHex: string, lastRead: number, unread: boolean) => void;
+    erase1o1: (pubkeyHex: string) => void;
 
     // legacy group related methods
     getLegacyGroup: (pubkeyHex: string) => ConvoInfoVolatileLegacyGroup | null;
@@ -321,7 +322,7 @@ declare module 'libsession_util_nodejs' {
     public get1o1: ConvoInfoVolatileWrapper['get1o1'];
     public getAll1o1: ConvoInfoVolatileWrapper['getAll1o1'];
     public set1o1: ConvoInfoVolatileWrapper['set1o1'];
-    // No way to erase contacts atm (we just hide them so keep the convo volatile info)
+    public erase1o1: ConvoInfoVolatileWrapper['eraseLegacyGroup'];
 
     // legacy-groups related methods
     public getLegacyGroup: ConvoInfoVolatileWrapper['getLegacyGroup'];
@@ -341,6 +342,7 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<ConvoInfoVolatileWrapper, 'get1o1'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'getAll1o1'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'set1o1'>
+    | MakeActionCall<ConvoInfoVolatileWrapper, 'erase1o1'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'getLegacyGroup'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'getAllLegacyGroups'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'setLegacyGroup'>
