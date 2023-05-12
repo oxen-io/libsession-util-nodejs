@@ -60,6 +60,7 @@ void ConvoInfoVolatileWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod("get1o1", &ConvoInfoVolatileWrapper::get1o1),
                     InstanceMethod("getAll1o1", &ConvoInfoVolatileWrapper::getAll1o1),
                     InstanceMethod("set1o1", &ConvoInfoVolatileWrapper::set1o1),
+                    InstanceMethod("erase1o1", &ConvoInfoVolatileWrapper::erase1o1),
 
                     // legacy group related methods
                     InstanceMethod("getLegacyGroup", &ConvoInfoVolatileWrapper::getLegacyGroup),
@@ -163,6 +164,10 @@ void ConvoInfoVolatileWrapper::setLegacyGroup(const Napi::CallbackInfo& info) {
 
 Napi::Value ConvoInfoVolatileWrapper::eraseLegacyGroup(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] { return config.erase_legacy_group(getStringArgs<1>(info)); });
+}
+
+Napi::Value ConvoInfoVolatileWrapper::erase1o1(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] { return config.erase_1to1(getStringArgs<1>(info)); });
 }
 
 /**

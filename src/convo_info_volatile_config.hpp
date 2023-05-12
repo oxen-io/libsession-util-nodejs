@@ -21,6 +21,7 @@ class ConvoInfoVolatileWrapper : public ConfigBaseImpl,
     Napi::Value get1o1(const Napi::CallbackInfo& info);
     Napi::Value getAll1o1(const Napi::CallbackInfo& info);
     void set1o1(const Napi::CallbackInfo& info);
+    Napi::Value erase1o1(const Napi::CallbackInfo& info);
 
     // legacy group related methods
     Napi::Value getLegacyGroup(const Napi::CallbackInfo& info);

@@ -2,6 +2,7 @@
 
 #include <oxenc/hex.h>
 
+#include <iostream>
 #include <optional>
 
 #include "base_config.hpp"
@@ -207,10 +208,9 @@ void UserGroupsWrapper::setLegacyGroup(const Napi::CallbackInfo& info) {
             auto isAdmin = item.Get("isAdmin");
             assertIsString(pubkeyHex);
             assertIsBoolean(isAdmin);
-
-            membersToAddOrUpdate.emplace_back(
-                    toCppString(pubkeyHex, "setLegacyGroup"),
-                    toCppBoolean(isAdmin, "setLegacyGroup"));
+            bool isAdminCpp = toCppBoolean(isAdmin, "setLegacyGroup");
+            std::string pubkeyHexCpp = toCppString(pubkeyHex, "setLegacyGroup");
+            membersToAddOrUpdate.emplace_back(pubkeyHexCpp, isAdminCpp);
         }
 
         for (const auto& [pubkey, admin] : membersToAddOrUpdate) {
@@ -225,8 +225,9 @@ void UserGroupsWrapper::setLegacyGroup(const Napi::CallbackInfo& info) {
         // now we need to iterate over all the members in legacyGroupInWrapper which
         // are not in membersToAddOrUpdate
 
-        for (auto& sid : inWrapperButNotInJsAnymore)
+        for (auto& sid : inWrapperButNotInJsAnymore) {
             group.erase(sid);
+        }
 
         config.set(group);
     });
