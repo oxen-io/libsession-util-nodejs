@@ -118,6 +118,9 @@ void ContactsConfigWrapper::set(const Napi::CallbackInfo& info) {
             contact.set_name(std::move(*name));
         if (auto nickname = maybeNonemptyString(obj.Get("nickname"), "contacts.set nickname"))
             contact.set_nickname(std::move(*nickname));
+        else
+            contact.set_nickname("");
+        // if no nickname are passed from the JS side, reset the nickname
 
         contact.approved = toCppBoolean(obj.Get("approved"), "contacts.set approved");
         contact.approved_me = toCppBoolean(obj.Get("approvedMe"), "contacts.set approvedMe");
@@ -130,6 +133,10 @@ void ContactsConfigWrapper::set(const Napi::CallbackInfo& info) {
                 obj.Get("expirationTimerSeconds"), "contacts.set expirationTimerSeconds")};
         if (auto pic = obj.Get("profilePicture"); !pic.IsUndefined())
             contact.profile_picture = profile_pic_from_object(pic);
+        else
+            contact.profile_picture.clear();
+        // if no profile picture are given from the JS side,
+        // reset that user profile picture
 
         config.set(contact);
     });
