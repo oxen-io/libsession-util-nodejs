@@ -96,11 +96,18 @@ declare module 'libsession_util_nodejs' {
 
   type UserConfigWrapper = BaseConfigWrapper & {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
-    getUserInfo: () => { name: string; priority: number; url: string; key: Uint8Array };
+    getUserInfo: () => {
+      name: string;
+      priority: number;
+      url: string;
+      key: Uint8Array;
+      expirySeconds: number | null; // <= 0 is returned as null
+    };
     setUserInfo: (
       name: string,
       priority: number,
-      profilePic: { url: string; key: Uint8Array } | null
+      profilePic: { url: string; key: Uint8Array } | null,
+      expirySeconds: number
     ) => void;
   };
 
