@@ -47,7 +47,7 @@ struct toJs_impl<legacy_group_info> {
         obj["name"] = toJs(env, legacy_group.name);
         obj["encPubkey"] = toJs(env, legacy_group.enc_pubkey);
         obj["encSeckey"] = toJs(env, legacy_group.enc_seckey);
-        obj["disappearingTimerSeconds"] = toJs(env, legacy_group.disappearing_timer.count());
+        // obj["disappearingTimerSeconds"] = toJs(env, legacy_group.disappearing_timer.count());
         obj["priority"] = toJs(env, legacy_group.priority);
         obj["joinedAtSeconds"] = toJs(env, legacy_group.joined_at);
         obj["members"] = members_array(env, legacy_group.members());
@@ -175,10 +175,10 @@ void UserGroupsWrapper::setLegacyGroup(const Napi::CallbackInfo& info) {
         if (auto encSeckey = maybeNonemptyBuffer(obj.Get("encSeckey"), "legacyGroup.set encSeckey"))
             group.enc_seckey = std::move(*encSeckey);
 
-        group.disappearing_timer = std::chrono::seconds{toCppInteger(
-                obj.Get("disappearingTimerSeconds"),
-                "legacyGroup.set disappearingTimerSeconds",
-                true)};
+        // group.disappearing_timer = std::chrono::seconds{toCppInteger(
+        //         obj.Get("disappearingTimerSeconds"),
+        //         "legacyGroup.set disappearingTimerSeconds",
+        //         true)};
 
         auto membersJSValue = obj.Get("members");
         assertIsArray(membersJSValue);
