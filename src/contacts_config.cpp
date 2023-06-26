@@ -111,8 +111,16 @@ void ContactsConfigWrapper::set(const Napi::CallbackInfo& info) {
 
         auto contact = config.get_or_construct(toCppString(obj.Get("id"), "contacts.set, id"));
 
+        auto createdFromJS =
+                toCppInteger(obj.Get("createdAtSeconds"), "contacts.set, createdAtSeconds", false);
+
+        // we don't allow overiding the `created` field once it is set.
         if (contact.created == 0)
-            contact.created = unix_timestamp_now();
+            if (createdFromJS > 0)  // if we were given something valid, use it
+                contact.created = createdFromJS;
+            else  // otherwise, init as now() (the field is already equal to 0 here, so we need a
+                  // created time)
+                contact.created = unix_timestamp_now();
 
         if (auto name = maybeNonemptyString(obj.Get("name"), "contacts.set name"))
             contact.set_name(std::move(*name));

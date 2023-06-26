@@ -154,6 +154,8 @@ declare module 'libsession_util_nodejs' {
     nickname?: string;
     profilePicture?: ProfilePicture;
     priority: number; // -1 means hidden, 0 means normal, > 1 means pinned
+    createdAtSeconds: number; // can only be set the first time a contact is created, a new change won't overide the value in the wrapper.
+
     // expirationMode: 'off' | 'disappearAfterRead' | 'disappearAfterSend'; // the same as defined in the disappearingBranch
     // expirationTimerSeconds: number;
   };
@@ -162,14 +164,12 @@ declare module 'libsession_util_nodejs' {
     approved?: boolean;
     approvedMe?: boolean;
     blocked?: boolean;
-    createdAtSeconds?: number; // actually only a read property. It cannot be set to the wrapper and is set to now() if not already set.
   };
 
   export type ContactInfo = ContactInfoShared & {
     approved: boolean;
     approvedMe: boolean;
     blocked: boolean;
-    createdAtSeconds: number; // actually only a read property. It cannot be set to the wrapper and is set to now() if not already set.
   };
 
   export class ContactsConfigWrapperNode extends BaseConfigWrapperNode {
