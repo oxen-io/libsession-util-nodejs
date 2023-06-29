@@ -101,13 +101,13 @@ declare module 'libsession_util_nodejs' {
       priority: number;
       url: string;
       key: Uint8Array;
-      // expirySeconds: number | null; // <= 0 is returned as null
+      expirySeconds: number | null; // <= 0 is returned as null
     };
     setUserInfo: (
       name: string,
       priority: number,
-      profilePic: { url: string; key: Uint8Array } | null
-      // expirySeconds: number
+      profilePic: { url: string; key: Uint8Array } | null,
+      expirySeconds: number
     ) => void;
   };
 
@@ -155,9 +155,8 @@ declare module 'libsession_util_nodejs' {
     profilePicture?: ProfilePicture;
     priority: number; // -1 means hidden, 0 means normal, > 1 means pinned
     createdAtSeconds: number; // can only be set the first time a contact is created, a new change won't overide the value in the wrapper.
-
-    // expirationMode: 'off' | 'disappearAfterRead' | 'disappearAfterSend'; // the same as defined in the disappearingBranch
-    // expirationTimerSeconds: number;
+    expirationMode: 'off' | 'disappearAfterRead' | 'disappearAfterSend'; // the same as defined in the disappearingBranch
+    expirationTimerSeconds: number;
   };
 
   export type ContactInfoSet = ContactInfoShared & {
@@ -216,7 +215,7 @@ declare module 'libsession_util_nodejs' {
     name: string; // human-readable; this should normally always be set, but in theory could be set to an empty string.
     encPubkey: Uint8Array; // bytes (32 or empty)
     encSeckey: Uint8Array; // bytes (32 or empty)
-    // disappearingTimerSeconds: number; // in seconds, 0 == disabled.
+    disappearingTimerSeconds: number; // in seconds, 0 == disabled.
     priority: number; // -1 means hidden, 0 means normal, > 1 means pinned. We currently don't support hidden groups on the client though
     members: Array<LegacyGroupMemberInfo>;
     joinedAtSeconds: number; // equivalent to the lastJoinedTimestamp in Session desktop but in seconds rather than MS
