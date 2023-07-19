@@ -2,14 +2,14 @@
   "main": "index.js",
   "name": "libsession_util_nodejs",
   "description": "Wrappers for the Session Util Library",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "license": "GPL-3.0",
   "author": {
     "name": "Oxen Project",
     "email": "team@oxen.io"
   },
   "scripts": {
-    "install": "cmake-js compile --runtime=electron --runtime-version=17.4.10 -p16"
+    "install": "cmake-js compile --runtime=electron --runtime-version=25.3.0 -p16"
   },
   "devDependencies": {
     "clang-format": "^1.8.0"
