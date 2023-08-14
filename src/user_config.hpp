@@ -19,6 +19,9 @@ class UserConfigWrapper : public ConfigBaseImpl, public Napi::ObjectWrap<UserCon
 
     Napi::Value getUserInfo(const Napi::CallbackInfo& info);
     void setUserInfo(const Napi::CallbackInfo& info);
+
+    Napi::Value getEnableBlindedMsgRequest(const Napi::CallbackInfo& info);
+    void setEnableBlindedMsgRequest(const Napi::CallbackInfo& info);
 };
 
 }  // namespace session::nodeapi

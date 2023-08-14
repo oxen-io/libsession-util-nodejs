@@ -16,6 +16,12 @@ void UserConfigWrapper::Init(Napi::Env env, Napi::Object exports) {
             {
                     InstanceMethod("getUserInfo", &UserConfigWrapper::getUserInfo),
                     InstanceMethod("setUserInfo", &UserConfigWrapper::setUserInfo),
+                    InstanceMethod(
+                            "getEnableBlindedMsgRequest",
+                            &UserConfigWrapper::getEnableBlindedMsgRequest),
+                    InstanceMethod(
+                            "setEnableBlindedMsgRequest",
+                            &UserConfigWrapper::setEnableBlindedMsgRequest),
             });
 }
 
@@ -84,6 +90,27 @@ void UserConfigWrapper::setUserInfo(const Napi::CallbackInfo& info) {
             assertIsObject(profile_pic_obj);
 
         config.set_profile_pic(profile_pic_from_object(profile_pic_obj));
+    });
+}
+
+Napi::Value UserConfigWrapper::getEnableBlindedMsgRequest(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        auto env = info.Env();
+        auto blindedMsgRequest = toJs(env, config.get_blinded_msgreqs());
+
+        return blindedMsgRequest;
+    });
+}
+
+void UserConfigWrapper::setEnableBlindedMsgRequest(const Napi::CallbackInfo& info) {
+    wrapExceptions(info, [&] {
+        assertInfoLength(info, 1);
+
+        auto blindedMsgRequests = info[0];
+        assertIsBoolean(blindedMsgRequests);
+
+        auto blindedMsgReqCpp = toCppBoolean(blindedMsgRequests, "set_blinded_msgreqs");
+        config.set_blinded_msgreqs(blindedMsgReqCpp);
     });
 }
 

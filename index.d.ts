@@ -107,8 +107,10 @@ declare module 'libsession_util_nodejs' {
       name: string,
       priority: number,
       profilePic: { url: string; key: Uint8Array } | null
-      // expirySeconds: number
+      // expirySeconds: number,
     ) => void;
+    setEnableBlindedMsgRequest: (msgRequest: boolean) => void;
+    getEnableBlindedMsgRequest: () => boolean | undefined;
   };
 
   export type UserConfigWrapperActionsCalls = MakeWrapperActionCalls<UserConfigWrapper>;
@@ -120,6 +122,8 @@ declare module 'libsession_util_nodejs' {
     constructor(secretKey: Uint8Array, dump: Uint8Array | null);
     public getUserInfo: UserConfigWrapper['getUserInfo'];
     public setUserInfo: UserConfigWrapper['setUserInfo'];
+    public getEnableBlindedMsgRequest: UserConfigWrapper['getEnableBlindedMsgRequest'];
+    public setEnableBlindedMsgRequest: UserConfigWrapper['setEnableBlindedMsgRequest'];
   }
 
   /**
@@ -130,7 +134,9 @@ declare module 'libsession_util_nodejs' {
   export type UserConfigActionsType =
     | ['init', Uint8Array, Uint8Array | null]
     | MakeActionCall<UserConfigWrapper, 'getUserInfo'>
-    | MakeActionCall<UserConfigWrapper, 'setUserInfo'>;
+    | MakeActionCall<UserConfigWrapper, 'setUserInfo'>
+    | MakeActionCall<UserConfigWrapper, 'getEnableBlindedMsgRequest'>
+    | MakeActionCall<UserConfigWrapper, 'setEnableBlindedMsgRequest'>;
 
   /**
    *
