@@ -25,7 +25,7 @@ Once your changes are ready to be tested in the `session-desktop` you can compil
 
 ```
 cd [SESSION_DESKTOP_FOLDER]
-rm -rf node_modules/libsession_util_nodejs; cp -R [FOLDER_NOT_IN_SESSION_DESKTOP]/libsession-util-nodejs node_modules/libsession_util_nodejs; rm -rf node_modules/libsession_util_nodejs/build && yarn cmake-js --runtime=electron --runtime-version=25.3.0 --arch=x64 -d node_modules/libsession_util_nodejs -p16 && yarn worker:utils && yarn worker:libsession
+rm -rf node_modules/libsession_util_nodejs; cp -R [FOLDER_NOT_IN_SESSION_DESKTOP]/libsession-util-nodejs node_modules/libsession_util_nodejs; rm -rf node_modules/libsession_util_nodejs/build && yarn cmake-js --runtime=electron --runtime-version=25.3.0 --arch=x64 -d node_modules/libsession_util_nodejs -p16 && yarn build:workers
 ```
 
 Every part of this command is needed and might need to be updated using your paths. Also, the `worker:libsession` needs to be recompiled too to include the just created .node file in itself.
