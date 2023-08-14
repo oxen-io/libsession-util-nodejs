@@ -45,7 +45,7 @@ declare module 'libsession_util_nodejs' {
 
   export type PushConfigResult = { data: Uint8Array; seqno: number; hashes: Array<string> };
 
-  type MakeActionCall<A extends BaseConfigWrapper, B extends string> = [B, ...Parameters<A[B]>];
+  type MakeActionCall<A extends BaseConfigWrapper, B extends keyof A> = [B, ...Parameters<A[B]>];
 
   /**
    *
@@ -64,7 +64,6 @@ declare module 'libsession_util_nodejs' {
     currentHashes: () => Array<string>;
   };
 
-  type MakeActionsCall<A extends BaseConfigWrapper, B extends string> = [B, ...Parameters<A[B]>];
   export type BaseConfigActions =
     | MakeActionCall<BaseConfigWrapper, 'needsDump'>
     | MakeActionCall<BaseConfigWrapper, 'needsPush'>
