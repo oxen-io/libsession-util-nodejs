@@ -22,6 +22,12 @@ void UserConfigWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod(
                             "setEnableBlindedMsgRequest",
                             &UserConfigWrapper::setEnableBlindedMsgRequest),
+                    InstanceMethod(
+                            "getExpiry",
+                            &UserConfigWrapper::getExpiry),
+                    InstanceMethod(
+                            "setExpiry",
+                            &UserConfigWrapper::setExpiry),
             });
 }
 
@@ -63,16 +69,14 @@ Napi::Value UserConfigWrapper::getUserInfo(const Napi::CallbackInfo& info) {
 void UserConfigWrapper::setUserInfo(const Napi::CallbackInfo& info) {
     wrapExceptions(info, [&] {
         assertInfoLength(
-                info, 3);  // 4 with expiry but disabled until disappearing message is included
+                info, 3);
 
         auto name = info[0];
         auto priority = info[1];
         auto profile_pic_obj = info[2];
-        // auto expirySeconds = info[3];
 
         assertIsStringOrNull(name);
         assertIsNumber(priority);
-        // assertIsNumber(expirySeconds);
         std::string new_name;
 
         if (name.IsString())
@@ -83,8 +87,6 @@ void UserConfigWrapper::setUserInfo(const Napi::CallbackInfo& info) {
         auto new_priority = toPriority(priority, config.get_nts_priority());
         config.set_nts_priority(new_priority);
 
-        // auto expiryCppSeconds = toCppInteger(expirySeconds, "set_nts_expiry", false);
-        // config.set_nts_expiry(std::chrono::seconds{expiryCppSeconds});
 
         if (!profile_pic_obj.IsNull() && !profile_pic_obj.IsUndefined())
             assertIsObject(profile_pic_obj);
@@ -111,6 +113,27 @@ void UserConfigWrapper::setEnableBlindedMsgRequest(const Napi::CallbackInfo& inf
 
         auto blindedMsgReqCpp = toCppBoolean(blindedMsgRequests, "set_blinded_msgreqs");
         config.set_blinded_msgreqs(blindedMsgReqCpp);
+    });
+}
+
+Napi::Value UserConfigWrapper::getExpiry(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        auto env = info.Env();
+        auto expirySeconds = toJs(env, config.get_nts_expiry()->count());
+
+        return expirySeconds;
+    });
+}
+
+void UserConfigWrapper::setExpiry(const Napi::CallbackInfo& info) {
+    wrapExceptions(info, [&] {
+        assertInfoLength(info, 1);
+
+        auto expirySeconds = info[0];
+        assertIsNumber(expirySeconds);
+
+        auto expiryCppSeconds = toCppInteger(expirySeconds, "set_nts_expiry", false);
+        config.set_nts_expiry(std::chrono::seconds{expiryCppSeconds});
     });
 }
 

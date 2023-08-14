@@ -24,12 +24,8 @@ declare module 'libsession_util_nodejs' {
    *
    */
 
-  /**
-   *
-   * Utilities
-   *
-   */
-
+  // region Utilities
+  
   type AsyncWrapper<T extends (...args: any) => any> = (
     ...args: Parameters<T>
   ) => Promise<ReturnType<T>>;
@@ -47,11 +43,10 @@ declare module 'libsession_util_nodejs' {
 
   type MakeActionCall<A extends BaseConfigWrapper, B extends keyof A> = [B, ...Parameters<A[B]>];
 
-  /**
-   *
-   * Base Config wrapper logic
-   *
-   */
+  // endregion
+
+  // region Base Config wrapper logic
+  
 
   type BaseConfigWrapper = {
     needsDump: () => boolean;
@@ -87,11 +82,9 @@ declare module 'libsession_util_nodejs' {
 
   export type BaseWrapperActionsCalls = MakeWrapperActionCalls<BaseConfigWrapper>;
 
-  /**
-   *
-   * User config wrapper logic
-   *
-   */
+  // endregion
+
+  // region User config wrapper logic
 
   type UserConfigWrapper = BaseConfigWrapper & {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
@@ -100,16 +93,16 @@ declare module 'libsession_util_nodejs' {
       priority: number;
       url: string;
       key: Uint8Array;
-      // expirySeconds: number | null; // <= 0 is returned as null
     };
     setUserInfo: (
       name: string,
       priority: number,
       profilePic: { url: string; key: Uint8Array } | null
-      // expirySeconds: number,
     ) => void;
     setEnableBlindedMsgRequest: (msgRequest: boolean) => void;
     getEnableBlindedMsgRequest: () => boolean | undefined;
+    setExpiry: (expirySeconds: number) => void;
+    getExpiry: () => number | undefined;
   };
 
   export type UserConfigWrapperActionsCalls = MakeWrapperActionCalls<UserConfigWrapper>;
@@ -123,6 +116,8 @@ declare module 'libsession_util_nodejs' {
     public setUserInfo: UserConfigWrapper['setUserInfo'];
     public getEnableBlindedMsgRequest: UserConfigWrapper['getEnableBlindedMsgRequest'];
     public setEnableBlindedMsgRequest: UserConfigWrapper['setEnableBlindedMsgRequest'];
+    public getExpiry: UserConfigWrapper['getExpiry'];
+    public setExpiry: UserConfigWrapper['setExpiry'];
   }
 
   /**
@@ -135,13 +130,14 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<UserConfigWrapper, 'getUserInfo'>
     | MakeActionCall<UserConfigWrapper, 'setUserInfo'>
     | MakeActionCall<UserConfigWrapper, 'getEnableBlindedMsgRequest'>
-    | MakeActionCall<UserConfigWrapper, 'setEnableBlindedMsgRequest'>;
+    | MakeActionCall<UserConfigWrapper, 'setEnableBlindedMsgRequest'>
+    | MakeActionCall<UserConfigWrapper, 'getExpiry'>
+    | MakeActionCall<UserConfigWrapper, 'setExpiry'>;
 
-  /**
-   *
-   * Contacts wrapper logic
-   *
-   */
+  // endregion
+
+  // region Contacts wrapper logic
+
 
   type ContactsWrapper = BaseConfigWrapper & {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
@@ -192,11 +188,10 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<ContactsWrapper, 'getAll'>
     | MakeActionCall<ContactsWrapper, 'erase'>;
 
-  /**
-   *
-   * UserGroups wrapper logic
-   *
-   */
+  // endregion
+
+  // region UserGroups wrapper logic
+
 
   export type UserGroupsType = 'Community' | 'LegacyGroup';
 
@@ -284,12 +279,10 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<UserGroupsWrapper, 'setLegacyGroup'>
     | MakeActionCall<UserGroupsWrapper, 'eraseLegacyGroup'>;
 
-  /**
-   *
-   * Conversation Volatile wrapper logic
-   *
-   */
+  // endregion
 
+  // region Conversation Volatile wrapper logic
+  
   export type ConvoVolatileType = '1o1' | UserGroupsType;
 
   export type BaseConvoInfoVolatile = {
@@ -363,4 +356,5 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<ConvoInfoVolatileWrapper, 'setCommunityByFullUrl'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'getAllCommunities'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'eraseCommunityByFullUrl'>;
+  // endregion
 }
