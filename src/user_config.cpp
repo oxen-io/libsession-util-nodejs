@@ -22,12 +22,8 @@ void UserConfigWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod(
                             "setEnableBlindedMsgRequest",
                             &UserConfigWrapper::setEnableBlindedMsgRequest),
-                    InstanceMethod(
-                            "getExpiry",
-                            &UserConfigWrapper::getExpiry),
-                    InstanceMethod(
-                            "setExpiry",
-                            &UserConfigWrapper::setExpiry),
+                    InstanceMethod("getNoteToSelfExpiry", &UserConfigWrapper::getNoteToSelfExpiry),
+                    InstanceMethod("setNoteToSelfExpiry", &UserConfigWrapper::setNoteToSelfExpiry),
             });
 }
 
@@ -42,16 +38,9 @@ Napi::Value UserConfigWrapper::getUserInfo(const Napi::CallbackInfo& info) {
 
         auto name = config.get_name();
         auto priority = config.get_nts_priority();
-        // auto expirySeconds = config.get_nts_expiry();
 
         user_info_obj["name"] = toJs(env, name);
         user_info_obj["priority"] = toJs(env, priority);
-
-        // if (expirySeconds) {
-        //     user_info_obj["expirySeconds"] = toJs(env, expirySeconds->count());
-        // } else {
-        //     user_info_obj["expirySeconds"] = env.Null();
-        // }
 
         auto profile_pic_obj = object_from_profile_pic(env, config.get_profile_pic());
         if (profile_pic_obj) {
@@ -116,7 +105,7 @@ void UserConfigWrapper::setEnableBlindedMsgRequest(const Napi::CallbackInfo& inf
     });
 }
 
-Napi::Value UserConfigWrapper::getExpiry(const Napi::CallbackInfo& info) {
+Napi::Value UserConfigWrapper::getNoteToSelfExpiry(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
         auto env = info.Env();
         auto expirySeconds = toJs(env, config.get_nts_expiry()->count());
@@ -125,7 +114,7 @@ Napi::Value UserConfigWrapper::getExpiry(const Napi::CallbackInfo& info) {
     });
 }
 
-void UserConfigWrapper::setExpiry(const Napi::CallbackInfo& info) {
+void UserConfigWrapper::setNoteToSelfExpiry(const Napi::CallbackInfo& info) {
     wrapExceptions(info, [&] {
         assertInfoLength(info, 1);
 
