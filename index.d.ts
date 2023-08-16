@@ -148,7 +148,7 @@ declare module 'libsession_util_nodejs' {
   export type ContactsWrapperActionsCalls = MakeWrapperActionCalls<ContactsWrapper>;
 
   // must match DisappearingMessageConversationType in session-desktop
-  type DisappearingMessageConversationType = 'off' | 'disappearAfterRead' | 'disappearAfterSend';
+  export type DisappearingMessageConversationType = 'off' | 'disappearAfterRead' | 'disappearAfterSend';
 
   type ContactInfoShared = {
     id: string;
