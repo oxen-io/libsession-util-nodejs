@@ -18,8 +18,8 @@ using namespace std::literals;
 inline constexpr std::string_view expiration_mode_string(expiration_mode mode) {
     switch (mode) {
         case expiration_mode::none: return "off"sv;
-        case expiration_mode::after_read: return "disappearAfterRead"sv;
-        case expiration_mode::after_send: return "disappearAfterSend"sv;
+        case expiration_mode::after_read: return "deleteAfterRead"sv;
+        case expiration_mode::after_send: return "deleteAfterRead"sv;
     }
     // Don't do this via a default case so that the above will start warning about unhandled cases
     // if a newer libsession-util adds a new expiration mode value.
@@ -27,9 +27,9 @@ inline constexpr std::string_view expiration_mode_string(expiration_mode mode) {
 }
 
 inline constexpr expiration_mode expiration_mode_from_string(std::string_view mode) {
-    if (mode == "disappearAfterRead"sv)
+    if (mode == "deleteAfterRead"sv)
         return expiration_mode::after_read;
-    if (mode == "disappearAfterSend"sv)
+    if (mode == "deleteAfterRead"sv)
         return expiration_mode::after_send;
     return expiration_mode::none;
 }
