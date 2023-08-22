@@ -177,8 +177,7 @@ void UserGroupsWrapper::setLegacyGroup(const Napi::CallbackInfo& info) {
 
         group.disappearing_timer = std::chrono::seconds{toCppInteger(
                 obj.Get("disappearingTimerSeconds"),
-                "legacyGroup.set disappearingTimerSeconds",
-                true)};
+                "legacyGroup.set disappearingTimerSeconds")};
 
         auto membersJSValue = obj.Get("members");
         assertIsArray(membersJSValue);

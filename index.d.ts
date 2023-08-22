@@ -244,7 +244,7 @@ declare module 'libsession_util_nodejs' {
     // Legacy groups related methods
     getLegacyGroup: (pubkeyHex: string) => LegacyGroupInfo | null;
     getAllLegacyGroups: () => Array<LegacyGroupInfo>;
-    setLegacyGroup: (info: LegacyGroupInfo) => boolean;
+    setLegacyGroup: (info: LegacyGroupInfo) => void;
     eraseLegacyGroup: (pubkeyHex: string) => boolean;
   };
 
