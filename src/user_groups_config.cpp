@@ -154,10 +154,13 @@ Napi::Value UserGroupsWrapper::getAllLegacyGroups(const Napi::CallbackInfo& info
 void UserGroupsWrapper::setLegacyGroup(const Napi::CallbackInfo& info) {
     wrapExceptions(info, [&] {
         assertInfoLength(info, 1);
+
         auto legacyGroupValue = info[0];
         assertIsObject(legacyGroupValue);
-
         auto obj = legacyGroupValue.As<Napi::Object>();
+
+        if (obj.IsEmpty())
+            throw std::invalid_argument("cppLegacyGroup received empty");
 
         auto group = config.get_or_construct_legacy_group(
                 toCppString(obj.Get("pubkeyHex"), "legacyGroup.set"));
@@ -177,7 +180,7 @@ void UserGroupsWrapper::setLegacyGroup(const Napi::CallbackInfo& info) {
 
         group.disappearing_timer = std::chrono::seconds{toCppInteger(
                 obj.Get("disappearingTimerSeconds"),
-                "legacyGroup.set disappearingTimerSeconds")};
+                "legacyGroup.set disappearingTimerSeconds", true)};
 
         auto membersJSValue = obj.Get("members");
         assertIsArray(membersJSValue);
