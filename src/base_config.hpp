@@ -125,16 +125,16 @@ class ConfigBaseImpl {
             assertIsString(info[0]);
             assertIsUInt8ArrayOrNull(info[1]);
             assertIsUInt8ArrayOrNull(info[2]);
-            std::string ed25519_pubkey_str = toCppString(info[0], class_name + ".new0");
+            std::string ed25519_pubkey_str = toCppString(info[0], class_name + ".new.pubkey");
             std::optional<ustring> secret_key;
             auto second = info[1];
             if (!second.IsEmpty() && !second.IsNull() && !second.IsUndefined())
-                secret_key = toCppBufferView(second, class_name + ".new1");
+                secret_key = toCppBufferView(second, class_name + ".new.secret");
 
             std::optional<ustring> dump;
             auto third = info[2];
             if (!third.IsEmpty() && !third.IsNull() && !third.IsUndefined())
-                dump = toCppBufferView(third, class_name + ".new2");
+                dump = toCppBufferView(third, class_name + ".new.dump");
 
             auto withoutPrefix = ed25519_pubkey_str.substr(2);
             ustring ed25519_pubkey = (const unsigned char*)oxenc::from_hex(withoutPrefix).c_str();

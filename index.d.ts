@@ -158,12 +158,13 @@ declare module 'libsession_util_nodejs' {
 
   export type ContactsWrapperActionsCalls = MakeWrapperActionCalls<ContactsWrapper>;
 
-  type ContactInfoShared = {
+  export type PriorityType = { priority: number }; // -1 means hidden, 0 means normal, > 1 means pinned
+
+  type ContactInfoShared = PriorityType & {
     id: string;
     name?: string;
     nickname?: string;
     profilePicture?: ProfilePicture;
-    priority: number; // -1 means hidden, 0 means normal, > 1 means pinned
     createdAtSeconds: number; // can only be set the first time a contact is created, a new change won't overide the value in the wrapper.
 
     // expirationMode: 'off' | 'disappearAfterRead' | 'disappearAfterSend'; // the same as defined in the disappearingBranch
@@ -211,25 +212,33 @@ declare module 'libsession_util_nodejs' {
     roomCasePreserved: string;
   };
 
-  export type CommunityInfo = CommunityDetails & {
-    pubkeyHex: string;
-    priority: number; // -1 means hidden, 0 means normal, > 0 means pinned. We currently don't support hidden communities on the client though
-  };
+  export type CommunityInfo = CommunityDetails &
+    PriorityType & {
+      pubkeyHex: string;
+    };
 
   export type LegacyGroupMemberInfo = {
     pubkeyHex: string;
     isAdmin: boolean;
   };
 
-  export type LegacyGroupInfo = {
+  type BaseGroupInfo = PriorityType & {
+    joinedAtSeconds: number; // equivalent to the lastJoinedTimestamp in Session desktop but in seconds rather than MS
+  };
+
+  export type LegacyGroupInfo = BaseGroupInfo & {
     pubkeyHex: string; // The legacy group "session id" (33 bytes).
     name: string; // human-readable; this should normally always be set, but in theory could be set to an empty string.
     encPubkey: Uint8Array; // bytes (32 or empty)
     encSeckey: Uint8Array; // bytes (32 or empty)
     // disappearingTimerSeconds: number; // in seconds, 0 == disabled.
-    priority: number; // -1 means hidden, 0 means normal, > 1 means pinned. We currently don't support hidden groups on the client though
     members: Array<LegacyGroupMemberInfo>;
-    joinedAtSeconds: number; // equivalent to the lastJoinedTimestamp in Session desktop but in seconds rather than MS
+  };
+
+  export type CreateGroupResult = BaseGroupInfo & {
+    pubkeyHex: GroupPubkeyType; // The group "session id" (33 bytes), starting with 03.
+    secretKey: Uint8Array;
+    authSig: string;
   };
 
   type UserGroupsWrapper = BaseConfigWrapper & {
@@ -257,6 +266,13 @@ declare module 'libsession_util_nodejs' {
     getAllLegacyGroups: () => Array<LegacyGroupInfo>;
     setLegacyGroup: (info: LegacyGroupInfo) => boolean;
     eraseLegacyGroup: (pubkeyHex: string) => boolean;
+
+    // Groups related methods
+    createGroup: () => CreateGroupResult;
+    getGroup: (pubkeyHex: GroupPubkeyType) => GroupInfoGet | null;
+    // getAllGroups: () => Array<LegacyGroupInfo>;
+    // setGroup: (info: LegacyGroupInfo) => boolean;
+    // eraseGroup: (pubkeyHex: GroupPubkeyType) => boolean;
   };
 
   export type UserGroupsWrapperActionsCalls = MakeWrapperActionCalls<UserGroupsWrapper>;
@@ -275,6 +291,13 @@ declare module 'libsession_util_nodejs' {
     public getAllLegacyGroups: UserGroupsWrapper['getAllLegacyGroups'];
     public setLegacyGroup: UserGroupsWrapper['setLegacyGroup'];
     public eraseLegacyGroup: UserGroupsWrapper['eraseLegacyGroup'];
+
+    // groups related methods
+    public createGroup: UserGroupsWrapper['createGroup'];
+    public getGroup: UserGroupsWrapper['getGroup'];
+    // public getAllGroups: UserGroupsWrapper['getAllGroups'];
+    // public setGroup: UserGroupsWrapper['setGroup'];
+    // public eraseGroup: UserGroupsWrapper['eraseGroup'];
   }
 
   export type UserGroupsConfigActionsType =
@@ -287,7 +310,8 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<UserGroupsWrapper, 'getAllLegacyGroups'>
     | MakeActionCall<UserGroupsWrapper, 'getLegacyGroup'>
     | MakeActionCall<UserGroupsWrapper, 'setLegacyGroup'>
-    | MakeActionCall<UserGroupsWrapper, 'eraseLegacyGroup'>;
+    | MakeActionCall<UserGroupsWrapper, 'eraseLegacyGroup'>
+    | MakeActionCall<UserGroupsWrapper, 'createGroup'>;
 
   /**
    *

@@ -13,6 +13,7 @@
 namespace session::nodeapi {
 
 using config::community_info;
+using config::group_info;
 using config::legacy_group_info;
 using config::UserGroups;
 
@@ -56,6 +57,21 @@ struct toJs_impl<legacy_group_info> {
     }
 };
 
+template <>
+struct toJs_impl<group_info> {
+    Napi::Object operator()(const Napi::Env& env, const group_info& info) {
+        auto obj = Napi::Object::New(env);
+
+        obj["pubkeyHex"] = toJs(env, info.id);
+        obj["secretKey"] = toJs(env, info.secretkey);
+        obj["authSig"] = toJs(env, info.auth_sig);
+        obj["priority"] = toJs(env, info.priority);
+        obj["joinedAtSeconds"] = toJs(env, info.joined_at);
+
+        return obj;
+    }
+};
+
 void UserGroupsWrapper::Init(Napi::Env env, Napi::Object exports) {
     InitHelper<UserGroupsWrapper>(
             env,
@@ -78,6 +94,14 @@ void UserGroupsWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod("getAllLegacyGroups", &UserGroupsWrapper::getAllLegacyGroups),
                     InstanceMethod("setLegacyGroup", &UserGroupsWrapper::setLegacyGroup),
                     InstanceMethod("eraseLegacyGroup", &UserGroupsWrapper::eraseLegacyGroup),
+
+                    // Groups related methods
+                    InstanceMethod("createGroup", &UserGroupsWrapper::createGroup),
+                    InstanceMethod("getGroup", &UserGroupsWrapper::getGroup),
+                    // InstanceMethod("getAllGroups", &UserGroupsWrapper::getAllGroups),
+                    // InstanceMethod("setGroup", &UserGroupsWrapper::setGroup),
+                    // InstanceMethod("eraseGroup", &UserGroupsWrapper::eraseGroup),
+
             });
 }
 
@@ -235,6 +259,20 @@ void UserGroupsWrapper::setLegacyGroup(const Napi::CallbackInfo& info) {
 
 Napi::Value UserGroupsWrapper::eraseLegacyGroup(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] { return config.erase_legacy_group(getStringArgs<1>(info)); });
+}
+
+/**
+ * =================================================
+ * ===================== GROUPS ====================
+ * =================================================
+ */
+
+Napi::Value UserGroupsWrapper::createGroup(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] { return config.create_group(); });
+}
+
+Napi::Value UserGroupsWrapper::getGroup(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] { return config.get_group(getStringArgs<1>(info)); });
 }
 
 }  // namespace session::nodeapi

@@ -13,20 +13,6 @@ namespace session::nodeapi {
 
 using config::groups::Info;
 
-// template <>
-// struct toJs_impl<convo::one_to_one> {
-//     Napi::Object operator()(const Napi::Env& env, const convo::one_to_one& info_1o1) {
-
-//         auto obj = Napi::Object::New(env);
-
-//         obj["pubkeyHex"] = toJs(env, info_1o1.session_id);
-//         obj["unread"] = toJs(env, info_1o1.unread);
-//         obj["lastRead"] = toJs(env, info_1o1.last_read);
-
-//         return obj;
-//     }
-// };
-
 void GroupInfoWrapper::Init(Napi::Env env, Napi::Object exports) {
     InitHelper<GroupInfoWrapper>(
             env,
@@ -106,9 +92,11 @@ Napi::Value GroupInfoWrapper::setInfo(const Napi::CallbackInfo& info) {
     });
 }
 
-// Napi::Value GroupInfoWrapper::destroy(const Napi::CallbackInfo& info) {
-//     return wrapResult(info, [&] { return config.erase_legacy_group(getStringArgs<1>(info));
-//     });
-// }
+Napi::Value GroupInfoWrapper::destroy(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        config.destroy_group();
+        return this->getInfo(info);
+    });
+}
 
 }  // namespace session::nodeapi

@@ -19,7 +19,7 @@ class GroupInfoWrapper : public ConfigBaseImpl, public Napi::ObjectWrap<GroupInf
     // GroupInfo related methods
     Napi::Value getInfo(const Napi::CallbackInfo& info);
     Napi::Value setInfo(const Napi::CallbackInfo& info);
-    // Napi::Value destroy();
+    Napi::Value destroy(const Napi::CallbackInfo& info);
 };
 
 }  // namespace session::nodeapi
