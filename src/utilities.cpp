@@ -123,6 +123,17 @@ int64_t toCppInteger(Napi::Value x, const std::string& identifier, bool allowUnd
     throw std::invalid_argument{"Unsupported type for "s + identifier + ": expected a number"};
 }
 
+std::optional<int64_t> maybeNonemptyInt(Napi::Value x, const std::string& identifier) {
+    if (x.IsNull() || x.IsUndefined())
+        return std::nullopt;
+    if (x.IsNumber()) {
+        auto num = x.As<Napi::Number>().Int64Value();
+        return num;
+    }
+
+    throw std::invalid_argument{"maybeNonemptyInt with invalid type, called from " + identifier};
+}
+
 bool toCppBoolean(Napi::Value x, const std::string& identifier) {
     if (x.IsNull() || x.IsUndefined())
         return false;

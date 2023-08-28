@@ -53,7 +53,7 @@ declare module 'libsession_util_nodejs' {
    *
    */
 
-  type BaseConfigWrapper = {
+  export type BaseConfigWrapper = {
     needsDump: () => boolean;
     needsPush: () => boolean;
     push: () => PushConfigResult;
@@ -63,6 +63,11 @@ declare module 'libsession_util_nodejs' {
     storageNamespace: () => number;
     currentHashes: () => Array<string>;
   };
+
+  export type GenericWrapperActionsCall<A extends string, B extends keyof BaseConfigWrapper> = (
+    wrapperId: A,
+    ...args: Parameters<BaseConfigWrapper[B]>
+  ) => Promise<ReturnType<BaseConfigWrapper[B]>>;
 
   export type BaseConfigActions =
     | MakeActionCall<BaseConfigWrapper, 'needsDump'>
@@ -363,4 +368,82 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<ConvoInfoVolatileWrapper, 'setCommunityByFullUrl'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'getAllCommunities'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'eraseCommunityByFullUrl'>;
+
+  /**
+   *
+   * GroupInfo wrapper logic
+   *
+   */
+
+  type GroupInfoShared = {
+    name: string | null;
+    createdAtSeconds: number | null;
+    deleteAttachBeforeSeconds: number | null;
+    deleteBeforeSeconds: number | null;
+    expirySeconds: number | null;
+    profilePicture: ProfilePicture | null;
+  };
+
+  export type GroupInfoGet = GroupInfoShared & {
+    // pubkeyHex: string; // The group "session id" (33 bytes), starting with 03
+    isDestroyed: boolean;
+  };
+
+  export type GroupInfoSet = GroupInfoShared;
+
+  type GroupInfoWrapper = BaseConfigWrapper & {
+    initGroup: (
+      ed25519Pubkey: Uint8Array,
+      secretKey: Uint8Array | null,
+      dump: Uint8Array | null
+    ) => void;
+
+    // GroupInfo related methods
+    getInfo: () => GroupInfoGet | null;
+    setInfo: (info: GroupInfoSet) => GroupInfoGet;
+    destroy: () => void;
+  };
+
+  type AsyncGroupWrapper<T extends (...args: any) => any> = (
+    groupPk: GroupPubkeyType,
+    ...args: Parameters<T>
+  ) => Promise<ReturnType<T>>;
+
+  type MakeGroupWrapperActionCalls<Type extends BaseConfigWrapper> = {
+    [Property in keyof Omit<Type, 'initGroup'>]: AsyncGroupWrapper<Type[Property]>;
+  };
+
+  export type GroupPubkeyType = `03${string}`; // type of a string which starts by the 03 prefixed used for closed group
+
+  type MakeGroupActionCall<A extends BaseConfigWrapper, B extends keyof A> = [
+    B,
+    ...Parameters<A[B]>
+  ]; // all of the groupActionCalls need the pubkey of the group we are targetting
+
+  export type GroupInfoWrapperActionsCalls = MakeGroupWrapperActionCalls<GroupInfoWrapper> & {
+    initGroup: (
+      ed25519Pubkey: GroupPubkeyType,
+      secretKey: Uint8Array | null,
+      dump: Uint8Array | null
+    ) => Promise<void>;
+  };
+
+  export class GroupInfoWrapperNode extends BaseConfigWrapperNode {
+    constructor(
+      ed25519Pubkey: GroupPubkeyType,
+      secretKey: Uint8Array | null,
+      dump: Uint8Array | null
+    );
+
+    // GroupInfo related methods
+    public getInfo: GroupInfoWrapper['getInfo'];
+    public setInfo: GroupInfoWrapper['setInfo'];
+    public destroy: GroupInfoWrapper['destroy'];
+  }
+
+  export type GroupInfoActionsType =
+    | ['initGroup', GroupPubkeyType, Uint8Array | null, Uint8Array | null]
+    | MakeGroupActionCall<GroupInfoWrapper, 'getInfo'>
+    | MakeGroupActionCall<GroupInfoWrapper, 'setInfo'>
+    | MakeGroupActionCall<GroupInfoWrapper, 'destroy'>;
 }

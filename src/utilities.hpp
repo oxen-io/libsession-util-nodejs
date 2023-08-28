@@ -48,11 +48,12 @@ auto getStringArgs(const Napi::CallbackInfo& info) {
         return args;
 }
 
-
 std::string toCppString(Napi::Value x, const std::string& identifier);
 ustring toCppBuffer(Napi::Value x, const std::string& identifier);
 ustring_view toCppBufferView(Napi::Value x, const std::string& identifier);
 int64_t toCppInteger(Napi::Value x, const std::string& identifier, bool allowUndefined = false);
+std::optional<int64_t> maybeNonemptyInt(Napi::Value x, const std::string& identifier);
+
 bool toCppBoolean(Napi::Value x, const std::string& identifier);
 
 // If the object is null/undef/empty returns nullopt, otherwise if a String returns a std::string of

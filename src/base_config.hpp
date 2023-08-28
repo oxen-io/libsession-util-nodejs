@@ -1,6 +1,7 @@
 #pragma once
 
 #include <napi.h>
+#include <oxenc/hex.h>
 
 #include <cassert>
 #include <memory>
@@ -101,6 +102,43 @@ class ConfigBaseImpl {
                 dump = toCppBufferView(second, class_name + ".new");
 
             return std::make_shared<Config>(secretKey, dump);
+        });
+    }
+
+    // Constructs a shared_ptr of some config::ConfigBase-derived type, taking a secret key and
+    // optional dump.  This is what most Config types require, but a subclass could replace this if
+    // it needs to do something else.
+    template <
+            typename Config,
+            std::enable_if_t<std::is_base_of_v<config::ConfigBase, Config>, int> = 0>
+    static std::shared_ptr<Config> construct3Args(
+            const Napi::CallbackInfo& info, const std::string& class_name) {
+        return wrapExceptions(info, [&] {
+            if (!info.IsConstructCall())
+                throw std::invalid_argument{
+                        "You need to call the constructor with the `new` syntax"};
+
+            assertInfoLength(info, 3);
+
+            // we should get ed25519_pubkey as string (with 03 prefix), as first arg, secret key as
+            // second opt arg and optional dumped as third arg
+            assertIsString(info[0]);
+            assertIsUInt8ArrayOrNull(info[1]);
+            assertIsUInt8ArrayOrNull(info[2]);
+            std::string ed25519_pubkey_str = toCppString(info[0], class_name + ".new0");
+            std::optional<ustring> secret_key;
+            auto second = info[1];
+            if (!second.IsEmpty() && !second.IsNull() && !second.IsUndefined())
+                secret_key = toCppBufferView(second, class_name + ".new1");
+
+            std::optional<ustring> dump;
+            auto third = info[2];
+            if (!third.IsEmpty() && !third.IsNull() && !third.IsUndefined())
+                dump = toCppBufferView(third, class_name + ".new2");
+
+            auto withoutPrefix = ed25519_pubkey_str.substr(2);
+            ustring ed25519_pubkey = (const unsigned char*)oxenc::from_hex(withoutPrefix).c_str();
+            return std::make_shared<Config>(ed25519_pubkey, secret_key, dump);
         });
     }
 
