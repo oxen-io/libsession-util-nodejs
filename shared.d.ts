@@ -33,7 +33,7 @@ declare module 'libsession_util_nodejs' {
     currentHashes: () => Array<string>;
   };
 
-  type BaseConfigFunctions =
+  export type BaseConfigFunctions =
     | 'needsDump'
     | 'needsPush'
     | 'push'
@@ -86,5 +86,20 @@ declare module 'libsession_util_nodejs' {
 
   type MakeGroupWrapperActionCalls<Type extends BaseConfigWrapper> = {
     [Property in keyof Omit<Type, 'initGroup'>]: AsyncGroupWrapper<Type[Property]>;
+  };
+
+  export type PriorityType = { priority: number }; // -1 means hidden, 0 means normal, > 1 means pinned
+
+  type GroupInfoShared = {
+    name: string | null;
+    createdAtSeconds: number | null;
+    deleteAttachBeforeSeconds: number | null;
+    deleteBeforeSeconds: number | null;
+    expirySeconds: number | null;
+    profilePicture: ProfilePicture | null;
+  };
+
+  export type GroupInfoGet = GroupInfoShared & {
+    isDestroyed: boolean;
   };
 }
