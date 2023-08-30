@@ -101,6 +101,9 @@ declare module 'libsession_util_nodejs' {
     setEnableBlindedMsgRequest: (msgRequest: boolean) => void;
     getEnableBlindedMsgRequest: () => boolean | undefined;
     setNoteToSelfExpiry: (expirySeconds: number) => void;
+    /**
+     * @returns the expiry in seconds, 0 if off, undefined if not set 
+     */
     getNoteToSelfExpiry: () => number | undefined;
   };
 
