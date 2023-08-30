@@ -9,8 +9,6 @@
 
 namespace session::nodeapi {
 
-// namespace convo = config::convo;
-
 using config::groups::Info;
 
 void GroupInfoWrapper::Init(Napi::Env env, Napi::Object exports) {
@@ -22,7 +20,7 @@ void GroupInfoWrapper::Init(Napi::Env env, Napi::Object exports) {
                     // group related methods
                     InstanceMethod("getInfo", &GroupInfoWrapper::getInfo),
                     InstanceMethod("setInfo", &GroupInfoWrapper::setInfo),
-                    // InstanceMethod("destroy", &GroupInfoWrapper::destroy),
+                    InstanceMethod("destroy", &GroupInfoWrapper::destroy),
 
             });
 }

@@ -2,7 +2,7 @@
 
 #include <napi.h>
 
-#include "base_config.hpp"
+#include "../base_config.hpp"
 #include "session/config/groups/info.hpp"
 
 namespace session::nodeapi {
