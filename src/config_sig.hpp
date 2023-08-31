@@ -12,34 +12,24 @@
 #include "session/types.hpp"
 #include "utilities.hpp"
 
+using ustring_view = std::basic_string_view<unsigned char>;
+
 namespace session::nodeapi {
 
-class ConfigBaseImpl;
+class ConfigSigImpl;
 template <typename T>
 inline constexpr bool is_derived_napi_wrapper =
-        std::is_base_of_v<ConfigBaseImpl, T>&& std::is_base_of_v<Napi::ObjectWrap<T>, T>;
+        std::is_base_of_v<ConfigSigImpl, T>&& std::is_base_of_v<Napi::ObjectWrap<T>, T>;
 
 /// Base implementation class for config types; this provides the napi wrappers for the base
 /// methods.  Subclasses should inherit from this (alongside Napi::ObjectWrap<ConfigBaseWrapper>)
 /// and wrap their method list argument in `DefineClass` with a call to
-/// `ConfigBaseImpl::WithBaseMethods<Subtype>({...})` to have the base methods added to the derived
+/// `ConfigSigImpl::WithBaseMethods<Subtype>({...})` to have the base methods added to the derived
 /// type appropriately.
-class ConfigBaseImpl {
-
-    std::shared_ptr<config::ConfigBase> conf_;
+class ConfigSigImpl {
+    std::shared_ptr<config::ConfigSig> conf_;
 
   public:
-    // These are exposed as read-only accessors rather than methods:
-    Napi::Value needsDump(const Napi::CallbackInfo& info);
-    Napi::Value needsPush(const Napi::CallbackInfo& info);
-    Napi::Value storageNamespace(const Napi::CallbackInfo& info);
-    Napi::Value currentHashes(const Napi::CallbackInfo& info);
-
-    Napi::Value push(const Napi::CallbackInfo& info);
-    Napi::Value dump(const Napi::CallbackInfo& info);
-    void confirmPushed(const Napi::CallbackInfo& info);
-    Napi::Value merge(const Napi::CallbackInfo& info);
-
     // Called from a sub-type's Init function (typically indirectly, via InitHelper) to add the base
     // class properties/methods to the type.
     template <typename T, std::enable_if_t<is_derived_napi_wrapper<T>, int> = 0>
@@ -50,30 +40,16 @@ class ConfigBaseImpl {
             if (prop.utf8name)
                 seen.emplace(prop.utf8name);
 
-        properties.push_back(T::InstanceMethod("needsDump", &T::needsDump));
-        properties.push_back(T::InstanceMethod("needsPush", &T::needsPush));
-        properties.push_back(T::InstanceMethod("storageNamespace", &T::storageNamespace));
-        properties.push_back(T::InstanceMethod("currentHashes", &T::currentHashes));
-
-        properties.push_back(T::InstanceMethod("push", &T::push));
-        properties.push_back(T::InstanceMethod("dump", &T::dump));
-        properties.push_back(T::InstanceMethod("confirmPushed", &T::confirmPushed));
-        properties.push_back(T::InstanceMethod("merge", &T::merge));
-
         return properties;
     }
 
   protected:
     // Constructor (callable from a subclass): the wrapper subclass constructs its
-    // ConfigBase-derived shared_ptr during *its* construction, passing it here.  For example:
-    //
-    //     ConfigWhateverWrapper(const Napi::CallbackInfo& info) :
-    //         ConfigBaseImpl{construct<config::Whatever>(info), "Whatever"},
-    //         Napi::ObjectWrap<UserWhateverWrapper>{info} {}
-    ConfigBaseImpl(std::shared_ptr<session::config::ConfigBase> conf) : conf_{std::move(conf)} {
+    // ConfigSig-derived shared_ptr during *its* construction, passing it here.
+    ConfigSigImpl(std::shared_ptr<config::ConfigSig> conf) : conf_{std::move(conf)} {
         if (!conf_)
             throw std::invalid_argument{
-                    "ConfigBaseImpl initialization requires a live ConfigBase pointer"};
+                    "ConfigSigImpl initialization requires a live ConfigSig pointer"};
     }
 
     // Constructs a shared_ptr of some config::ConfigBase-derived type, taking a secret key and
@@ -82,49 +58,23 @@ class ConfigBaseImpl {
     template <
             typename Config,
             std::enable_if_t<std::is_base_of_v<config::ConfigBase, Config>, int> = 0>
-    static std::shared_ptr<Config> construct(
+    static std::shared_ptr<Config> constructFromKeys(
             const Napi::CallbackInfo& info, const std::string& class_name) {
         return wrapExceptions(info, [&] {
             if (!info.IsConstructCall())
                 throw std::invalid_argument{
                         "You need to call the constructor with the `new` syntax"};
 
-            assertInfoLength(info, 2);
+            assertInfoLength(info, 6);
 
-            // we should get secret key as first arg and optional dumped as second argument
-            assertIsUInt8Array(info[0]);
-            assertIsUInt8ArrayOrNull(info[1]);
-            ustring_view secretKey = toCppBufferView(info[0], class_name + ".new");
+            // types come from constructor of Keys::Keys
+            assertIsUInt8Array(info[0]);        // user_ed25519_secretkey
+            assertIsUInt8Array(info[1]);        // group_ed25519_pubkey
+            assertIsUInt8ArrayOrNull(info[2]);  // group_ed25519_secretkey
+            assertIsUInt8ArrayOrNull(info[3]);  // dumped
+            assertIsUInt8ArrayOrNull(info[4]);  // dumped
+            assertIsUInt8ArrayOrNull(info[5]);  // dumped
 
-            std::optional<ustring_view> dump;
-            auto second = info[1];
-            if (!second.IsEmpty() && !second.IsNull() && !second.IsUndefined())
-                dump = toCppBufferView(second, class_name + ".new");
-
-            return std::make_shared<Config>(secretKey, dump);
-        });
-    }
-
-    // Constructs a shared_ptr of some config::ConfigBase-derived type, taking a secret key and
-    // optional dump.  This is what most Config types require, but a subclass could replace this if
-    // it needs to do something else.
-    template <
-            typename Config,
-            std::enable_if_t<std::is_base_of_v<config::ConfigBase, Config>, int> = 0>
-    static std::shared_ptr<Config> construct3Args(
-            const Napi::CallbackInfo& info, const std::string& class_name) {
-        return wrapExceptions(info, [&] {
-            if (!info.IsConstructCall())
-                throw std::invalid_argument{
-                        "You need to call the constructor with the `new` syntax"};
-
-            assertInfoLength(info, 3);
-
-            // we should get ed25519_pubkey as string (with 03 prefix), as first arg, secret key as
-            // second opt arg and optional dumped as third arg
-            assertIsString(info[0]);
-            assertIsUInt8ArrayOrNull(info[1]);
-            assertIsUInt8ArrayOrNull(info[2]);
             std::string ed25519_pubkey_str = toCppString(info[0], class_name + ".new.pubkey");
             std::optional<ustring> secret_key;
             auto second = info[1];
@@ -142,13 +92,13 @@ class ConfigBaseImpl {
         });
     }
 
-    virtual ~ConfigBaseImpl() = default;
+    virtual ~ConfigSigImpl() = default;
 
     // Accesses a reference the stored config instance as `std::shared_ptr<T>` (if no template is
-    // specified then as the base ConfigBase type).  `T` must be a subclass of ConfigBase for this
+    // specified then as the base ConfigSig type).  `T` must be a subclass of ConfigSig for this
     // to compile.  Throws std::logic_error if not set.  Throws std::invalid_argument if the
     // instance is not castable to a `T`.
-    template <typename T, std::enable_if_t<std::is_base_of_v<config::ConfigBase, T>, int> = 0>
+    template <typename T, std::enable_if_t<std::is_base_of_v<config::ConfigSig, T>, int> = 0>
     T& get_config() {
         assert(conf_);  // should not be possible to construct without this set
         if (auto* t = dynamic_cast<T*>(conf_.get()))
