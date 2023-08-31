@@ -3,7 +3,9 @@ declare module 'libsession_util_nodejs' {
     ...args: Parameters<T>
   ) => Promise<ReturnType<T>>;
 
-  type MakeWrapperActionCalls<Type extends BaseConfigWrapper> = {
+  export type RecordOfFunctions = Record<string, (...args: any) => any>;
+
+  type MakeWrapperActionCalls<Type extends RecordOfFunctions> = {
     [Property in keyof Type]: AsyncWrapper<Type[Property]>;
   };
 
@@ -14,7 +16,7 @@ declare module 'libsession_util_nodejs' {
 
   export type PushConfigResult = { data: Uint8Array; seqno: number; hashes: Array<string> };
 
-  type MakeActionCall<A extends BaseConfigWrapper, B extends keyof A> = [B, ...Parameters<A[B]>];
+  type MakeActionCall<A extends RecordOfFunctions, B extends keyof A> = [B, ...Parameters<A[B]>];
 
   /**
    *
@@ -84,7 +86,7 @@ declare module 'libsession_util_nodejs' {
     ...args: Parameters<T>
   ) => Promise<ReturnType<T>>;
 
-  type MakeGroupWrapperActionCalls<Type extends BaseConfigWrapper> = {
+  type MakeGroupWrapperActionCalls<Type extends RecordOfFunctions> = {
     [Property in keyof Omit<Type, 'initGroup'>]: AsyncGroupWrapper<Type[Property]>;
   };
 

@@ -1,3 +1,5 @@
+/// <reference path="../shared.d.ts" />
+
 /**
  *
  * Contacts wrapper logic

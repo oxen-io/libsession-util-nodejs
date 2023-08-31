@@ -1,6 +1,7 @@
-/// <reference path="./shared.d.ts" />
-/// <reference path="./user/index.d.ts" />
-/// <reference path="./groups/index.d.ts" />
+/// <reference path="./types/shared.d.ts" />
+/// <reference path="./types/user/index.d.ts" />
+/// <reference path="./types/groups/index.d.ts" />
+
 declare module 'libsession_util_nodejs' {
   /**
    * This is quite a complex setup, but so far I didn't find an easier way to describe what we want to do with the wrappers and have strong typings.

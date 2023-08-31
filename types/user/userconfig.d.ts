@@ -1,3 +1,5 @@
+/// <reference path="../shared.d.ts" />
+
 declare module 'libsession_util_nodejs' {
   /**
    *

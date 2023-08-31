@@ -1,3 +1,5 @@
+/// <reference path="../shared.d.ts" />
+
 declare module 'libsession_util_nodejs' {
   export type ConvoVolatileType = '1o1' | UserGroupsType;
 
