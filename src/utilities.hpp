@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "session/types.hpp"
+#include "utilities.hpp"
 
 namespace session::nodeapi {
 

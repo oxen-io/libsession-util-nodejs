@@ -20,34 +20,20 @@ declare module 'libsession_util_nodejs' {
     promoted: boolean;
   };
 
-  type GroupMemberWrapper = BaseConfigWrapper & {
-    initGroup: (
-      ed25519Pubkey: Uint8Array,
-      secretKey: Uint8Array | null,
-      dump: Uint8Array | null
-    ) => void;
-
+  type GroupMemberWrapper = {
     // GroupMember related methods
-    get: (pubkeyHex: string) => GroupMemberGet | null;
-    getOrConstruct: (pubkeyHex: string) => GroupMemberGet;
-    getAll: () => Array<GroupMemberGet>;
+    memberGet: (pubkeyHex: string) => GroupMemberGet | null;
+    memberGetOrConstruct: (pubkeyHex: string) => GroupMemberGet;
+    memberGetAll: () => Array<GroupMemberGet>;
 
     // setters
-    setName: (pubkeyHex: string, newName: string) => GroupMemberGet;
-    setInvited: (pubkeyHex: string, failed: boolean) => GroupMemberGet;
-    setPromoted: (pubkeyHex: string, failed: boolean) => GroupMemberGet;
-    setAccepted: (pubkeyHex: string) => GroupMemberGet;
-    setProfilePicture: (pubkeyHex: string, profilePicture: ProfilePicture) => GroupMemberGet;
+    memberSetName: (pubkeyHex: string, newName: string) => GroupMemberGet;
+    memberSetInvited: (pubkeyHex: string, failed: boolean) => GroupMemberGet;
+    memberSetPromoted: (pubkeyHex: string, failed: boolean) => GroupMemberGet;
+    memberSetAccepted: (pubkeyHex: string) => GroupMemberGet;
+    memberSetProfilePicture: (pubkeyHex: string, profilePicture: ProfilePicture) => GroupMemberGet;
 
     // eraser
-    erase: (pubkeyHex: string) => null;
-  };
-
-  export type GroupMemberWrapperActionsCalls = MakeGroupWrapperActionCalls<GroupMemberWrapper> & {
-    initGroup: (
-      ed25519Pubkey: GroupPubkeyType,
-      secretKey: Uint8Array | null,
-      dump: Uint8Array | null
-    ) => Promise<void>;
+    memberErase: (pubkeyHex: string) => null;
   };
 }

@@ -5,18 +5,6 @@
 
 namespace session::nodeapi {
 
-Napi::Object object_from_profile_pic(const Napi::Env& env, const config::profile_pic& pic) {
-    auto obj = Napi::Object::New(env);
-    if (pic) {
-        obj["url"] = toJs(env, pic.url);
-        obj["key"] = toJs(env, pic.key);
-    } else {
-        obj["url"] = env.Null();
-        obj["key"] = env.Null();
-    }
-    return obj;
-}
-
 config::profile_pic profile_pic_from_object(Napi::Value val) {
     if (val.IsNull() || val.IsUndefined())
         return {};

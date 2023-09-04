@@ -12,12 +12,13 @@
 #include "session/types.hpp"
 #include "utilities.hpp"
 
+using ustring_view = std::basic_string_view<unsigned char>;
+
 namespace session::nodeapi {
 
 class ConfigBaseImpl;
 template <typename T>
-inline constexpr bool is_derived_napi_wrapper =
-        std::is_base_of_v<ConfigBaseImpl, T>&& std::is_base_of_v<Napi::ObjectWrap<T>, T>;
+inline constexpr bool is_derived_napi_wrapper = std::is_base_of_v<Napi::ObjectWrap<T>, T>;
 
 /// Base implementation class for config types; this provides the napi wrappers for the base
 /// methods.  Subclasses should inherit from this (alongside Napi::ObjectWrap<ConfigBaseWrapper>)

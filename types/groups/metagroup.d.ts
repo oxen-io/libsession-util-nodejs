@@ -1,4 +1,6 @@
 /// <reference path="../shared.d.ts" />
+/// <reference path="./groupmembers.d.ts" />
+/// <reference path="./groupinfo.d.ts" />
 
 declare module 'libsession_util_nodejs' {
   type ConstructorOptions = {
@@ -10,30 +12,43 @@ declare module 'libsession_util_nodejs' {
     dumpedKeys: Uint8Array | null;
   };
 
-  type MetaGroupWrapper = {
-    init: (options: ConstructorOptions) => void;
+  type MetaGroupWrapper = GroupInfoWrapper &
+    GroupMemberWrapper & {
+      init: (options: ConstructorOptions) => void;
 
-    // info
-    infoNeedsPush: () => boolean;
+      // shared actions
+      needsPush: () => boolean;
 
-    // members
-    membersNeedsPush: () => boolean;
+      // info
 
-    // keys
-    keysNeedsRekey: () => boolean;
-  };
+      // members
+
+      // keys
+      keysNeedsRekey: () => boolean;
+    };
 
   export type MetaGroupWrapperActionsCalls = MakeWrapperActionCalls<MetaGroupWrapper>;
 
   export class MetaGroupWrapperNode {
     constructor(ConstructorOptions);
+
+    // shared actions
+    public needsPush: MetaGroupWrapper['needsPush'];
+
+    // info
+    public infoGet: MetaGroupWrapper['infoGet'];
+    public infoSet: MetaGroupWrapper['infoSet'];
+    public infoDestroy: MetaGroupWrapper['infoDestroy'];
+
     // members
-
-    public infoNeedsPush: MetaGroupWrapper['infoNeedsPush'];
-
-    // members
-
-    public membersNeedsPush: MetaGroupWrapper['membersNeedsPush'];
+    public memberGet: MetaGroupWrapper['memberGet'];
+    public memberGetOrConstruct: MetaGroupWrapper['memberGetOrConstruct'];
+    public memberGetAll: MetaGroupWrapper['memberGetAll'];
+    public memberSetAccepted: MetaGroupWrapper['memberSetAccepted'];
+    public memberSetName: MetaGroupWrapper['memberSetName'];
+    public memberSetPromoted: MetaGroupWrapper['memberSetPromoted'];
+    public memberSetInvited: MetaGroupWrapper['memberSetInvited'];
+    public memberErase: MetaGroupWrapper['memberErase'];
 
     // keys
 
@@ -42,7 +57,24 @@ declare module 'libsession_util_nodejs' {
 
   export type MetaGroupActionsType =
     | ['init', ConstructorOptions]
-    | MakeActionCall<MetaGroupWrapper, 'infoNeedsPush'>
-    | MakeActionCall<MetaGroupWrapper, 'membersNeedsPush'>
+    // shared actions
+    | MakeActionCall<MetaGroupWrapper, 'needsPush'>
+
+    // info actions
+    | MakeActionCall<MetaGroupWrapper, 'infoGet'>
+    | MakeActionCall<MetaGroupWrapper, 'infoSet'>
+    | MakeActionCall<MetaGroupWrapper, 'infoDestroy'>
+
+    // member actions
+    | MakeActionCall<MetaGroupWrapper, 'memberGet'>
+    | MakeActionCall<MetaGroupWrapper, 'memberGetOrConstruct'>
+    | MakeActionCall<MetaGroupWrapper, 'memberGetAll'>
+    | MakeActionCall<MetaGroupWrapper, 'memberSetAccepted'>
+    | MakeActionCall<MetaGroupWrapper, 'memberSetName'>
+    | MakeActionCall<MetaGroupWrapper, 'memberSetPromoted'>
+    | MakeActionCall<MetaGroupWrapper, 'memberSetInvited'>
+    | MakeActionCall<MetaGroupWrapper, 'memberErase'>
+
+    // keys actions
     | MakeActionCall<MetaGroupWrapper, 'keysNeedsRekey'>;
 }

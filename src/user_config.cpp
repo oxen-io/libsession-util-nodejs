@@ -47,7 +47,7 @@ Napi::Value UserConfigWrapper::getUserInfo(const Napi::CallbackInfo& info) {
         //     user_info_obj["expirySeconds"] = env.Null();
         // }
 
-        auto profile_pic_obj = object_from_profile_pic(env, config.get_profile_pic());
+        auto profile_pic_obj = toJs(env, config.get_profile_pic());
         if (profile_pic_obj) {
             user_info_obj["url"] = profile_pic_obj.Get("url");
             user_info_obj["key"] = profile_pic_obj.Get("key");
