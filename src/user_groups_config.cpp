@@ -64,7 +64,6 @@ struct toJs_impl<group_info> {
 
         obj["pubkeyHex"] = toJs(env, info.id);
         obj["secretKey"] = toJs(env, info.secretkey);
-        obj["authSig"] = toJs(env, info.auth_sig);
         obj["priority"] = toJs(env, info.priority);
         obj["joinedAtSeconds"] = toJs(env, info.joined_at);
 

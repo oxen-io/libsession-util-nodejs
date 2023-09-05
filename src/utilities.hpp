@@ -5,6 +5,7 @@
 #include <optional>
 #include <string_view>
 #include <type_traits>
+#include <unordered_set>
 #include <vector>
 
 #include "session/types.hpp"
@@ -121,6 +122,17 @@ struct toJs_impl<std::vector<T>> {
         auto arr = Napi::Array::New(env, val.size());
         for (size_t i = 0; i < val.size(); i++)
             arr[i] = toJs(env, val[i]);
+        return arr;
+    }
+};
+template <typename T>
+struct toJs_impl<std::unordered_set<T>> {
+    auto operator()(const Napi::Env& env, const std::unordered_set<T>& set) {
+        std::vector<T> as_array(set.begin(), set.end());
+
+        auto arr = Napi::Array::New(env, as_array.size());
+        for (size_t i = 0; i < as_array.size(); i++)
+            arr[i] = toJs(env, as_array[i]);
         return arr;
     }
 };

@@ -41,7 +41,6 @@ declare module 'libsession_util_nodejs' {
   export type CreateGroupResult = BaseGroupInfo & {
     pubkeyHex: GroupPubkeyType; // The group "session id" (33 bytes), starting with 03.
     secretKey: Uint8Array;
-    authSig: string;
   };
 
   type UserGroupsWrapper = BaseConfigWrapper & {
