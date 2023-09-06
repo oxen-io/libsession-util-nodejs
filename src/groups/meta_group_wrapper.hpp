@@ -6,6 +6,7 @@
 #include "../profile_pic.hpp"
 #include "../utilities.hpp"
 #include "./meta_group.hpp"
+#include "oxenc/bt_producer.h"
 
 namespace session::nodeapi {
 using config::groups::Members;
@@ -30,31 +31,17 @@ struct toJs_impl<member> {
     }
 };
 
-using push_entry_t = std::pair<
-        std::string,
-        std::tuple<
-                session::config::seqno_t,
-                session::ustring,
-                std::vector<std::string, std::allocator<std::string>>>>;
-
-using dump_entry_t = std::pair<std::string, session::ustring>;
+using push_entry_t = std::tuple<
+        session::config::seqno_t,
+        session::ustring,
+        std::vector<std::string, std::allocator<std::string>>>;
 
 Napi::Object push_entry_to_JS(const Napi::Env& env, const push_entry_t& push_entry) {
     auto obj = Napi::Object::New(env);
 
-    obj["type"] = toJs(env, push_entry.first);
-    obj["seqno"] = toJs(env, std::get<0>(push_entry.second));
-    obj["data"] = toJs(env, std::get<1>(push_entry.second));
-    obj["seqno"] = toJs(env, std::get<2>(push_entry.second));
-
-    return obj;
-};
-
-Napi::Object dump_entry_to_JS(const Napi::Env& env, const dump_entry_t& dump_entry) {
-    auto obj = Napi::Object::New(env);
-
-    obj["type"] = toJs(env, dump_entry.first);
-    obj["data"] = toJs(env, dump_entry.second);
+    obj["seqno"] = toJs(env, std::get<0>(push_entry));
+    obj["data"] = toJs(env, std::get<1>(push_entry));
+    obj["hashes"] = toJs(env, std::get<2>(push_entry));
 
     return obj;
 };
@@ -68,37 +55,42 @@ class MetaGroupWrapper : public MetaBaseWrapper, public Napi::ObjectWrap<MetaGro
                 "MetaGroupWrapperNode",
                 {
                         // shared exposed functions
+
                         InstanceMethod("needsPush", &MetaGroupWrapper::needsPush),
+                        InstanceMethod("push", &MetaGroupWrapper::push),
+                        InstanceMethod("needsDump", &MetaGroupWrapper::needsDump),
+                        InstanceMethod("metaDump", &MetaGroupWrapper::metaDump),
 
                         // infos exposed functions
-                        InstanceMethod("infoGet", &MetaGroupWrapper::infoGet),
-                        InstanceMethod("infoSet", &MetaGroupWrapper::infoSet),
-                        InstanceMethod("infoDestroy", &MetaGroupWrapper::infoDestroy),
+                        // InstanceMethod("infoGet", &MetaGroupWrapper::infoGet),
+                        // InstanceMethod("infoSet", &MetaGroupWrapper::infoSet),
+                        // InstanceMethod("infoDestroy", &MetaGroupWrapper::infoDestroy),
 
-                        // members exposed functions
-                        InstanceMethod("memberGet", &MetaGroupWrapper::memberGet),
-                        InstanceMethod(
-                                "memberGetOrConstruct", &MetaGroupWrapper::memberGetOrConstruct),
-                        InstanceMethod("memberGetAll", &MetaGroupWrapper::memberGetAll),
-                        InstanceMethod("memberSetName", &MetaGroupWrapper::memberSetName),
-                        InstanceMethod("memberSetInvited", &MetaGroupWrapper::memberSetInvited),
-                        InstanceMethod("memberSetAccepted", &MetaGroupWrapper::memberSetAccepted),
-                        InstanceMethod("memberSetPromoted", &MetaGroupWrapper::memberSetPromoted),
-                        InstanceMethod(
-                                "memberSetProfilePicture",
-                                &MetaGroupWrapper::memberSetProfilePicture),
-                        InstanceMethod("memberErase", &MetaGroupWrapper::memberErase),
+                        // // members exposed functions
+                        // InstanceMethod("memberGet", &MetaGroupWrapper::memberGet),
+                        // InstanceMethod(
+                        //         "memberGetOrConstruct", &MetaGroupWrapper::memberGetOrConstruct),
+                        // InstanceMethod("memberGetAll", &MetaGroupWrapper::memberGetAll),
+                        // InstanceMethod("memberSetName", &MetaGroupWrapper::memberSetName),
+                        // InstanceMethod("memberSetInvited", &MetaGroupWrapper::memberSetInvited),
+                        // InstanceMethod("memberSetAccepted",
+                        // &MetaGroupWrapper::memberSetAccepted),
+                        // InstanceMethod("memberSetPromoted",
+                        // &MetaGroupWrapper::memberSetPromoted), InstanceMethod(
+                        //         "memberSetProfilePicture",
+                        //         &MetaGroupWrapper::memberSetProfilePicture),
+                        // InstanceMethod("memberErase", &MetaGroupWrapper::memberErase),
 
-                        // keys exposed functions
+                        // // keys exposed functions
 
-                        InstanceMethod("keysNeedsRekey", &MetaGroupWrapper::keysNeedsRekey),
-                        InstanceMethod("keyRekey", &MetaGroupWrapper::keyRekey),
+                        // InstanceMethod("keysNeedsRekey", &MetaGroupWrapper::keysNeedsRekey),
+                        // InstanceMethod("keyRekey", &MetaGroupWrapper::keyRekey),
 
-                        InstanceMethod("currentHashes", &MetaGroupWrapper::currentHashes),
-                        InstanceMethod("loadKeyMessage", &MetaGroupWrapper::loadKeyMessage),
+                        // InstanceMethod("currentHashes", &MetaGroupWrapper::currentHashes),
+                        // InstanceMethod("loadKeyMessage", &MetaGroupWrapper::loadKeyMessage),
 
-                        InstanceMethod("encryptMessage", &MetaGroupWrapper::encryptMessage),
-                        InstanceMethod("decryptMessage", &MetaGroupWrapper::decryptMessage),
+                        // InstanceMethod("encryptMessage", &MetaGroupWrapper::encryptMessage),
+                        // InstanceMethod("decryptMessage", &MetaGroupWrapper::decryptMessage),
 
                 });
     }
@@ -122,22 +114,14 @@ class MetaGroupWrapper : public MetaBaseWrapper, public Napi::ObjectWrap<MetaGro
     Napi::Value push(const Napi::CallbackInfo& info) {
         return wrapResult(info, [&] {
             auto env = info.Env();
+            auto to_push = Napi::Object::New(env);
 
-            vector<Napi::Object> to_push;
-            if (this->meta_group->members->needs_push()) {
-                auto memberPush = push_entry_to_JS(
-                        env, std::make_pair("GroupMember"s, this->meta_group->members->push()));
-                to_push.push_back(memberPush);
-            }
+            to_push["GroupMember"s] = push_entry_to_JS(env, this->meta_group->members->push());
+            to_push["GroupInfo"s] = push_entry_to_JS(env, this->meta_group->info->push());
 
-            if (this->meta_group->info->needs_push()) {
-                auto infosPush = push_entry_to_JS(
-                        env, std::make_pair("GroupInfo"s, this->meta_group->info->push()));
-                to_push.push_back(infosPush);
-            }
-            // TODO see what to do with this and needs_rekey below
-            // if (this->meta_group->keys->needs_rekey()) {
-            //     to_push.push_back(std::make_pair("GroupKeys"s, this->meta_group->keys_rekey()));
+            // TODO see what to do with this and needs_rekey below?
+            //     to_push.push_back(std::make_pair("GroupKeys"s,
+            //     this->meta_group->keys_rekey()));
             // }
             return to_push;
         });
@@ -150,30 +134,20 @@ class MetaGroupWrapper : public MetaBaseWrapper, public Napi::ObjectWrap<MetaGro
         });
     }
 
-    Napi::Value dump(const Napi::CallbackInfo& info) {
+    Napi::Value metaDump(const Napi::CallbackInfo& info) {
         return wrapResult(info, [&] {
             auto env = info.Env();
 
-            vector<Napi::Object> to_dump;
-            if (this->meta_group->members->needs_dump()) {
-                auto memberDump = dump_entry_to_JS(
-                        env, std::make_pair("GroupMember"s, this->meta_group->members->dump()));
-                to_dump.push_back(memberDump);
-            }
+            oxenc::bt_dict_producer combined;
 
-            if (this->meta_group->info->needs_dump()) {
-                auto infoDump = dump_entry_to_JS(
-                        env, std::make_pair("GroupInfo"s, this->meta_group->members->dump()));
-                to_dump.push_back(infoDump);
-            }
+            // NB: the keys have to be in ascii-sorted order:
+            combined.append("info", session::from_unsigned_sv(this->meta_group->info->dump()));
+            combined.append("keys", session::from_unsigned_sv(this->meta_group->keys->dump()));
+            combined.append(
+                    "members", session::from_unsigned_sv(this->meta_group->members->dump()));
+            auto to_dump = std::move(combined).str();  // Will be a std::string, but contains binary
 
-            if (this->meta_group->keys->needs_dump()) {
-                auto keysDump = dump_entry_to_JS(
-                        env, std::make_pair("GroupKeys"s, this->meta_group->members->dump()));
-                to_dump.push_back(keysDump);
-            }
-
-            return to_dump;
+            return to_unsigned_sv(to_dump);
         });
     }
 

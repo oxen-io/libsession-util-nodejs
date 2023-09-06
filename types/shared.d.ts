@@ -91,6 +91,7 @@ declare module 'libsession_util_nodejs' {
   };
 
   export type PriorityType = { priority: number }; // -1 means hidden, 0 means normal, > 1 means pinned
+  type GroupSubWrapperType = 'GroupInfo' | 'GroupMember' | 'GroupKeys';
 
   type GroupInfoShared = {
     name: string | null;
@@ -103,5 +104,6 @@ declare module 'libsession_util_nodejs' {
 
   export type GroupInfoGet = GroupInfoShared & {
     isDestroyed: boolean;
+    secretKey?: Uint8Array;
   };
 }

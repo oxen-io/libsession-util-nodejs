@@ -6,11 +6,9 @@
 declare module 'libsession_util_nodejs' {
   export type GroupWrapperConstructor = {
     userEd25519Secretkey: Uint8Array;
-    groupEd25519Pubkey: Uint8Array;
-    groupEd25519Secretkey: Uint8Array | null;
-    dumpedInfo: Uint8Array | null;
-    dumpedMembers: Uint8Array | null;
-    dumpedKeys: Uint8Array | null;
+    groupEd25519Pubkey: Uint8Array; // the ed25519 pubkey without the 03 prefix
+    groupEd25519Secretkey: Uint8Array | null; // the ed25519 privkey if we have it (comes from usergroup wrapper if we have it)
+    metaDumped: Uint8Array | null;
   };
 
   type MetaGroupWrapper = GroupInfoWrapper &
@@ -19,9 +17,9 @@ declare module 'libsession_util_nodejs' {
       // shared actions
       init: (options: GroupWrapperConstructor) => void;
       needsPush: () => boolean;
-      push: () => Array<{ type: SubWrapperType; data: Uint8Array; seqno: number }>;
+      push: () => { [T in Exclude<GroupSubWrapperType, 'GroupKeys'>]: PushConfigResult }; // GroupKeys push comes from rekey() and has no hashes etc associated.
       needsDump: () => boolean;
-      dump: () => Array<{ type: SubWrapperType; data: Uint8Array }>;
+      metaDump: () => Uint8Array;
     };
 
   // this just adds an argument of type GroupPubkeyType in front of the parameters of that function
@@ -34,13 +32,13 @@ declare module 'libsession_util_nodejs' {
   }>;
 
   export class MetaGroupWrapperNode {
-    constructor(GroupWrapperConstructor);
+    constructor(options: GroupWrapperConstructor);
 
     // shared actions
     public needsPush: MetaGroupWrapper['needsPush'];
     public push: MetaGroupWrapper['push'];
     public needsDump: MetaGroupWrapper['needsDump'];
-    public dump: MetaGroupWrapper['dump'];
+    public metaDump: MetaGroupWrapper['metaDump'];
 
     // info
     public infoGet: MetaGroupWrapper['infoGet'];
@@ -75,7 +73,7 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<MetaGroupWrapper, 'needsPush'>
     | MakeActionCall<MetaGroupWrapper, 'push'>
     | MakeActionCall<MetaGroupWrapper, 'needsDump'>
-    | MakeActionCall<MetaGroupWrapper, 'dump'>
+    | MakeActionCall<MetaGroupWrapper, 'metaDump'>
 
     // info actions
     | MakeActionCall<MetaGroupWrapper, 'infoGet'>

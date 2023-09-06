@@ -10,7 +10,7 @@ namespace session::nodeapi {
 class MetaBaseWrapper {
 
   public:
-    explicit MetaBaseWrapper();
+    explicit MetaBaseWrapper(){};
 
     virtual ~MetaBaseWrapper() = default;
 
@@ -37,6 +37,7 @@ class MetaBaseWrapper {
             if (!info.IsConstructCall())
                 throw std::invalid_argument{
                         "You need to call the constructor with the `new` syntax"};
+            throw std::invalid_argument{"PLOP"};
 
             assertInfoLength(info, 1);
             auto arg = info[0];
@@ -60,12 +61,30 @@ class MetaBaseWrapper {
                     obj.Get("groupEd25519Secretkey"),
                     class_name + ":constructGroupWrapper.groupEd25519Secretkey");
 
-            std::optional<ustring> dumped_info = maybeNonemptyBuffer(
-                    obj.Get("dumpedInfo"), class_name + ":constructGroupWrapper.dumpedInfo");
-            std::optional<ustring> dumped_members = maybeNonemptyBuffer(
-                    obj.Get("dumpedMembers"), class_name + ":constructGroupWrapper.dumpedMembers");
-            std::optional<ustring> dumped_keys = maybeNonemptyBuffer(
-                    obj.Get("dumpedKeys"), class_name + ":constructGroupWrapper.dumpedKeys");
+            std::optional<ustring> dumped_meta = maybeNonemptyBuffer(
+                    obj.Get("metaDumped"), class_name + ":constructGroupWrapper.metaDumped");
+
+            std::optional<ustring_view> dumped_info;
+            std::optional<ustring_view> dumped_members;
+            std::optional<ustring_view> dumped_keys;
+
+            if (dumped_meta) {
+                auto dumped_meta_str = from_unsigned_sv(*dumped_meta);
+
+                oxenc::bt_dict_consumer combined{dumped_meta_str};
+                // NB: must read in ascii-sorted order:
+                if (!combined.skip_until("info"))
+                    throw std::runtime_error{"info dump not found in combined dump!"};
+                dumped_info = session::to_unsigned_sv(combined.consume_string_view());
+
+                if (!combined.skip_until("keys"))
+                    throw std::runtime_error{"keys dump not found in combined dump!"};
+                dumped_keys = session::to_unsigned_sv(combined.consume_string_view());
+
+                if (!combined.skip_until("members"))
+                    throw std::runtime_error{"members dump not found in combined dump!"};
+                dumped_members = session::to_unsigned_sv(combined.consume_string_view());
+            }
 
             auto info = std::make_shared<config::groups::Info>(
                     group_ed25519_pubkey, group_ed25519_secretkey, dumped_info);

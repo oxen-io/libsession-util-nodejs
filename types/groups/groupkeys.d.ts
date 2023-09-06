@@ -1,8 +1,6 @@
 /// <reference path="../shared.d.ts" />
 
 declare module 'libsession_util_nodejs' {
-  type SubWrapperType = 'GroupInfo' | 'GroupMember' | 'GroupKeys';
-
   export type GroupKeysWrapper = {
     keysNeedsRekey: () => boolean;
     keyRekey: () => Uint8Array;
