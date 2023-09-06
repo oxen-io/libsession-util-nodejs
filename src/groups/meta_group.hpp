@@ -2,7 +2,6 @@
 
 #include <napi.h>
 
-#include "../meta/meta_base.hpp"
 #include "session/config/groups/info.hpp"
 #include "session/config/groups/keys.hpp"
 #include "session/config/groups/members.hpp"
@@ -21,7 +20,7 @@ using std::vector;
 using std::make_shared;
 using std::shared_ptr;
 
-class MetaGroup : public MetaBase {
+class MetaGroup {
   public:
     shared_ptr<config::groups::Info> info;
     shared_ptr<config::groups::Members> members;
@@ -31,7 +30,7 @@ class MetaGroup : public MetaBase {
             shared_ptr<config::groups::Info> info,
             shared_ptr<config::groups::Members> members,
             shared_ptr<config::groups::Keys> keys) :
-            MetaBase(), info{info}, members{members}, keys{keys} {}
+            info{info}, members{members}, keys{keys} {}
 
     explicit MetaGroup(const Napi::CallbackInfo& info) {}
 };
