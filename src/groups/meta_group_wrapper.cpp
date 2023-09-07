@@ -87,6 +87,9 @@ Napi::Value MetaGroupWrapper::infoGet(const Napi::CallbackInfo& info) {
 
         if (auto expiry = this->meta_group->info->get_expiry_timer(); expiry)
             obj["expirySeconds"] = toJs(env, expiry->count());
+        else
+            obj["expirySeconds"] = env.Null();
+
         obj["isDestroyed"] = toJs(env, this->meta_group->info->is_destroyed());
         obj["profilePicture"] = toJs(env, this->meta_group->info->get_profile_pic());
 

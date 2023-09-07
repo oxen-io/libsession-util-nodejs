@@ -25,11 +25,11 @@ declare module 'libsession_util_nodejs' {
     isAdmin: boolean;
   };
 
-  type BaseGroupInfo = PriorityType & {
+  type BaseUserGroup = PriorityType & {
     joinedAtSeconds: number; // equivalent to the lastJoinedTimestamp in Session desktop but in seconds rather than MS
   };
 
-  export type LegacyGroupInfo = BaseGroupInfo & {
+  export type LegacyGroupInfo = BaseUserGroup & {
     pubkeyHex: string; // The legacy group "session id" (33 bytes).
     name: string; // human-readable; this should normally always be set, but in theory could be set to an empty string.
     encPubkey: Uint8Array; // bytes (32 or empty)
@@ -38,10 +38,18 @@ declare module 'libsession_util_nodejs' {
     members: Array<LegacyGroupMemberInfo>;
   };
 
-  export type CreateGroupResult = BaseGroupInfo & {
+  type UserGroupsGet = BaseUserGroup & {
     pubkeyHex: GroupPubkeyType; // The group "session id" (33 bytes), starting with 03.
-    secretKey: FixedSizeUint8Array<64>;
+    secretKey: FixedSizeUint8Array<64> | null;
+    authData: Uint8Array | null;
   };
+
+  /**
+   * We can set anything on a UserGroup and can omit fields by explicitely setting them to null.
+   * The only one which cannot be omited is the pubkeyHex
+   */
+  type UserGroupsSet = Pick<UserGroupsGet, 'pubkeyHex'> &
+    AllFieldsNullable<Omit<UserGroupsGet, 'pubkeyHex'>>;
 
   type UserGroupsWrapper = BaseConfigWrapper & {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
@@ -70,11 +78,12 @@ declare module 'libsession_util_nodejs' {
     eraseLegacyGroup: (pubkeyHex: string) => boolean;
 
     // Groups related methods
-    createGroup: () => CreateGroupResult;
-    getGroup: (pubkeyHex: GroupPubkeyType) => GroupInfoGet | null;
-    // getAllGroups: () => Array<LegacyGroupInfo>;
-    // setGroup: (info: LegacyGroupInfo) => boolean;
-    // eraseGroup: (pubkeyHex: GroupPubkeyType) => boolean;
+    // the create group always returns the secretKey as we've just created it
+    createGroup: () => UserGroupsGet & NonNullable<Pick<UserGroupsGet, 'secretKey'>>;
+    getGroup: (pubkeyHex: GroupPubkeyType) => UserGroupsGet | null;
+    getAllGroups: () => Array<UserGroupsGet>;
+    setGroup: (info: UserGroupsSet) => UserGroupsGet;
+    eraseGroup: (pubkeyHex: GroupPubkeyType) => boolean;
   };
 
   export type UserGroupsWrapperActionsCalls = MakeWrapperActionCalls<UserGroupsWrapper>;
@@ -97,9 +106,9 @@ declare module 'libsession_util_nodejs' {
     // groups related methods
     public createGroup: UserGroupsWrapper['createGroup'];
     public getGroup: UserGroupsWrapper['getGroup'];
-    // public getAllGroups: UserGroupsWrapper['getAllGroups'];
-    // public setGroup: UserGroupsWrapper['setGroup'];
-    // public eraseGroup: UserGroupsWrapper['eraseGroup'];
+    public getAllGroups: UserGroupsWrapper['getAllGroups'];
+    public setGroup: UserGroupsWrapper['setGroup'];
+    public eraseGroup: UserGroupsWrapper['eraseGroup'];
   }
 
   export type UserGroupsConfigActionsType =
@@ -114,5 +123,8 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<UserGroupsWrapper, 'setLegacyGroup'>
     | MakeActionCall<UserGroupsWrapper, 'eraseLegacyGroup'>
     | MakeActionCall<UserGroupsWrapper, 'createGroup'>
-    | MakeActionCall<UserGroupsWrapper, 'getGroup'>;
+    | MakeActionCall<UserGroupsWrapper, 'getGroup'>
+    | MakeActionCall<UserGroupsWrapper, 'getAllGroups'>
+    | MakeActionCall<UserGroupsWrapper, 'setGroup'>
+    | MakeActionCall<UserGroupsWrapper, 'eraseGroup'>;
 }

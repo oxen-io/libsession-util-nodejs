@@ -32,9 +32,9 @@ class UserGroupsWrapper : public ConfigBaseImpl, public Napi::ObjectWrap<UserGro
     // groups related methods
     Napi::Value createGroup(const Napi::CallbackInfo& info);
     Napi::Value getGroup(const Napi::CallbackInfo& info);
-    // Napi::Value getAllGroups(const Napi::CallbackInfo& info);
-    // void setGroup(const Napi::CallbackInfo& info);
-    // Napi::Value eraseGroup(const Napi::CallbackInfo& info);
+    Napi::Value getAllGroups(const Napi::CallbackInfo& info);
+    Napi::Value setGroup(const Napi::CallbackInfo& info);
+    Napi::Value eraseGroup(const Napi::CallbackInfo& info);
 };
 
 }  // namespace session::nodeapi

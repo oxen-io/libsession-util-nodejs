@@ -5,7 +5,6 @@ declare module 'libsession_util_nodejs' {
    *
    * Group Wrapper Logics
    */
-  export type GroupInfoSet = GroupInfoShared;
 
   export type GroupInfoWrapper = {
     // GroupInfo related methods

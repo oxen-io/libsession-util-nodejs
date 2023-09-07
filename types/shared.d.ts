@@ -14,8 +14,20 @@ declare module 'libsession_util_nodejs' {
     ? U
     : never;
   type Uint8ArrayWithoutIndex = Pick<Uint8Array, KnownKeys<Uint8Array>>;
-
   type FixedSizeUint8Array<N extends number> = FixedSizeArray<number, N> & Uint8ArrayWithoutIndex;
+
+  /**
+   * Allow a single type to be Nullable. i.e. string => string | null
+   */
+  type Nullable<T> = T | null;
+
+  /**
+   * Allow all the fields of a type to be -themselves- nullable.
+   * i.e. {field1: string, field2: number} => {field1: string | null, field2: number | null}
+   */
+  type AllFieldsNullable<T> = {
+    [P in keyof T]: Nullable<T[P]>;
+  };
 
   type AsyncWrapper<T extends (...args: any) => any> = (
     ...args: Parameters<T>
@@ -124,4 +136,6 @@ declare module 'libsession_util_nodejs' {
     isDestroyed: boolean;
     secretKey?: FixedSizeUint8Array<64>;
   };
+
+  export type GroupInfoSet = GroupInfoShared & {};
 }

@@ -97,9 +97,9 @@ void UserGroupsWrapper::Init(Napi::Env env, Napi::Object exports) {
                     // Groups related methods
                     InstanceMethod("createGroup", &UserGroupsWrapper::createGroup),
                     InstanceMethod("getGroup", &UserGroupsWrapper::getGroup),
-                    // InstanceMethod("getAllGroups", &UserGroupsWrapper::getAllGroups),
-                    // InstanceMethod("setGroup", &UserGroupsWrapper::setGroup),
-                    // InstanceMethod("eraseGroup", &UserGroupsWrapper::eraseGroup),
+                    InstanceMethod("getAllGroups", &UserGroupsWrapper::getAllGroups),
+                    InstanceMethod("setGroup", &UserGroupsWrapper::setGroup),
+                    InstanceMethod("eraseGroup", &UserGroupsWrapper::eraseGroup),
 
             });
 }
@@ -272,6 +272,58 @@ Napi::Value UserGroupsWrapper::createGroup(const Napi::CallbackInfo& info) {
 
 Napi::Value UserGroupsWrapper::getGroup(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] { return config.get_group(getStringArgs<1>(info)); });
+}
+
+Napi::Value UserGroupsWrapper::getAllGroups(const Napi::CallbackInfo& info) {
+    return get_all_impl(info, config.size_groups(), config.begin_groups(), config.end());
+}
+
+Napi::Value UserGroupsWrapper::setGroup(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        assertInfoLength(info, 1);
+        assertIsObject(info[0]);
+        auto obj = info[0].As<Napi::Object>();
+
+        if (obj.IsEmpty())
+            throw std::invalid_argument("setGroup received empty");
+
+        assertIsString(obj.Get("pubkeyHex"));
+        auto groupPk = toCppString(obj.Get("pubkeyHex"), "legacyGroup.set");
+
+        // we should get a `UserGroupsSet` object. If any fields are null, skip updating them.
+        // Otherwise, use the corresponding value to update what we got from the
+        // `get_or_construct_group` below
+
+        auto group_info = config.get_or_construct_group(groupPk);
+
+        if (auto priority =
+                    maybeNonemptyInt(obj.Get("priority"), "UserGroupsWrapper::setGroup priority")) {
+            group_info.priority = toPriority(obj.Get("priority"), group_info.priority);
+        }
+
+        if (auto joinedAtSeconds = maybeNonemptyInt(
+                    obj.Get("joinedAtSeconds"), "UserGroupsWrapper::setGroup joinedAtSeconds")) {
+            group_info.joined_at = *joinedAtSeconds;
+        }
+
+        if (auto secretKey = maybeNonemptyBuffer(
+                    obj.Get("secretKey"), "UserGroupsWrapper::setGroup secretKey")) {
+            group_info.secretkey = *secretKey;
+        }
+
+        if (auto authData = maybeNonemptyBuffer(
+                    obj.Get("authData"), "UserGroupsWrapper::setGroup authData")) {
+            group_info.auth_data = *authData;
+        }
+
+        config.set(group_info);
+
+        return config.get_or_construct_group(groupPk);
+    });
+}
+
+Napi::Value UserGroupsWrapper::eraseGroup(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] { return config.erase_group(getStringArgs<1>(info)); });
 }
 
 }  // namespace session::nodeapi
