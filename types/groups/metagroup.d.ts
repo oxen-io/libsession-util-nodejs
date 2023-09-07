@@ -5,9 +5,9 @@
 
 declare module 'libsession_util_nodejs' {
   export type GroupWrapperConstructor = {
-    userEd25519Secretkey: Uint8Array;
-    groupEd25519Pubkey: Uint8Array; // the ed25519 pubkey without the 03 prefix
-    groupEd25519Secretkey: Uint8Array | null; // the ed25519 privkey if we have it (comes from usergroup wrapper if we have it)
+    userEd25519Secretkey: FixedSizeUint8Array<64>;
+    groupEd25519Pubkey: FixedSizeUint8Array<32>; // the ed25519 pubkey without the 03 prefix
+    groupEd25519Secretkey: FixedSizeUint8Array<64> | null; // the ed25519 privkey if we have it (comes from usergroup wrapper if we have it)
     metaDumped: Uint8Array | null;
   };
 

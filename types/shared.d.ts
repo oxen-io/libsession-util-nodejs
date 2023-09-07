@@ -1,4 +1,22 @@
 declare module 'libsession_util_nodejs' {
+  type FixedSizeArray<T, N extends number> = N extends N
+    ? number extends N
+      ? T[]
+      : _FixedSizeArray<T, N, []>
+    : never;
+  type _FixedSizeArray<T, N extends number, R extends unknown[]> = R['length'] extends N
+    ? R
+    : _FixedSizeArray<T, N, [T, ...R]>;
+
+  type KnownKeys<T> = {
+    [K in keyof T]: string extends K ? never : number extends K ? never : K;
+  } extends { [_ in keyof T]: infer U }
+    ? U
+    : never;
+  type Uint8ArrayWithoutIndex = Pick<Uint8Array, KnownKeys<Uint8Array>>;
+
+  type FixedSizeUint8Array<N extends number> = FixedSizeArray<number, N> & Uint8ArrayWithoutIndex;
+
   type AsyncWrapper<T extends (...args: any) => any> = (
     ...args: Parameters<T>
   ) => Promise<ReturnType<T>>;
@@ -104,6 +122,6 @@ declare module 'libsession_util_nodejs' {
 
   export type GroupInfoGet = GroupInfoShared & {
     isDestroyed: boolean;
-    secretKey?: Uint8Array;
+    secretKey?: FixedSizeUint8Array<64>;
   };
 }

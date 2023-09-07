@@ -30,7 +30,7 @@ class MetaGroup {
             shared_ptr<config::groups::Info> info,
             shared_ptr<config::groups::Members> members,
             shared_ptr<config::groups::Keys> keys) :
-            info{info}, members{members}, keys{keys} {}
+            info{info}, members{members}, keys{keys} {};
 
     explicit MetaGroup(const Napi::CallbackInfo& info) {}
 };

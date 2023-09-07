@@ -8,15 +8,14 @@
 
 Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
     using namespace session::nodeapi;
+    // Group wrappers init
+    MetaGroupWrapper::Init(env, exports);
 
     // User wrappers init
     UserConfigWrapper::Init(env, exports);
     ContactsConfigWrapper::Init(env, exports);
     UserGroupsWrapper::Init(env, exports);
     ConvoInfoVolatileWrapper::Init(env, exports);
-
-    // Group wrappers init
-    MetaGroupWrapper::Init(env, exports);
 
     return exports;
 }

@@ -37,7 +37,6 @@ class MetaBaseWrapper {
             if (!info.IsConstructCall())
                 throw std::invalid_argument{
                         "You need to call the constructor with the `new` syntax"};
-            throw std::invalid_argument{"PLOP"};
 
             assertInfoLength(info, 1);
             auto arg = info[0];
