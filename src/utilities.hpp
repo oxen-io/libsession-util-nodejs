@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "session/config/namespaces.hpp"
 #include "session/types.hpp"
 #include "utilities.hpp"
 
@@ -96,6 +97,13 @@ template <>
 struct toJs_impl<bool> {
     auto operator()(const Napi::Env& env, bool b) const { return Napi::Boolean::New(env, b); }
 };
+template <>
+struct toJs_impl<session::config::Namespace> {
+    auto operator()(const Napi::Env& env, session::config::Namespace b) const {
+        return Napi::Number::New(env, static_cast<int16_t>(b));
+    }
+};
+
 template <typename T>
 struct toJs_impl<T, std::enable_if_t<std::is_arithmetic_v<T>>> {
     auto operator()(const Napi::Env& env, T n) const { return Napi::Number::New(env, n); }
@@ -233,5 +241,20 @@ std::string printable(ustring_view x);
 int64_t toPriority(Napi::Value x, int64_t currentPriority);
 
 int64_t unix_timestamp_now();
+
+using push_entry_t = std::tuple<
+        session::config::seqno_t,
+        session::ustring,
+        std::vector<std::string, std::allocator<std::string>>>;
+
+Napi::Object push_entry_to_JS(
+        const Napi::Env& env,
+        const push_entry_t& push_entry,
+        const session::config::Namespace& push_namespace);
+
+Napi::Object push_key_entry_to_JS(
+        const Napi::Env& env,
+        const session::ustring_view& key_data,
+        const session::config::Namespace& push_namespace);
 
 }  // namespace session::nodeapi

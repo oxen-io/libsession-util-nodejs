@@ -2,6 +2,8 @@
 
 #include <oxenc/hex.h>
 
+#include "session/config/namespaces.hpp"
+
 namespace session::nodeapi {
 
 static void checkOrThrow(bool condition, const char* msg) {
@@ -178,5 +180,31 @@ int64_t unix_timestamp_now() {
     using namespace std::chrono;
     return duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
 }
+
+Napi::Object push_entry_to_JS(
+        const Napi::Env& env,
+        const push_entry_t& push_entry,
+        const session::config::Namespace& push_namespace) {
+    auto obj = Napi::Object::New(env);
+
+    obj["seqno"] = toJs(env, std::get<0>(push_entry));
+    obj["data"] = toJs(env, std::get<1>(push_entry));
+    obj["hashes"] = toJs(env, std::get<2>(push_entry));
+    obj["namespace"] = toJs(env, push_namespace);
+
+    return obj;
+};
+
+Napi::Object push_key_entry_to_JS(
+        const Napi::Env& env,
+        const session::ustring_view& key_data,
+        const session::config::Namespace& push_namespace) {
+    auto obj = Napi::Object::New(env);
+
+    obj["data"] = toJs(env, key_data);
+    obj["namespace"] = toJs(env, push_namespace);
+
+    return obj;
+};
 
 }  // namespace session::nodeapi

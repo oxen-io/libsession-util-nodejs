@@ -44,7 +44,17 @@ declare module 'libsession_util_nodejs' {
     key: Uint8Array | null;
   };
 
-  export type PushConfigResult = { data: Uint8Array; seqno: number; hashes: Array<string> };
+  export type PushConfigResult = {
+    data: Uint8Array;
+    seqno: number;
+    hashes: Array<string>;
+    namespace: number;
+  };
+
+  export type PushKeyConfigResult = Pick<PushConfigResult, 'data' | 'namespace'>;
+
+  export type ConfirmPush = [seqno: number, hash: string];
+  export type MergeSingle = { hash: string; data: Uint8Array };
 
   type MakeActionCall<A extends RecordOfFunctions, B extends keyof A> = [B, ...Parameters<A[B]>];
 
@@ -60,8 +70,7 @@ declare module 'libsession_util_nodejs' {
     push: () => PushConfigResult;
     dump: () => Uint8Array;
     confirmPushed: (seqno: number, hash: string) => void;
-    merge: (toMerge: Array<{ hash: string; data: Uint8Array }>) => number;
-    storageNamespace: () => number;
+    merge: (toMerge: Array<MergeSingle>) => number;
     currentHashes: () => Array<string>;
   };
 
@@ -73,7 +82,6 @@ declare module 'libsession_util_nodejs' {
     | 'confirmPushed'
     | 'merge'
     | 'needsPush'
-    | 'storageNamespace'
     | 'currentHashes';
 
   export type GenericWrapperActionsCall<A extends string, B extends keyof BaseConfigWrapper> = (
@@ -88,7 +96,6 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<BaseConfigWrapper, 'dump'>
     | MakeActionCall<BaseConfigWrapper, 'confirmPushed'>
     | MakeActionCall<BaseConfigWrapper, 'merge'>
-    | MakeActionCall<BaseConfigWrapper, 'storageNamespace'>
     | MakeActionCall<BaseConfigWrapper, 'currentHashes'>;
 
   export abstract class BaseConfigWrapperNode {
@@ -98,7 +105,6 @@ declare module 'libsession_util_nodejs' {
     public dump: BaseConfigWrapper['dump'];
     public confirmPushed: BaseConfigWrapper['confirmPushed'];
     public merge: BaseConfigWrapper['merge'];
-    public storageNamespace: BaseConfigWrapper['storageNamespace'];
     public currentHashes: BaseConfigWrapper['currentHashes'];
   }
 

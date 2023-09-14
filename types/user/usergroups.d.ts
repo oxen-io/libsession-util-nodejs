@@ -7,7 +7,7 @@ declare module 'libsession_util_nodejs' {
    *
    */
 
-  export type UserGroupsType = 'Community' | 'LegacyGroup';
+  export type UserGroupsType = 'Community' | 'LegacyGroup' | 'Group';
 
   export type CommunityDetails = {
     fullUrlWithPubkey: string;

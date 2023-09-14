@@ -4,6 +4,8 @@
 /// <reference path="./groupkeys.d.ts" />
 
 declare module 'libsession_util_nodejs' {
+  export type ConfirmKeysPush = [data: Uint8Array, hash: string, timestampMs: number];
+
   export type GroupWrapperConstructor = {
     userEd25519Secretkey: FixedSizeUint8Array<64>;
     groupEd25519Pubkey: FixedSizeUint8Array<32>; // the ed25519 pubkey without the 03 prefix
@@ -17,9 +19,31 @@ declare module 'libsession_util_nodejs' {
       // shared actions
       init: (options: GroupWrapperConstructor) => void;
       needsPush: () => boolean;
-      push: () => { [T in Exclude<GroupSubWrapperType, 'GroupKeys'>]: PushConfigResult }; // GroupKeys push comes from rekey() and has no hashes etc associated.
+      push: () => {
+        groupInfo: PushConfigResult | null;
+        groupMember: PushConfigResult | null;
+        groupKeys: PushKeyConfigResult | null;
+      };
       needsDump: () => boolean;
       metaDump: () => Uint8Array;
+      metaConfirmPushed: ({
+        groupInfo,
+        groupKeys,
+        groupMember,
+      }: {
+        groupInfo: ConfirmPush | null;
+        groupMember: ConfirmPush | null;
+        groupKeys: ConfirmKeysPush | null;
+      }) => void;
+      metaMerge: ({
+        groupInfo,
+        groupKeys,
+        groupMember,
+      }: {
+        groupInfo: Array<MergeSingle> | null;
+        groupMember: Array<MergeSingle> | null;
+        groupKeys: Array<MergeSingle & { timestampMs: number }> | null;
+      }) => void;
     };
 
   // this just adds an argument of type GroupPubkeyType in front of the parameters of that function
@@ -39,6 +63,8 @@ declare module 'libsession_util_nodejs' {
     public push: MetaGroupWrapper['push'];
     public needsDump: MetaGroupWrapper['needsDump'];
     public metaDump: MetaGroupWrapper['metaDump'];
+    public metaConfirmPushed: MetaGroupWrapper['metaConfirmPushed'];
+    public metaMerge: MetaGroupWrapper['metaMerge'];
 
     // info
     public infoGet: MetaGroupWrapper['infoGet'];
@@ -74,6 +100,8 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<MetaGroupWrapper, 'push'>
     | MakeActionCall<MetaGroupWrapper, 'needsDump'>
     | MakeActionCall<MetaGroupWrapper, 'metaDump'>
+    | MakeActionCall<MetaGroupWrapper, 'metaConfirmPushed'>
+    | MakeActionCall<MetaGroupWrapper, 'metaMerge'>
 
     // info actions
     | MakeActionCall<MetaGroupWrapper, 'infoGet'>

@@ -31,13 +31,6 @@ struct toJs_impl<member> {
     }
 };
 
-using push_entry_t = std::tuple<
-        session::config::seqno_t,
-        session::ustring,
-        std::vector<std::string, std::allocator<std::string>>>;
-
-Napi::Object push_entry_to_JS(const Napi::Env& env, const push_entry_t& push_entry);
-
 class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
   public:
     static void Init(Napi::Env env, Napi::Object exports);
@@ -56,13 +49,28 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
             auto env = info.Env();
             auto to_push = Napi::Object::New(env);
 
-            to_push["GroupMember"s] = push_entry_to_JS(env, this->meta_group->members->push());
-            to_push["GroupInfo"s] = push_entry_to_JS(env, this->meta_group->info->push());
+            if (this->meta_group->members->needs_push())
+                to_push["groupMember"s] = push_entry_to_JS(
+                        env,
+                        this->meta_group->members->push(),
+                        this->meta_group->members->storage_namespace());
+            else
+                to_push["groupMember"s] = env.Null();
 
-            // TODO see what to do with this and needs_rekey below?
-            //     to_push.push_back(std::make_pair("GroupKeys"s,
-            //     this->meta_group->keys_rekey()));
-            // }
+            if (this->meta_group->info->needs_push())
+                to_push["groupInfo"s] = push_entry_to_JS(
+                        env,
+                        this->meta_group->info->push(),
+                        this->meta_group->info->storage_namespace());
+            else
+                to_push["groupInfo"s] = env.Null();
+
+            if (auto pending_config = this->meta_group->keys->pending_config())
+                to_push["groupKeys"s] = push_key_entry_to_JS(
+                        env, *(pending_config), this->meta_group->keys->storage_namespace());
+            else
+                to_push["groupKeys"s] = env.Null();
+
             return to_push;
         });
     }
@@ -87,9 +95,12 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
                     "members", session::from_unsigned_sv(this->meta_group->members->dump()));
             auto to_dump = std::move(combined).str();
 
-            return to_unsigned_sv(to_dump);
+            return ustring{to_unsigned_sv(to_dump)};
         });
     }
+
+    void metaConfirmPushed(const Napi::CallbackInfo& info);
+    Napi::Value metaMerge(const Napi::CallbackInfo& info);
 
     /** Info Actions */
 

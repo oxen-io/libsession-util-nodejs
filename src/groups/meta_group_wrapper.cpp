@@ -6,16 +6,6 @@
 
 namespace session::nodeapi {
 
-Napi::Object push_entry_to_JS(const Napi::Env& env, const push_entry_t& push_entry) {
-    auto obj = Napi::Object::New(env);
-
-    obj["seqno"] = toJs(env, std::get<0>(push_entry));
-    obj["data"] = toJs(env, std::get<1>(push_entry));
-    obj["hashes"] = toJs(env, std::get<2>(push_entry));
-
-    return obj;
-};
-
 MetaGroupWrapper::MetaGroupWrapper(const Napi::CallbackInfo& info) :
         meta_group{MetaBaseWrapper::constructGroupWrapper(info, "MetaGroupWrapper")},
         Napi::ObjectWrap<MetaGroupWrapper>{info} {}
@@ -32,6 +22,8 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod("push", &MetaGroupWrapper::push),
                     InstanceMethod("needsDump", &MetaGroupWrapper::needsDump),
                     InstanceMethod("metaDump", &MetaGroupWrapper::metaDump),
+                    InstanceMethod("metaConfirmPushed", &MetaGroupWrapper::metaConfirmPushed),
+                    InstanceMethod("metaMerge", &MetaGroupWrapper::metaMerge),
 
                     // infos exposed functions
                     InstanceMethod("infoGet", &MetaGroupWrapper::infoGet),
@@ -67,10 +59,177 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
 Napi::Value MetaGroupWrapper::needsPush(const Napi::CallbackInfo& info) {
 
     return wrapResult(info, [&] {
-        return this->meta_group->members->needs_push() ||
-               this->meta_group->info
-                       ->needs_push();  // || this->meta_group->keys->needs_rekey() // TODO
-        // see what to do with this and needs_rekey below
+        return this->meta_group->members->needs_push() || this->meta_group->info->needs_push() ||
+               this->meta_group->keys->pending_config();
+    });
+}
+
+void MetaGroupWrapper::metaConfirmPushed(const Napi::CallbackInfo& info) {
+    wrapExceptions(info, [&]() {
+        assertInfoLength(info, 1);
+        auto arg = info[0];
+        assertIsObject(arg);
+        auto obj = arg.As<Napi::Object>();
+
+        auto groupInfo = obj.Get("groupInfo");
+        auto groupMember = obj.Get("groupMember");
+        auto groupKeys = obj.Get("groupKeys");
+
+        // Note: we need to process keys first as they might allow us the incoming info+members
+        // details
+        if (!groupKeys.IsNull() && !groupKeys.IsUndefined()) {
+            assertIsArray(groupKeys);
+            auto groupKeysArr = groupKeys.As<Napi::Array>();
+            if (groupKeysArr.Length() != 3) {
+                throw std::invalid_argument("groupKeysArr length was not 3");
+            }
+
+            auto data = maybeNonemptyBuffer(
+                    groupKeysArr.Get("0"), "MetaGroupWrapper::metaConfirmPushed groupKeysArr data");
+            auto hash = maybeNonemptyString(
+                    groupKeysArr.Get("1"), "MetaGroupWrapper::metaConfirmPushed groupKeysArr hash");
+            auto timestamp_ms = maybeNonemptyInt(
+                    groupKeysArr.Get("2"),
+                    "MetaGroupWrapper::metaConfirmPushed groupKeysArr timestamp_ms");
+            if (data && hash && timestamp_ms)
+                this->meta_group->keys->load_key_message(
+                        *hash,
+                        *data,
+                        *timestamp_ms,
+                        *(this->meta_group->info),
+                        *(this->meta_group->members));
+        }
+
+        if (!groupInfo.IsNull() && !groupInfo.IsUndefined()) {
+            assertIsArray(groupInfo);
+            auto groupInfoArr = groupInfo.As<Napi::Array>();
+            if (groupInfoArr.Length() != 2) {
+                throw std::invalid_argument("groupInfoArr length was not 2");
+            }
+
+            auto seqno = maybeNonemptyInt(
+                    groupInfoArr.Get("0"), "MetaGroupWrapper::metaConfirmPushed groupInfo seqno");
+            auto hash = maybeNonemptyString(
+                    groupInfoArr.Get("1"), "MetaGroupWrapper::metaConfirmPushed groupInfo hash");
+            if (seqno && hash)
+                this->meta_group->info->confirm_pushed(*seqno, *hash);
+        }
+
+        if (!groupMember.IsNull() && !groupMember.IsUndefined()) {
+            assertIsArray(groupMember);
+            auto groupMemberArr = groupMember.As<Napi::Array>();
+            if (groupMemberArr.Length() != 2) {
+                throw std::invalid_argument("groupMemberArr length was not 2");
+            }
+
+            auto seqno = maybeNonemptyInt(
+                    groupMemberArr.Get("0"),
+                    "MetaGroupWrapper::metaConfirmPushed groupMemberArr seqno");
+            auto hash = maybeNonemptyString(
+                    groupMemberArr.Get("1"),
+                    "MetaGroupWrapper::metaConfirmPushed groupMemberArr hash");
+            if (seqno && hash)
+                this->meta_group->members->confirm_pushed(*seqno, *hash);
+        }
+    });
+};
+
+Napi::Value MetaGroupWrapper::metaMerge(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        assertInfoLength(info, 1);
+        auto arg = info[0];
+        assertIsObject(arg);
+        auto obj = arg.As<Napi::Object>();
+
+        auto groupInfo = obj.Get("groupInfo");
+        auto groupMember = obj.Get("groupMember");
+        auto groupKeys = obj.Get("groupKeys");
+
+        auto count_merged = 0;
+
+        // Note: we need to process keys first as they might allow us the incoming info+members
+        // details
+        if (!groupKeys.IsNull() && !groupKeys.IsUndefined()) {
+            assertIsArray(groupKeys);
+            auto asArr = groupKeys.As<Napi::Array>();
+
+            for (uint32_t i = 0; i < asArr.Length(); i++) {
+                Napi::Value item = asArr[i];
+                assertIsObject(item);
+                if (item.IsEmpty())
+                    throw std::invalid_argument("MetaMerge.item groupKeys received empty");
+
+                Napi::Object itemObject = item.As<Napi::Object>();
+                assertIsString(itemObject.Get("hash"));
+                assertIsUInt8Array(itemObject.Get("data"));
+                assertIsNumber(itemObject.Get("timestampMs"));
+
+                auto hash = toCppString(itemObject.Get("hash"), "meta.merge keys hash");
+                auto data = toCppBuffer(itemObject.Get("data"), "meta.merge keys data");
+                auto timestamp_ms = toCppInteger(
+                        itemObject.Get("timestampMs"), "meta.merge keys timestampMs", false);
+
+                this->meta_group->keys->load_key_message(
+                        hash,
+                        data,
+                        timestamp_ms,
+                        *(this->meta_group->info),
+                        *(this->meta_group->members));
+                count_merged++;  // load_key_message doesn't necessarely merge something as not
+                                 // all keys are for us.
+            }
+        }
+
+        if (!groupInfo.IsNull() && !groupInfo.IsUndefined()) {
+            assertIsArray(groupInfo);
+            auto asArr = groupInfo.As<Napi::Array>();
+
+            std::vector<std::pair<std::string, ustring_view>> conf_strs;
+            conf_strs.reserve(asArr.Length());
+
+            for (uint32_t i = 0; i < asArr.Length(); i++) {
+                Napi::Value item = asArr[i];
+                assertIsObject(item);
+                if (item.IsEmpty())
+                    throw std::invalid_argument("MetaMerge.item groupInfo received empty");
+
+                Napi::Object itemObject = item.As<Napi::Object>();
+                assertIsString(itemObject.Get("hash"));
+                assertIsUInt8Array(itemObject.Get("data"));
+                conf_strs.emplace_back(
+                        toCppString(itemObject.Get("hash"), "meta.merge"),
+                        toCppBufferView(itemObject.Get("data"), "meta.merge"));
+            }
+
+            auto info_count_merged = this->meta_group->info->merge(conf_strs);
+            count_merged += info_count_merged;
+        }
+
+        if (!groupMember.IsNull() && !groupMember.IsUndefined()) {
+            assertIsArray(groupMember);
+            auto asArr = groupMember.As<Napi::Array>();
+
+            std::vector<std::pair<std::string, ustring_view>> conf_strs;
+            conf_strs.reserve(asArr.Length());
+
+            for (uint32_t i = 0; i < asArr.Length(); i++) {
+                Napi::Value item = asArr[i];
+                assertIsObject(item);
+                if (item.IsEmpty())
+                    throw std::invalid_argument("MetaMerge.item groupMember received empty");
+
+                Napi::Object itemObject = item.As<Napi::Object>();
+                assertIsString(itemObject.Get("hash"));
+                assertIsUInt8Array(itemObject.Get("data"));
+                conf_strs.emplace_back(
+                        toCppString(itemObject.Get("hash"), "meta.merge"),
+                        toCppBufferView(itemObject.Get("data"), "meta.merge"));
+            }
+
+            auto member_count_merged = this->meta_group->members->merge(conf_strs);
+            count_merged += member_count_merged;
+        }
+        return count_merged;
     });
 }
 
