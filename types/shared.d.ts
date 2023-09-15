@@ -111,6 +111,8 @@ declare module 'libsession_util_nodejs' {
   export type BaseWrapperActionsCalls = MakeWrapperActionCalls<BaseConfigWrapper>;
 
   export type GroupPubkeyType = `03${string}`; // type of a string which starts by the 03 prefixed used for closed group
+  export type PubkeyType = `05${string}`; // type of a string which starts by the 05 prefixed used for **legacy** closed group and session ids
+  export type BlindedPubkeyType = `15${string}`;
 
   type MakeGroupActionCall<A extends BaseConfigWrapper, B extends keyof A> = [
     B,
