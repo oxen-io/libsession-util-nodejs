@@ -75,31 +75,6 @@ void MetaGroupWrapper::metaConfirmPushed(const Napi::CallbackInfo& info) {
         auto groupMember = obj.Get("groupMember");
         auto groupKeys = obj.Get("groupKeys");
 
-        // Note: we need to process keys first as they might allow us the incoming info+members
-        // details
-        if (!groupKeys.IsNull() && !groupKeys.IsUndefined()) {
-            assertIsArray(groupKeys);
-            auto groupKeysArr = groupKeys.As<Napi::Array>();
-            if (groupKeysArr.Length() != 3) {
-                throw std::invalid_argument("groupKeysArr length was not 3");
-            }
-
-            auto data = maybeNonemptyBuffer(
-                    groupKeysArr.Get("0"), "MetaGroupWrapper::metaConfirmPushed groupKeysArr data");
-            auto hash = maybeNonemptyString(
-                    groupKeysArr.Get("1"), "MetaGroupWrapper::metaConfirmPushed groupKeysArr hash");
-            auto timestamp_ms = maybeNonemptyInt(
-                    groupKeysArr.Get("2"),
-                    "MetaGroupWrapper::metaConfirmPushed groupKeysArr timestamp_ms");
-            if (data && hash && timestamp_ms)
-                this->meta_group->keys->load_key_message(
-                        *hash,
-                        *data,
-                        *timestamp_ms,
-                        *(this->meta_group->info),
-                        *(this->meta_group->members));
-        }
-
         if (!groupInfo.IsNull() && !groupInfo.IsUndefined()) {
             assertIsArray(groupInfo);
             auto groupInfoArr = groupInfo.As<Napi::Array>();

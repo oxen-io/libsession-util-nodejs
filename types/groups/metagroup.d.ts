@@ -28,12 +28,10 @@ declare module 'libsession_util_nodejs' {
       metaDump: () => Uint8Array;
       metaConfirmPushed: ({
         groupInfo,
-        groupKeys,
         groupMember,
       }: {
         groupInfo: ConfirmPush | null;
         groupMember: ConfirmPush | null;
-        groupKeys: ConfirmKeysPush | null;
       }) => void;
       metaMerge: ({
         groupInfo,
