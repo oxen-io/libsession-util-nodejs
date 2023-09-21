@@ -22,6 +22,7 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod("push", &MetaGroupWrapper::push),
                     InstanceMethod("needsDump", &MetaGroupWrapper::needsDump),
                     InstanceMethod("metaDump", &MetaGroupWrapper::metaDump),
+                    InstanceMethod("metaDebugDump", &MetaGroupWrapper::metaDebugDump),
                     InstanceMethod("metaConfirmPushed", &MetaGroupWrapper::metaConfirmPushed),
                     InstanceMethod("metaMerge", &MetaGroupWrapper::metaMerge),
 
@@ -52,7 +53,6 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
 
                     InstanceMethod("encryptMessage", &MetaGroupWrapper::encryptMessage),
                     InstanceMethod("decryptMessage", &MetaGroupWrapper::decryptMessage),
-
             });
 }
 

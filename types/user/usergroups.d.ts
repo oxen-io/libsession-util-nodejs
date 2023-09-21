@@ -42,6 +42,7 @@ declare module 'libsession_util_nodejs' {
     pubkeyHex: GroupPubkeyType; // The group "session id" (33 bytes), starting with 03.
     secretKey: FixedSizeUint8Array<64> | null;
     authData: Uint8Array | null;
+    name: string | null;
   };
 
   /**

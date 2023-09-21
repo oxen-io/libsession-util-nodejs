@@ -99,6 +99,23 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
         });
     }
 
+    Napi::Value metaDebugDump(const Napi::CallbackInfo& info) {
+        return wrapResult(info, [&] {
+            auto env = info.Env();
+
+            oxenc::bt_dict_producer combined;
+
+            // NB: the keys have to be in ascii-sorted order:
+            combined.append("info", session::from_unsigned_sv(this->meta_group->info->make_dump()));
+            combined.append("keys", session::from_unsigned_sv(this->meta_group->keys->make_dump()));
+            combined.append(
+                    "members", session::from_unsigned_sv(this->meta_group->members->make_dump()));
+            auto to_dump = std::move(combined).str();
+
+            return ustring{to_unsigned_sv(to_dump)};
+        });
+    }
+
     void metaConfirmPushed(const Napi::CallbackInfo& info);
     Napi::Value metaMerge(const Napi::CallbackInfo& info);
 
@@ -278,13 +295,10 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
 
     Napi::Value encryptMessage(const Napi::CallbackInfo& info) {
         return wrapResult(info, [&] {
-            assertInfoLength(info, 2);
-            assertIsUInt8Array(info[0]);
-            assertIsBoolean(info[1]);
+            assertInfoLength(info, 1);
 
             auto plaintext = toCppBuffer(info[0], __PRETTY_FUNCTION__);
-            auto compress = toCppBoolean(info[1], __PRETTY_FUNCTION__);
-            return this->meta_group->keys->encrypt_message(plaintext, compress);
+            return this->meta_group->keys->encrypt_message(plaintext);
         });
     }
     Napi::Value decryptMessage(const Napi::CallbackInfo& info) {
@@ -293,7 +307,9 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
             assertIsUInt8Array(info[0]);
 
             auto ciphertext = toCppBuffer(info[0], __PRETTY_FUNCTION__);
-            return this->meta_group->keys->decrypt_message(ciphertext);
+            auto decrypted = this->meta_group->keys->decrypt_message(ciphertext);
+
+            return decrypt_result_to_JS(info.Env(), decrypted);
         });
     }
 };

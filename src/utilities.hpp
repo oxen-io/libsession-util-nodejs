@@ -257,4 +257,7 @@ Napi::Object push_key_entry_to_JS(
         const session::ustring_view& key_data,
         const session::config::Namespace& push_namespace);
 
+Napi::Object decrypt_result_to_JS(
+        const Napi::Env& env, const std::pair<std::string, ustring> decrypted);
+
 }  // namespace session::nodeapi

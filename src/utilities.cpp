@@ -181,7 +181,7 @@ int64_t unix_timestamp_now() {
     return duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
 }
 
-Napi::Object push_entry_to_JS(
+Napi::Object push_result_to_JS(
         const Napi::Env& env,
         const push_entry_t& push_entry,
         const session::config::Namespace& push_namespace) {
@@ -206,5 +206,15 @@ Napi::Object push_key_entry_to_JS(
 
     return obj;
 };
+
+Napi::Object decrypt_result_to_JS(
+        const Napi::Env& env, const std::pair<std::string, ustring> decrypted) {
+    auto obj = Napi::Object::New(env);
+
+    obj["pubkeyHex"] = toJs(env, decrypted.first);
+    obj["plaintext"] = toJs(env, decrypted.second);
+
+    return obj;
+}
 
 }  // namespace session::nodeapi

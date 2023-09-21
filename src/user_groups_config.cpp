@@ -66,6 +66,8 @@ struct toJs_impl<group_info> {
         obj["secretKey"] = toJs(env, info.secretkey);
         obj["priority"] = toJs(env, info.priority);
         obj["joinedAtSeconds"] = toJs(env, info.joined_at);
+        obj["name"] = toJs(env, info.name);
+        // TODO kicked and setKicked todo
 
         return obj;
     }
@@ -314,6 +316,10 @@ Napi::Value UserGroupsWrapper::setGroup(const Napi::CallbackInfo& info) {
         if (auto authData = maybeNonemptyBuffer(
                     obj.Get("authData"), "UserGroupsWrapper::setGroup authData")) {
             group_info.auth_data = *authData;
+        }
+
+        if (auto name = maybeNonemptyString(obj.Get("name"), "UserGroupsWrapper::setGroup name")) {
+            group_info.name = *name;
         }
 
         config.set(group_info);
