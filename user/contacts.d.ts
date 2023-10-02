@@ -14,7 +14,7 @@ declare module 'libsession_util_nodejs' {
 
   export type ContactsWrapperActionsCalls = MakeWrapperActionCalls<ContactsWrapper>;
 
-  // must match DisappearingMessageConversationModeType in session-desktop
+  // NOTE must match DisappearingMessageConversationModeType in session-desktop excluding the legacy type which will be removed in future
   export type DisappearingMessageConversationModeType =
     | 'off'
     | 'deleteAfterRead'
