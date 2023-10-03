@@ -24,7 +24,7 @@ add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${CMAKE_JS_SRC})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_JS_INC} "node_modules/node-addon-api" "../../node_modules/node-addon-api")
 
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
-target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_JS_LIB} libsession::config libsession::crypto)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_JS_LIB} ${LIBSESSION_STATIC_BUNDLE_LIBS})
 
 if(MSVC AND CMAKE_JS_NODELIB_DEF AND CMAKE_JS_NODELIB_TARGET)
   # Generate node.lib
