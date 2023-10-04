@@ -155,14 +155,13 @@ inline std::optional<std::string_view> maybe_string(std::string_view val) {
     return val;
 }
 
-// Calls the given callable and wraps it suitable for an Napi call:
+// Calls the given callable and wraps it to be suitable for a Napi call:
 // - Napi::Error exceptions will be uncaught
 // - Other std::exceptions will be caught, converted to Napi::Errors, and rethrown
-// - The return value will be returned as-is if already a Napi::Value (or subtype)
+// - The return value will be returned as-is if it is already a Napi::Value (or subtype)
 // - The return will be void if void
-// - Otherwise the return value will be passed through toJs() to convert it to a Napi::Value.  See
-//   toJs below, but generally this supports numeric types, bools, strings, ustrings, and vectors of
-//   any of those.
+// - Otherwise the return value will be passed through toJs() to convert it to a Napi::Value.
+// See toJs below, but generally this supports numeric types, bools, strings, ustrings, and vectors of any of those primitives.
 //
 // General use is:
 //
@@ -186,14 +185,14 @@ auto wrapResult(const Napi::Env& env, Call&& call) {
     }
 }
 
-// Same as above, but a small shortcut to allow passing `info` instead of `info.Env()` as the first
-// argument.
+// Similar to wrapResult(), but a small shortcut to allow passing `info` instead of `info.Env()` as
+// the first argument.
 template <typename Call>
 auto wrapResult(const Napi::CallbackInfo& info, Call&& call) {
     return wrapResult(info.Env(), std::forward<Call>(call));
 }
 
-// Similar to wrapResult, above, but this only applies the exception wrapping (i.e. no wrapping of
+// Similar to wrapResult(), but this only applies the exception wrapping (i.e. no wrapping of
 // the result: we return it exactly as-is).
 template <typename Call>
 auto wrapExceptions(const Napi::Env& env, Call&& call) {

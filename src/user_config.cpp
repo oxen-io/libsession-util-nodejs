@@ -57,8 +57,7 @@ Napi::Value UserConfigWrapper::getUserInfo(const Napi::CallbackInfo& info) {
 
 void UserConfigWrapper::setUserInfo(const Napi::CallbackInfo& info) {
     wrapExceptions(info, [&] {
-        assertInfoLength(
-                info, 3);
+        assertInfoLength(info, 3);
 
         auto name = info[0];
         auto priority = info[1];
@@ -75,7 +74,6 @@ void UserConfigWrapper::setUserInfo(const Napi::CallbackInfo& info) {
 
         auto new_priority = toPriority(priority, config.get_nts_priority());
         config.set_nts_priority(new_priority);
-
 
         if (!profile_pic_obj.IsNull() && !profile_pic_obj.IsUndefined())
             assertIsObject(profile_pic_obj);
@@ -106,12 +104,7 @@ void UserConfigWrapper::setEnableBlindedMsgRequest(const Napi::CallbackInfo& inf
 }
 
 Napi::Value UserConfigWrapper::getNoteToSelfExpiry(const Napi::CallbackInfo& info) {
-    return wrapResult(info, [&] {
-        auto env = info.Env();
-        auto expirySeconds = toJs(env, config.get_nts_expiry()->count());
-
-        return expirySeconds;
-    });
+    return wrapResult(info, [&] { return config.get_nts_expiry()->count(); });
 }
 
 void UserConfigWrapper::setNoteToSelfExpiry(const Napi::CallbackInfo& info) {
