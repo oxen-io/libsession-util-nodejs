@@ -159,9 +159,6 @@ void UserGroupsWrapper::setLegacyGroup(const Napi::CallbackInfo& info) {
         assertIsObject(legacyGroupValue);
         auto obj = legacyGroupValue.As<Napi::Object>();
 
-        if (obj.IsEmpty())
-            throw std::invalid_argument("cppLegacyGroup received empty");
-
         auto group = config.get_or_construct_legacy_group(
                 toCppString(obj.Get("pubkeyHex"), "legacyGroup.set"));
 
