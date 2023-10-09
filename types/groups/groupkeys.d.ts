@@ -4,11 +4,9 @@ declare module 'libsession_util_nodejs' {
   export type GroupKeysWrapper = {
     keysNeedsRekey: () => boolean;
     keyRekey: () => Uint8Array;
-    groupKeys: () => Array<Uint8Array>;
-
     loadKeyMessage: (hash: string, data: Uint8Array, timestampMs: number) => boolean;
-    currentHashes: () => Array<string>;
 
+    currentHashes: () => Array<string>;
     encryptMessage: (plaintext: Uint8Array) => Uint8Array;
     decryptMessage: (ciphertext: Uint8Array) => { pubkeyHex: string; plaintext: Uint8Array };
   };

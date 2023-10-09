@@ -65,6 +65,7 @@ declare module 'libsession_util_nodejs' {
     public metaDebugDump: MetaGroupWrapper['metaDebugDump'];
     public metaConfirmPushed: MetaGroupWrapper['metaConfirmPushed'];
     public metaMerge: MetaGroupWrapper['metaMerge'];
+    public currentHashes: MetaGroupWrapper['currentHashes'];
 
     // info
     public infoGet: MetaGroupWrapper['infoGet'];
@@ -86,9 +87,7 @@ declare module 'libsession_util_nodejs' {
 
     public keysNeedsRekey: MetaGroupWrapper['keysNeedsRekey'];
     public keyRekey: MetaGroupWrapper['keyRekey'];
-    public groupKeys: MetaGroupWrapper['groupKeys'];
     public loadKeyMessage: MetaGroupWrapper['loadKeyMessage'];
-    public currentHashes: MetaGroupWrapper['currentHashes'];
     public encryptMessage: MetaGroupWrapper['encryptMessage'];
     public decryptMessage: MetaGroupWrapper['decryptMessage'];
   }
@@ -123,7 +122,6 @@ declare module 'libsession_util_nodejs' {
     // keys actions
     | MakeActionCall<MetaGroupWrapper, 'keysNeedsRekey'>
     | MakeActionCall<MetaGroupWrapper, 'keyRekey'>
-    | MakeActionCall<MetaGroupWrapper, 'groupKeys'>
     | MakeActionCall<MetaGroupWrapper, 'loadKeyMessage'>
     | MakeActionCall<MetaGroupWrapper, 'currentHashes'>
     | MakeActionCall<MetaGroupWrapper, 'encryptMessage'>

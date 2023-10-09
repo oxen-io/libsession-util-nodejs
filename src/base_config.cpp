@@ -25,7 +25,7 @@ Napi::Value ConfigBaseImpl::push(const Napi::CallbackInfo& info) {
         auto& conf = get_config<ConfigBase>();
         auto to_push = conf.push();
 
-        return push_entry_to_JS(info.Env(), to_push, conf.storage_namespace());
+        return push_result_to_JS(info.Env(), to_push, conf.storage_namespace());
     });
 }
 

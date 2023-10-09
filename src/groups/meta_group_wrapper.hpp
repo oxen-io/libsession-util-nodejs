@@ -50,7 +50,7 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
             auto to_push = Napi::Object::New(env);
 
             if (this->meta_group->members->needs_push())
-                to_push["groupMember"s] = push_entry_to_JS(
+                to_push["groupMember"s] = push_result_to_JS(
                         env,
                         this->meta_group->members->push(),
                         this->meta_group->members->storage_namespace());
@@ -58,7 +58,7 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
                 to_push["groupMember"s] = env.Null();
 
             if (this->meta_group->info->needs_push())
-                to_push["groupInfo"s] = push_entry_to_JS(
+                to_push["groupInfo"s] = push_result_to_JS(
                         env,
                         this->meta_group->info->push(),
                         this->meta_group->info->storage_namespace());

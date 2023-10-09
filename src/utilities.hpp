@@ -247,7 +247,7 @@ using push_entry_t = std::tuple<
         session::ustring,
         std::vector<std::string, std::allocator<std::string>>>;
 
-Napi::Object push_entry_to_JS(
+Napi::Object push_result_to_JS(
         const Napi::Env& env,
         const push_entry_t& push_entry,
         const session::config::Namespace& push_namespace);
