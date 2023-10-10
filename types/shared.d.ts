@@ -71,7 +71,7 @@ declare module 'libsession_util_nodejs' {
     dump: () => Uint8Array;
     makeDump: () => Uint8Array;
     confirmPushed: (seqno: number, hash: string) => void;
-    merge: (toMerge: Array<MergeSingle>) => number;
+    merge: (toMerge: Array<MergeSingle>) => Array<string>; // merge returns the array of hashes merged correctly
     currentHashes: () => Array<string>;
   };
 
