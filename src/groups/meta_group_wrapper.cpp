@@ -22,7 +22,7 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod("push", &MetaGroupWrapper::push),
                     InstanceMethod("needsDump", &MetaGroupWrapper::needsDump),
                     InstanceMethod("metaDump", &MetaGroupWrapper::metaDump),
-                    InstanceMethod("metaDebugDump", &MetaGroupWrapper::metaDebugDump),
+                    InstanceMethod("metaMakeDump", &MetaGroupWrapper::metaMakeDump),
                     InstanceMethod("metaConfirmPushed", &MetaGroupWrapper::metaConfirmPushed),
                     InstanceMethod("metaMerge", &MetaGroupWrapper::metaMerge),
 

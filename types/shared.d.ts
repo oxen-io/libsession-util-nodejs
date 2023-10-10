@@ -69,6 +69,7 @@ declare module 'libsession_util_nodejs' {
     needsPush: () => boolean;
     push: () => PushConfigResult;
     dump: () => Uint8Array;
+    makeDump: () => Uint8Array;
     confirmPushed: (seqno: number, hash: string) => void;
     merge: (toMerge: Array<MergeSingle>) => number;
     currentHashes: () => Array<string>;
@@ -79,6 +80,7 @@ declare module 'libsession_util_nodejs' {
     | 'needsPush'
     | 'push'
     | 'dump'
+    | 'makeDump'
     | 'confirmPushed'
     | 'merge'
     | 'needsPush'
@@ -94,6 +96,7 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<BaseConfigWrapper, 'needsPush'>
     | MakeActionCall<BaseConfigWrapper, 'push'>
     | MakeActionCall<BaseConfigWrapper, 'dump'>
+    | MakeActionCall<BaseConfigWrapper, 'makeDump'>
     | MakeActionCall<BaseConfigWrapper, 'confirmPushed'>
     | MakeActionCall<BaseConfigWrapper, 'merge'>
     | MakeActionCall<BaseConfigWrapper, 'currentHashes'>;
@@ -103,6 +106,7 @@ declare module 'libsession_util_nodejs' {
     public needsPush: BaseConfigWrapper['needsPush'];
     public push: BaseConfigWrapper['push'];
     public dump: BaseConfigWrapper['dump'];
+    public makeDump: BaseConfigWrapper['makeDump'];
     public confirmPushed: BaseConfigWrapper['confirmPushed'];
     public merge: BaseConfigWrapper['merge'];
     public currentHashes: BaseConfigWrapper['currentHashes'];

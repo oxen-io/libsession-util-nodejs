@@ -36,6 +36,13 @@ Napi::Value ConfigBaseImpl::dump(const Napi::CallbackInfo& info) {
     });
 }
 
+Napi::Value ConfigBaseImpl::makeDump(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&]() {
+        assertInfoLength(info, 0);
+        return get_config<ConfigBase>().make_dump();
+    });
+}
+
 void ConfigBaseImpl::confirmPushed(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&]() {
         assertInfoLength(info, 2);

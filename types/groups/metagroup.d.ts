@@ -26,7 +26,7 @@ declare module 'libsession_util_nodejs' {
       };
       needsDump: () => boolean;
       metaDump: () => Uint8Array;
-      metaDebugDump: () => Uint8Array;
+      metaMakeDump: () => Uint8Array;
       metaConfirmPushed: ({
         groupInfo,
         groupMember,
@@ -62,7 +62,7 @@ declare module 'libsession_util_nodejs' {
     public push: MetaGroupWrapper['push'];
     public needsDump: MetaGroupWrapper['needsDump'];
     public metaDump: MetaGroupWrapper['metaDump'];
-    public metaDebugDump: MetaGroupWrapper['metaDebugDump'];
+    public metaMakeDump: MetaGroupWrapper['metaMakeDump'];
     public metaConfirmPushed: MetaGroupWrapper['metaConfirmPushed'];
     public metaMerge: MetaGroupWrapper['metaMerge'];
     public currentHashes: MetaGroupWrapper['currentHashes'];
@@ -99,7 +99,7 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<MetaGroupWrapper, 'push'>
     | MakeActionCall<MetaGroupWrapper, 'needsDump'>
     | MakeActionCall<MetaGroupWrapper, 'metaDump'>
-    | MakeActionCall<MetaGroupWrapper, 'metaDebugDump'>
+    | MakeActionCall<MetaGroupWrapper, 'metaMakeDump'>
     | MakeActionCall<MetaGroupWrapper, 'metaConfirmPushed'>
     | MakeActionCall<MetaGroupWrapper, 'metaMerge'>
 

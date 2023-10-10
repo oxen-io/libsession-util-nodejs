@@ -37,6 +37,7 @@ class ConfigBaseImpl {
 
     Napi::Value push(const Napi::CallbackInfo& info);
     Napi::Value dump(const Napi::CallbackInfo& info);
+    Napi::Value makeDump(const Napi::CallbackInfo& info);
     void confirmPushed(const Napi::CallbackInfo& info);
     Napi::Value merge(const Napi::CallbackInfo& info);
 
@@ -55,6 +56,7 @@ class ConfigBaseImpl {
         properties.push_back(T::InstanceMethod("currentHashes", &T::currentHashes));
         properties.push_back(T::InstanceMethod("push", &T::push));
         properties.push_back(T::InstanceMethod("dump", &T::dump));
+        properties.push_back(T::InstanceMethod("makeDump", &T::makeDump));
         properties.push_back(T::InstanceMethod("confirmPushed", &T::confirmPushed));
         properties.push_back(T::InstanceMethod("merge", &T::merge));
 

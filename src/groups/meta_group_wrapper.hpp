@@ -99,7 +99,7 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
         });
     }
 
-    Napi::Value metaDebugDump(const Napi::CallbackInfo& info) {
+    Napi::Value metaMakeDump(const Napi::CallbackInfo& info) {
         return wrapResult(info, [&] {
             auto env = info.Env();
 
