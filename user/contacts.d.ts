@@ -14,11 +14,13 @@ declare module 'libsession_util_nodejs' {
 
   export type ContactsWrapperActionsCalls = MakeWrapperActionCalls<ContactsWrapper>;
 
-  // NOTE must match DisappearingMessageConversationModeType in session-desktop excluding the legacy type which will be removed in future
+  // NOTE must match DisappearingMessageConversationModeType in session-desktop
   export type DisappearingMessageConversationModeType =
     | 'off'
     | 'deleteAfterRead'
-    | 'deleteAfterSend';
+    | 'deleteAfterSend'
+    // TODO legacy messages support will be removed in a future release
+    | 'legacy';
 
   type ContactInfoShared = {
     id: string;
