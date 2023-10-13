@@ -38,7 +38,7 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
     explicit MetaGroupWrapper(const Napi::CallbackInfo& info);
 
   private:
-    std::shared_ptr<MetaGroup> meta_group;
+    std::unique_ptr<MetaGroup> meta_group;
 
     /* Shared Actions */
 

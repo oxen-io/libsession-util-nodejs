@@ -31,7 +31,7 @@ class MetaBaseWrapper {
         exports.Set(class_name, cls);
     }
 
-    static std::shared_ptr<session::nodeapi::MetaGroup> constructGroupWrapper(
+    static std::unique_ptr<session::nodeapi::MetaGroup> constructGroupWrapper(
             const Napi::CallbackInfo& info, const std::string& class_name) {
         return wrapExceptions(info, [&] {
             if (!info.IsConstructCall())
@@ -85,6 +85,8 @@ class MetaBaseWrapper {
                 dumped_members = session::to_unsigned_sv(combined.consume_string_view());
             }
 
+            // Note, we keep shared_ptr for those as the Keys one need a reference to Members and
+            // Info on his own currently.
             auto info = std::make_shared<config::groups::Info>(
                     group_ed25519_pubkey, group_ed25519_secretkey, dumped_info);
 
@@ -99,7 +101,7 @@ class MetaBaseWrapper {
                     *info,
                     *members);
 
-            return std::make_shared<session::nodeapi::MetaGroup>(info, members, keys);
+            return std::make_unique<session::nodeapi::MetaGroup>(info, members, keys);
         });
     }
 };

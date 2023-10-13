@@ -7,7 +7,7 @@
 namespace session::nodeapi {
 
 MetaGroupWrapper::MetaGroupWrapper(const Napi::CallbackInfo& info) :
-        meta_group{MetaBaseWrapper::constructGroupWrapper(info, "MetaGroupWrapper")},
+        meta_group{std::move(MetaBaseWrapper::constructGroupWrapper(info, "MetaGroupWrapper"))},
         Napi::ObjectWrap<MetaGroupWrapper>{info} {}
 
 void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
