@@ -9,7 +9,9 @@ declare module 'libsession_util_nodejs' {
     ...args: Parameters<T>
   ) => Promise<ReturnType<T>>;
 
-  type MakeWrapperActionCalls<Type extends BaseConfigWrapper> = {
+  export type RecordOfFunctions = Record<string, (...args: any) => any>;
+
+  type MakeWrapperActionCalls<Type extends RecordOfFunctions> = {
     [Property in keyof Type]: AsyncWrapper<Type[Property]>;
   };
 
@@ -19,8 +21,9 @@ declare module 'libsession_util_nodejs' {
   };
 
   export type PushConfigResult = { data: Uint8Array; seqno: number; hashes: Array<string> };
+  export type MergeSingle = { hash: string; data: Uint8Array };
 
-  type MakeActionCall<A extends BaseConfigWrapper, B extends keyof A> = [B, ...Parameters<A[B]>];
+  type MakeActionCall<A extends RecordOfFunctions, B extends keyof A> = [B, ...Parameters<A[B]>];
 
   /**
    *
@@ -34,7 +37,7 @@ declare module 'libsession_util_nodejs' {
     push: () => PushConfigResult;
     dump: () => Uint8Array;
     confirmPushed: (seqno: number, hash: string) => void;
-    merge: (toMerge: Array<{ hash: string; data: Uint8Array }>) => number;
+    merge: (toMerge: Array<MergeSingle>) => Array<string>; // merge returns the array of hashes that merged correctly
     storageNamespace: () => number;
     currentHashes: () => Array<string>;
   };
