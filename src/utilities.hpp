@@ -97,6 +97,7 @@ template <>
 struct toJs_impl<bool> {
     auto operator()(const Napi::Env& env, bool b) const { return Napi::Boolean::New(env, b); }
 };
+
 template <>
 struct toJs_impl<session::config::Namespace> {
     auto operator()(const Napi::Env& env, session::config::Namespace b) const {
@@ -108,22 +109,26 @@ template <typename T>
 struct toJs_impl<T, std::enable_if_t<std::is_arithmetic_v<T>>> {
     auto operator()(const Napi::Env& env, T n) const { return Napi::Number::New(env, n); }
 };
+
 template <typename T>
 struct toJs_impl<T, std::enable_if_t<std::is_convertible_v<T, std::string_view>>> {
     auto operator()(const Napi::Env& env, std::string_view s) const {
         return Napi::String::New(env, s.data(), s.size());
     }
 };
+
 template <typename T>
 struct toJs_impl<T, std::enable_if_t<std::is_convertible_v<T, ustring_view>>> {
     auto operator()(const Napi::Env& env, ustring_view b) const {
         return Napi::Buffer<uint8_t>::Copy(env, b.data(), b.size());
     }
 };
+
 template <typename T>
 struct toJs_impl<T, std::enable_if_t<std::is_base_of_v<Napi::Value, T>>> {
     auto operator()(const Napi::Env& env, const T& val) { return val; }
 };
+
 template <typename T>
 struct toJs_impl<std::vector<T>> {
     auto operator()(const Napi::Env& env, const std::vector<T>& val) {
@@ -133,6 +138,7 @@ struct toJs_impl<std::vector<T>> {
         return arr;
     }
 };
+
 template <typename T>
 struct toJs_impl<std::unordered_set<T>> {
     auto operator()(const Napi::Env& env, const std::unordered_set<T>& set) {
@@ -141,9 +147,11 @@ struct toJs_impl<std::unordered_set<T>> {
         auto arr = Napi::Array::New(env, as_array.size());
         for (size_t i = 0; i < as_array.size(); i++)
             arr[i] = toJs(env, as_array[i]);
+
         return arr;
     }
 };
+
 template <typename T>
 struct toJs_impl<std::optional<T>> {
     Napi::Value operator()(const Napi::Env& env, const std::optional<T>& val) {

@@ -1,4 +1,7 @@
 declare module 'libsession_util_nodejs' {
+  /**
+   * NOTE: For linting performance reasons, this type should only be used with small fixed size arrays (less < 100 items)
+   */
   type FixedSizeArray<T, N extends number> = N extends N
     ? number extends N
       ? T[]
@@ -14,6 +17,9 @@ declare module 'libsession_util_nodejs' {
     ? U
     : never;
   type Uint8ArrayWithoutIndex = Pick<Uint8Array, KnownKeys<Uint8Array>>;
+  /**
+   * NOTE: For linting performance reasons, this type should only be used with small fixed size arrays (less < 100 items)
+   */
   type FixedSizeUint8Array<N extends number> = FixedSizeArray<number, N> & Uint8ArrayWithoutIndex;
 
   /**

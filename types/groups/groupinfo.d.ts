@@ -1,11 +1,6 @@
 /// <reference path="../shared.d.ts" />
 
 declare module 'libsession_util_nodejs' {
-  /**
-   *
-   * Group Wrapper Logics
-   */
-
   export type GroupInfoWrapper = {
     // GroupInfo related methods
     infoGet: () => GroupInfoGet;

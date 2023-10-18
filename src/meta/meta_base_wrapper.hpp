@@ -86,7 +86,7 @@ class MetaBaseWrapper {
             }
 
             // Note, we keep shared_ptr for those as the Keys one need a reference to Members and
-            // Info on his own currently.
+            // Info on its own currently.
             auto info = std::make_shared<config::groups::Info>(
                     group_ed25519_pubkey, group_ed25519_secretkey, dumped_info);
 

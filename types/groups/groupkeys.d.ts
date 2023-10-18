@@ -2,6 +2,7 @@
 
 declare module 'libsession_util_nodejs' {
   export type GroupKeysWrapper = {
+    // GroupKeys related methods
     keysNeedsRekey: () => boolean;
     keyRekey: () => Uint8Array;
     loadKeyMessage: (hash: string, data: Uint8Array, timestampMs: number) => boolean;
