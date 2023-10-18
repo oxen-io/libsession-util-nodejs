@@ -18,8 +18,8 @@ using namespace std::literals;
 inline constexpr std::string_view expiration_mode_string(expiration_mode mode) {
     switch (mode) {
         case expiration_mode::none: return "off"sv;
-        case expiration_mode::after_read: return "disappearAfterRead"sv;
-        case expiration_mode::after_send: return "disappearAfterSend"sv;
+        case expiration_mode::after_read: return "deleteAfterRead"sv;
+        case expiration_mode::after_send: return "deleteAfterSend"sv;
     }
     // Don't do this via a default case so that the above will start warning about unhandled cases
     // if a newer libsession-util adds a new expiration mode value.
@@ -27,9 +27,9 @@ inline constexpr std::string_view expiration_mode_string(expiration_mode mode) {
 }
 
 inline constexpr expiration_mode expiration_mode_from_string(std::string_view mode) {
-    if (mode == "disappearAfterRead"sv)
+    if (mode == "deleteAfterRead"sv)
         return expiration_mode::after_read;
-    if (mode == "disappearAfterSend"sv)
+    if (mode == "deleteAfterSend"sv)
         return expiration_mode::after_send;
     return expiration_mode::none;
 }
@@ -47,8 +47,8 @@ struct toJs_impl<contact_info> {
         obj["blocked"] = toJs(env, contact.blocked);
         obj["priority"] = toJs(env, contact.priority);
         obj["createdAtSeconds"] = toJs(env, contact.created);
-        // obj["expirationMode"] = toJs(env, expiration_mode_string(contact.exp_mode));
-        // obj["expirationTimerSeconds"] = toJs(env, contact.exp_timer.count());
+        obj["expirationMode"] = toJs(env, expiration_mode_string(contact.exp_mode));
+        obj["expirationTimerSeconds"] = toJs(env, contact.exp_timer.count());
         obj["profilePicture"] = object_from_profile_pic(env, contact.profile_picture);
 
         return obj;
@@ -135,10 +135,10 @@ void ContactsConfigWrapper::set(const Napi::CallbackInfo& info) {
         contact.blocked = toCppBoolean(obj.Get("blocked"), "contacts.set blocked");
         contact.priority = toPriority(obj.Get("priority"), contact.priority);
 
-        // contact.exp_mode = expiration_mode_from_string(
-        //         toCppString(obj.Get("expirationMode"), "contacts.set expirationMode"));
-        // contact.exp_timer = std::chrono::seconds{toCppInteger(
-        //         obj.Get("expirationTimerSeconds"), "contacts.set expirationTimerSeconds")};
+        contact.exp_mode = expiration_mode_from_string(
+                toCppString(obj.Get("expirationMode"), "contacts.set expirationMode"));
+        contact.exp_timer = std::chrono::seconds{toCppInteger(
+                obj.Get("expirationTimerSeconds"), "contacts.set expirationTimerSeconds")};
         if (auto pic = obj.Get("profilePicture"); !pic.IsUndefined())
             contact.profile_picture = profile_pic_from_object(pic);
         else

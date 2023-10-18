@@ -28,10 +28,11 @@ declare module 'libsession_util_nodejs' {
     name: string; // human-readable; this should normally always be set, but in theory could be set to an empty string.
     encPubkey: Uint8Array; // bytes (32 or empty)
     encSeckey: Uint8Array; // bytes (32 or empty)
-    // disappearingTimerSeconds: number; // in seconds, 0 == disabled.
     priority: number; // -1 means hidden, 0 means normal, > 1 means pinned. We currently don't support hidden groups on the client though
     members: Array<LegacyGroupMemberInfo>;
     joinedAtSeconds: number; // equivalent to the lastJoinedTimestamp in Session desktop but in seconds rather than MS
+    // NOTE Properties need to be optional going forward to backward compatibility
+    disappearingTimerSeconds?: number; // in seconds, 0 or undefined == disabled.
   };
 
   type UserGroupsWrapper = BaseConfigWrapper & {

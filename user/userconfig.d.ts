@@ -12,16 +12,19 @@ declare module 'libsession_util_nodejs' {
       priority: number;
       url: string;
       key: Uint8Array;
-      // expirySeconds: number | null; // <= 0 is returned as null
     };
     setUserInfo: (
       name: string,
       priority: number,
       profilePic: { url: string; key: Uint8Array } | null
-      // expirySeconds: number,
     ) => void;
     setEnableBlindedMsgRequest: (msgRequest: boolean) => void;
     getEnableBlindedMsgRequest: () => boolean | undefined;
+    setNoteToSelfExpiry: (expirySeconds: number) => void;
+    /**
+     * @returns the expiry in seconds, 0 if off, undefined if not set
+     */
+    getNoteToSelfExpiry: () => number | undefined;
   };
 
   export type UserConfigWrapperActionsCalls = MakeWrapperActionCalls<UserConfigWrapper>;
@@ -35,6 +38,8 @@ declare module 'libsession_util_nodejs' {
     public setUserInfo: UserConfigWrapper['setUserInfo'];
     public getEnableBlindedMsgRequest: UserConfigWrapper['getEnableBlindedMsgRequest'];
     public setEnableBlindedMsgRequest: UserConfigWrapper['setEnableBlindedMsgRequest'];
+    public getNoteToSelfExpiry: UserConfigWrapper['getNoteToSelfExpiry'];
+    public setNoteToSelfExpiry: UserConfigWrapper['setNoteToSelfExpiry'];
   }
 
   /**
@@ -47,5 +52,7 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<UserConfigWrapper, 'getUserInfo'>
     | MakeActionCall<UserConfigWrapper, 'setUserInfo'>
     | MakeActionCall<UserConfigWrapper, 'getEnableBlindedMsgRequest'>
-    | MakeActionCall<UserConfigWrapper, 'setEnableBlindedMsgRequest'>;
+    | MakeActionCall<UserConfigWrapper, 'setEnableBlindedMsgRequest'>
+    | MakeActionCall<UserConfigWrapper, 'getNoteToSelfExpiry'>
+    | MakeActionCall<UserConfigWrapper, 'setNoteToSelfExpiry'>;
 }
