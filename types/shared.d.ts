@@ -1,26 +1,8 @@
 declare module 'libsession_util_nodejs' {
-  /**
-   * NOTE: For linting performance reasons, this type should only be used with small fixed size arrays (less < 100 items)
-   */
-  type FixedSizeArray<T, N extends number> = N extends N
-    ? number extends N
-      ? T[]
-      : _FixedSizeArray<T, N, []>
-    : never;
-  type _FixedSizeArray<T, N extends number, R extends unknown[]> = R['length'] extends N
-    ? R
-    : _FixedSizeArray<T, N, [T, ...R]>;
-
-  type KnownKeys<T> = {
-    [K in keyof T]: string extends K ? never : number extends K ? never : K;
-  } extends { [_ in keyof T]: infer U }
-    ? U
-    : never;
-  type Uint8ArrayWithoutIndex = Pick<Uint8Array, KnownKeys<Uint8Array>>;
-  /**
-   * NOTE: For linting performance reasons, this type should only be used with small fixed size arrays (less < 100 items)
-   */
-  type FixedSizeUint8Array<N extends number> = FixedSizeArray<number, N> & Uint8ArrayWithoutIndex;
+  type Uint8ArrayFixedLength<T extends number> = {
+    buffer: Uint8Array;
+    length: T;
+  };
 
   /**
    * Allow a single type to be Nullable. i.e. string => string | null
@@ -151,7 +133,7 @@ declare module 'libsession_util_nodejs' {
 
   export type GroupInfoGet = GroupInfoShared & {
     isDestroyed: boolean;
-    secretKey?: FixedSizeUint8Array<64>;
+    secretKey?: Uint8Array; // len 64
   };
 
   export type GroupInfoSet = GroupInfoShared & {};

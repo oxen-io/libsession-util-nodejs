@@ -40,7 +40,7 @@ declare module 'libsession_util_nodejs' {
 
   type UserGroupsGet = BaseUserGroup & {
     pubkeyHex: GroupPubkeyType; // The group "session id" (33 bytes), starting with 03.
-    secretKey: FixedSizeUint8Array<64> | null;
+    secretKey: Uint8Array | null; // len 64
     authData: Uint8Array | null;
     name: string | null;
   };

@@ -13,13 +13,13 @@ declare module 'libsession_util_nodejs' {
       name: string;
       priority: number;
       url: string;
-      key: Uint8Array; // FixedSizeUint8Array<32>
+      key: Uint8Array; // TODO could be made a FixedLength<32> but that impacts a bunch of things
       // expirySeconds: number | null; // <= 0 is returned as null
     };
     setUserInfo: (
       name: string,
       priority: number,
-      profilePic: { url: string; key: Uint8Array } | null // FixedSizeUint8Array<32>
+      profilePic: { url: string; key: Uint8Array } | null // TODO could be made a FixedLength<32> but that impacts a bunch of things
       // expirySeconds: number,
     ) => void;
     setEnableBlindedMsgRequest: (msgRequest: boolean) => void;
