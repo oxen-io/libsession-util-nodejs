@@ -31,6 +31,18 @@ struct toJs_impl<member> {
     }
 };
 
+template <>
+struct toJs_impl<Keys::swarm_auth> {
+    Napi::Object operator()(const Napi::Env& env, const Keys::swarm_auth& auth) {
+        auto obj = Napi::Object::New(env);
+
+        obj["subaccount"] = toJs(env, auth.subaccount);
+        obj["subaccount_sig"] = toJs(env, auth.subaccount_sig);
+        obj["signature"] = toJs(env, auth.signature);
+        return obj;
+    }
+};
+
 class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
   public:
     static void Init(Napi::Env env, Napi::Object exports);
@@ -66,7 +78,6 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
     Napi::Value memberErase(const Napi::CallbackInfo& info);
 
     /** Keys Actions */
-    // TODO key_supplement, swarm_make_subaccount, ...
 
     Napi::Value keysNeedsRekey(const Napi::CallbackInfo& info);
     Napi::Value keyRekey(const Napi::CallbackInfo& info);
@@ -74,6 +85,8 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
     Napi::Value currentHashes(const Napi::CallbackInfo& info);
     Napi::Value encryptMessage(const Napi::CallbackInfo& info);
     Napi::Value decryptMessage(const Napi::CallbackInfo& info);
+    Napi::Value makeSwarmSubAccount(const Napi::CallbackInfo& info);
+    Napi::Value swarmSubaccountSign(const Napi::CallbackInfo& info);
 };
 
 }  // namespace session::nodeapi

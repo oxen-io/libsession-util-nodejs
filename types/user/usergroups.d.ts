@@ -32,7 +32,7 @@ declare module 'libsession_util_nodejs' {
   export type LegacyGroupInfo = BaseUserGroup & {
     pubkeyHex: string; // The legacy group "session id" (33 bytes).
     name: string; // human-readable; this should normally always be set, but in theory could be set to an empty string.
-    encPubkey: Uint8Array; // bytes (32 or empty)
+    encPubkey: Uint8ArrayLen32; // bytes (32 or empty)
     encSeckey: Uint8Array; // bytes (32 or empty)
     // disappearingTimerSeconds: number; // in seconds, 0 == disabled.
     members: Array<LegacyGroupMemberInfo>;
@@ -40,8 +40,8 @@ declare module 'libsession_util_nodejs' {
 
   type UserGroupsGet = BaseUserGroup & {
     pubkeyHex: GroupPubkeyType; // The group "session id" (33 bytes), starting with 03.
-    secretKey: Uint8Array | null; // len 64
-    authData: Uint8Array | null;
+    secretKey: Uint8ArrayLen64 | null; // len 64
+    authData: Uint8ArrayLen100 | null; // len 100
     name: string | null;
   };
 

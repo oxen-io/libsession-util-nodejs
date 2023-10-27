@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "oxenc/bt_producer.h"
+#include "session/types.hpp"
 
 namespace session::nodeapi {
 
@@ -55,6 +56,8 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
 
                     InstanceMethod("encryptMessage", &MetaGroupWrapper::encryptMessage),
                     InstanceMethod("decryptMessage", &MetaGroupWrapper::decryptMessage),
+                    InstanceMethod("makeSwarmSubAccount", &MetaGroupWrapper::makeSwarmSubAccount),
+                    InstanceMethod("swarmSubaccountSign", &MetaGroupWrapper::swarmSubaccountSign),
             });
 }
 
@@ -118,7 +121,7 @@ Napi::Value MetaGroupWrapper::metaDump(const Napi::CallbackInfo& info) {
         combined.append("members", session::from_unsigned_sv(this->meta_group->members->dump()));
         auto to_dump = std::move(combined).str();
 
-        return ustring{to_unsigned_sv(to_dump)};
+        return session::ustring{to_unsigned_sv(to_dump)};
     });
 }
 
@@ -492,8 +495,6 @@ Napi::Value MetaGroupWrapper::keyRekey(const Napi::CallbackInfo& info) {
     });
 }
 
-// TODO key_supplement, swarm_make_subaccount, ...
-
 Napi::Value MetaGroupWrapper::loadKeyMessage(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
         assertInfoLength(info, 3);
@@ -522,6 +523,7 @@ Napi::Value MetaGroupWrapper::encryptMessage(const Napi::CallbackInfo& info) {
         return this->meta_group->keys->encrypt_message(plaintext);
     });
 }
+
 Napi::Value MetaGroupWrapper::decryptMessage(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
         assertInfoLength(info, 1);
@@ -531,6 +533,35 @@ Napi::Value MetaGroupWrapper::decryptMessage(const Napi::CallbackInfo& info) {
         auto decrypted = this->meta_group->keys->decrypt_message(ciphertext);
 
         return decrypt_result_to_JS(info.Env(), decrypted);
+    });
+}
+
+Napi::Value MetaGroupWrapper::makeSwarmSubAccount(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        assertInfoLength(info, 1);
+        assertIsString(info[0]);
+
+        auto memberPk = toCppString(info[0], __PRETTY_FUNCTION__);
+        ustring subaccount = this->meta_group->keys->swarm_make_subaccount(memberPk);
+
+        session::nodeapi::checkOrThrow(
+                subaccount.length() == 100, "expected subaccount to be 100 bytes long");
+
+        return subaccount;
+    });
+}
+
+Napi::Value MetaGroupWrapper::swarmSubaccountSign(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        assertInfoLength(info, 2);
+        assertIsUInt8Array(info[0]);
+        assertIsUInt8Array(info[1]);
+
+        auto message = toCppBuffer(info[0], __PRETTY_FUNCTION__);
+        auto authdata = toCppBuffer(info[1], __PRETTY_FUNCTION__);
+        auto subaccountSign = this->meta_group->keys->swarm_subaccount_sign(message, authdata);
+
+        return subaccountSign;
     });
 }
 /* #endregion */
