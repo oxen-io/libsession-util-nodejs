@@ -16,10 +16,10 @@ namespace session::nodeapi {
 
 using namespace std::literals;
 
-// template <typename T>
-// T object_wrap_impl(const Napi::ObjectWrap<T>&);
-// template <typename T>
-// using object_wrap_t = decltype(object_wrap_impl(std::declval<const T&>()));
+static void checkOrThrow(bool condition, const char* msg) {
+    if (!condition)
+        throw std::invalid_argument{msg};
+}
 
 void assertInfoLength(const Napi::CallbackInfo& info, const int expected);
 

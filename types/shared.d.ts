@@ -133,8 +133,19 @@ declare module 'libsession_util_nodejs' {
 
   export type GroupInfoGet = GroupInfoShared & {
     isDestroyed: boolean;
-    secretKey?: Uint8Array; // len 64
+    secretKey?: Uint8ArrayLen64; // len 64
   };
 
   export type GroupInfoSet = GroupInfoShared & {};
+
+  export type SwarmSubAccountSignResult = {
+    subaccount: string;
+    subaccount_sig: string; // keeping the case like this so we can send it as is (this is what the snode API expects)
+    signature: string;
+  };
+
+  // those types are not enforced currently, they all are just Uint8Arrays, but having them separate right away will make the enforcing of them later, easier
+  export type Uint8ArrayLen64 = Uint8Array;
+  export type Uint8ArrayLen32 = Uint8Array;
+  export type Uint8ArrayLen100 = Uint8Array;
 }

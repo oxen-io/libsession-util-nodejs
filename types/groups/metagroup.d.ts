@@ -90,6 +90,8 @@ declare module 'libsession_util_nodejs' {
     public loadKeyMessage: MetaGroupWrapper['loadKeyMessage'];
     public encryptMessage: MetaGroupWrapper['encryptMessage'];
     public decryptMessage: MetaGroupWrapper['decryptMessage'];
+    public makeSwarmSubAccount: MetaGroupWrapper['makeSwarmSubAccount'];
+    public swarmSubaccountSign: MetaGroupWrapper['swarmSubaccountSign'];
   }
 
   export type MetaGroupActionsType =
@@ -125,5 +127,7 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<MetaGroupWrapper, 'loadKeyMessage'>
     | MakeActionCall<MetaGroupWrapper, 'currentHashes'>
     | MakeActionCall<MetaGroupWrapper, 'encryptMessage'>
-    | MakeActionCall<MetaGroupWrapper, 'decryptMessage'>;
+    | MakeActionCall<MetaGroupWrapper, 'decryptMessage'>
+    | MakeActionCall<MetaGroupWrapper, 'makeSwarmSubAccount'>
+    | MakeActionCall<MetaGroupWrapper, 'swarmSubaccountSign'>;
 }

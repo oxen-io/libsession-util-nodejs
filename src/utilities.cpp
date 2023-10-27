@@ -6,11 +6,6 @@
 
 namespace session::nodeapi {
 
-static void checkOrThrow(bool condition, const char* msg) {
-    if (!condition)
-        throw std::invalid_argument{msg};
-}
-
 void assertInfoLength(const Napi::CallbackInfo& info, const int expected) {
     checkOrThrow(info.Length() == expected, "Invalid number of arguments");
 }

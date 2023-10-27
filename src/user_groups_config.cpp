@@ -67,6 +67,7 @@ struct toJs_impl<group_info> {
         obj["priority"] = toJs(env, info.priority);
         obj["joinedAtSeconds"] = toJs(env, info.joined_at);
         obj["name"] = toJs(env, info.name);
+        obj["authData"] = toJs(env, info.auth_data);
         // TODO kicked and setKicked todo
 
         return obj;

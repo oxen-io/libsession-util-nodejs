@@ -7,7 +7,7 @@ declare module 'libsession_util_nodejs' {
    *
    */
   type GroupMemberShared = {
-    pubkeyHex: string;
+    pubkeyHex: PubkeyType;
     name: string | null;
     profilePicture: ProfilePicture | null;
   };
@@ -22,18 +22,21 @@ declare module 'libsession_util_nodejs' {
 
   type GroupMemberWrapper = {
     // GroupMember related methods
-    memberGet: (pubkeyHex: string) => GroupMemberGet | null;
-    memberGetOrConstruct: (pubkeyHex: string) => GroupMemberGet;
+    memberGet: (pubkeyHex: PubkeyType) => GroupMemberGet | null;
+    memberGetOrConstruct: (pubkeyHex: PubkeyType) => GroupMemberGet;
     memberGetAll: () => Array<GroupMemberGet>;
 
     // setters
-    memberSetName: (pubkeyHex: string, newName: string) => GroupMemberGet;
-    memberSetInvited: (pubkeyHex: string, failed: boolean) => GroupMemberGet;
-    memberSetPromoted: (pubkeyHex: string, failed: boolean) => GroupMemberGet;
-    memberSetAccepted: (pubkeyHex: string) => GroupMemberGet;
-    memberSetProfilePicture: (pubkeyHex: string, profilePicture: ProfilePicture) => GroupMemberGet;
+    memberSetName: (pubkeyHex: PubkeyType, newName: string) => GroupMemberGet;
+    memberSetInvited: (pubkeyHex: PubkeyType, failed: boolean) => GroupMemberGet;
+    memberSetPromoted: (pubkeyHex: PubkeyType, failed: boolean) => GroupMemberGet;
+    memberSetAccepted: (pubkeyHex: PubkeyType) => GroupMemberGet;
+    memberSetProfilePicture: (
+      pubkeyHex: PubkeyType,
+      profilePicture: ProfilePicture
+    ) => GroupMemberGet;
 
     // eraser
-    memberErase: (pubkeyHex: string) => null;
+    memberErase: (pubkeyHex: PubkeyType) => null;
   };
 }
