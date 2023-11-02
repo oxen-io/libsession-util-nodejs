@@ -120,7 +120,8 @@ declare module 'libsession_util_nodejs' {
     [Property in keyof Omit<Type, 'initGroup'>]: AsyncGroupWrapper<Type[Property]>;
   };
 
-  export type PriorityType = { priority: number }; // -1 means hidden, 0 means normal, > 1 means pinned
+  export type WithPriority = { priority: number }; // -1 means hidden, 0 means normal, > 1 means pinned
+  export type WithGroupPubkey = { groupPk: GroupPubkeyType };
 
   type GroupInfoShared = {
     name: string | null;
@@ -147,5 +148,6 @@ declare module 'libsession_util_nodejs' {
   // those types are not enforced currently, they all are just Uint8Arrays, but having them separate right away will make the enforcing of them later, easier
   export type Uint8ArrayLen64 = Uint8Array;
   export type Uint8ArrayLen32 = Uint8Array;
-  export type Uint8ArrayLen100 = Uint8Array;
+  export type Uint8ArrayLen36 = Uint8Array; // subaccount tokens are 36 bytes long
+  export type Uint8ArrayLen100 = Uint8Array; // subaccount authdata are 100 bytes long
 }

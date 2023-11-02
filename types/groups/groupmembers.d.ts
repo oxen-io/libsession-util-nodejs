@@ -37,6 +37,6 @@ declare module 'libsession_util_nodejs' {
     ) => GroupMemberGet;
 
     // eraser
-    memberErase: (pubkeyHex: PubkeyType) => null;
+    memberErase: (members: Array<PubkeyType>) => boolean;
   };
 }

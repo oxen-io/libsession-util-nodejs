@@ -129,5 +129,8 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<MetaGroupWrapper, 'encryptMessage'>
     | MakeActionCall<MetaGroupWrapper, 'decryptMessage'>
     | MakeActionCall<MetaGroupWrapper, 'makeSwarmSubAccount'>
-    | MakeActionCall<MetaGroupWrapper, 'swarmSubaccountSign'>;
+    | MakeActionCall<MetaGroupWrapper, 'swarmSubaccountSign'>
+    | MakeActionCall<MetaGroupWrapper, 'generateSupplementKeys'>
+    | MakeActionCall<MetaGroupWrapper, 'swarmSubAccountToken'>
+    | MakeActionCall<MetaGroupWrapper, 'swarmVerifySubAccount'>;
 }

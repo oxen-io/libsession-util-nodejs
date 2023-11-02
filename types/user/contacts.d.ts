@@ -16,7 +16,7 @@ declare module 'libsession_util_nodejs' {
 
   export type ContactsWrapperActionsCalls = MakeWrapperActionCalls<ContactsWrapper>;
 
-  type ContactInfoShared = PriorityType & {
+  type ContactInfoShared = WithPriority & {
     id: string;
     name?: string;
     nickname?: string;

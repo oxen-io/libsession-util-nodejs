@@ -16,7 +16,7 @@ declare module 'libsession_util_nodejs' {
   };
 
   export type CommunityInfo = CommunityDetails &
-    PriorityType & {
+    WithPriority & {
       pubkeyHex: string;
     };
 
@@ -25,7 +25,7 @@ declare module 'libsession_util_nodejs' {
     isAdmin: boolean;
   };
 
-  type BaseUserGroup = PriorityType & {
+  type BaseUserGroup = WithPriority & {
     joinedAtSeconds: number; // equivalent to the lastJoinedTimestamp in Session desktop but in seconds rather than MS
   };
 

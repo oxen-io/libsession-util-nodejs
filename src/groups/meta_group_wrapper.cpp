@@ -57,6 +57,9 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod("encryptMessage", &MetaGroupWrapper::encryptMessage),
                     InstanceMethod("decryptMessage", &MetaGroupWrapper::decryptMessage),
                     InstanceMethod("makeSwarmSubAccount", &MetaGroupWrapper::makeSwarmSubAccount),
+                    InstanceMethod("swarmSubAccountToken", &MetaGroupWrapper::swarmSubAccountToken),
+                    InstanceMethod(
+                            "swarmVerifySubAccount", &MetaGroupWrapper::swarmVerifySubAccount),
                     InstanceMethod("swarmSubaccountSign", &MetaGroupWrapper::swarmSubaccountSign),
             });
 }
@@ -469,16 +472,22 @@ Napi::Value MetaGroupWrapper::memberSetProfilePicture(const Napi::CallbackInfo& 
 Napi::Value MetaGroupWrapper::memberErase(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
         assertInfoLength(info, 1);
-        assertIsString(info[0]);
+        auto toRemoveJSValue = info[0];
 
-        std::optional<ustring> result;
-        auto pubkeyHex = toCppString(info[0], __PRETTY_FUNCTION__);
-        auto erased = this->meta_group->members->erase(pubkeyHex);
-        if (erased) {
+        assertIsArray(toRemoveJSValue);
+
+        auto toRemoveJS = toRemoveJSValue.As<Napi::Array>();
+        auto rekeyed = false;
+        for (uint32_t i = 0; i < toRemoveJS.Length(); i++) {
+            auto pubkeyHex = toCppString(toRemoveJS[i], __PRETTY_FUNCTION__);
+            rekeyed |= this->meta_group->members->erase(pubkeyHex);
+        }
+
+        if (rekeyed) {
             meta_group->keys->rekey(*(this->meta_group->info), *(this->meta_group->members));
         }
 
-        return erased;
+        return rekeyed;
     });
 }
 
@@ -548,6 +557,52 @@ Napi::Value MetaGroupWrapper::makeSwarmSubAccount(const Napi::CallbackInfo& info
                 subaccount.length() == 100, "expected subaccount to be 100 bytes long");
 
         return subaccount;
+    });
+}
+
+Napi::Value MetaGroupWrapper::swarmSubAccountToken(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        assertInfoLength(info, 1);
+        assertIsString(info[0]);
+
+        auto memberPk = toCppString(info[0], __PRETTY_FUNCTION__);
+        ustring subaccount = this->meta_group->keys->swarm_subaccount_token(memberPk);
+
+        session::nodeapi::checkOrThrow(
+                subaccount.length() == 36, "expected subaccount tken to be 36 bytes long");
+
+        return subaccount;
+    });
+}
+
+Napi::Value MetaGroupWrapper::swarmVerifySubAccount(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        assertInfoLength(info, 1);
+        assertIsUInt8Array(info[0]);
+
+        auto signingValue = toCppBuffer(info[0], __PRETTY_FUNCTION__);
+        return this->meta_group->keys->swarm_verify_subaccount(signingValue);
+    });
+}
+
+Napi::Value MetaGroupWrapper::generateSupplementKeys(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        assertInfoLength(info, 1);
+        auto membersJSValue = info[0];
+        assertIsArray(membersJSValue);
+
+        auto membersJS = membersJSValue.As<Napi::Array>();
+        uint32_t arrayLength = membersJS.Length();
+        std::vector<std::string> membersToAdd;
+        membersToAdd.reserve(arrayLength);
+        std::vector<ustring> keyMessages;
+        keyMessages.reserve(arrayLength);
+
+        for (uint32_t i = 0; i < membersJS.Length(); i++) {
+            auto memberPk = toCppString(membersJS[i], __PRETTY_FUNCTION__);
+            keyMessages.push_back(this->meta_group->keys->key_supplement(memberPk));
+        }
+        return keyMessages;
     });
 }
 
