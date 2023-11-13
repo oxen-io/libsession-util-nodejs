@@ -26,6 +26,7 @@ struct toJs_impl<member> {
         obj["promotionPending"] = toJs(env, info.promotion_pending());
         obj["promotionFailed"] = toJs(env, info.promotion_failed());
         obj["promoted"] = toJs(env, info.promoted());
+        obj["admin"] = toJs(env, info.admin);
 
         return obj;
     }

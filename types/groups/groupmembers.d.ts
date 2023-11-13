@@ -18,6 +18,7 @@ declare module 'libsession_util_nodejs' {
     promotionPending: boolean;
     promotionFailed: boolean;
     promoted: boolean;
+    admin: boolean;
   };
 
   type GroupMemberWrapper = {
