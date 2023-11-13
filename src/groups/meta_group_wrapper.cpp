@@ -42,9 +42,10 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod("memberSetInvited", &MetaGroupWrapper::memberSetInvited),
                     InstanceMethod("memberSetAccepted", &MetaGroupWrapper::memberSetAccepted),
                     InstanceMethod("memberSetPromoted", &MetaGroupWrapper::memberSetPromoted),
+                    InstanceMethod("memberSetAdmin", &MetaGroupWrapper::memberSetAdmin),
                     InstanceMethod(
                             "memberSetProfilePicture", &MetaGroupWrapper::memberSetProfilePicture),
-                    InstanceMethod("memberErase", &MetaGroupWrapper::memberErase),
+                    InstanceMethod("memberEraseAndRekey", &MetaGroupWrapper::memberEraseAndRekey),
 
                     // keys exposed functions
 
@@ -61,6 +62,8 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod(
                             "swarmVerifySubAccount", &MetaGroupWrapper::swarmVerifySubAccount),
                     InstanceMethod("swarmSubaccountSign", &MetaGroupWrapper::swarmSubaccountSign),
+                    InstanceMethod(
+                            "generateSupplementKeys", &MetaGroupWrapper::generateSupplementKeys),
             });
 }
 
@@ -440,12 +443,29 @@ Napi::Value MetaGroupWrapper::memberSetAccepted(const Napi::CallbackInfo& info) 
 Napi::Value MetaGroupWrapper::memberSetPromoted(const Napi::CallbackInfo& info) {
 
     return wrapResult(info, [&] {
+        assertInfoLength(info, 2);
         assertIsString(info[0]);
         assertIsBoolean(info[1]);
         auto pubkeyHex = toCppString(info[0], __PRETTY_FUNCTION__);
         auto failed = toCppBoolean(info[1], __PRETTY_FUNCTION__);
         auto m = this->meta_group->members->get_or_construct(pubkeyHex);
         m.set_promoted(failed);
+
+        this->meta_group->members->set(m);
+        return this->meta_group->members->get_or_construct(m.session_id);
+    });
+}
+
+Napi::Value MetaGroupWrapper::memberSetAdmin(const Napi::CallbackInfo& info) {
+
+    return wrapResult(info, [&] {
+        assertInfoLength(info, 1);
+        assertIsString(info[0]);
+        auto pubkeyHex = toCppString(info[0], __PRETTY_FUNCTION__);
+        // Note: this step might add an admin which was removed back once he accepts the promotion,
+        // but there is not much we can do about it
+        auto m = this->meta_group->members->get_or_construct(pubkeyHex);
+        m.admin = true;
 
         this->meta_group->members->set(m);
         return this->meta_group->members->get_or_construct(m.session_id);
@@ -469,7 +489,7 @@ Napi::Value MetaGroupWrapper::memberSetProfilePicture(const Napi::CallbackInfo& 
     });
 }
 
-Napi::Value MetaGroupWrapper::memberErase(const Napi::CallbackInfo& info) {
+Napi::Value MetaGroupWrapper::memberEraseAndRekey(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
         assertInfoLength(info, 1);
         auto toRemoveJSValue = info[0];
@@ -571,7 +591,7 @@ Napi::Value MetaGroupWrapper::swarmSubAccountToken(const Napi::CallbackInfo& inf
         session::nodeapi::checkOrThrow(
                 subaccount.length() == 36, "expected subaccount tken to be 36 bytes long");
 
-        return subaccount;
+        return oxenc::to_hex(subaccount);
     });
 }
 

@@ -79,8 +79,9 @@ declare module 'libsession_util_nodejs' {
     public memberSetAccepted: MetaGroupWrapper['memberSetAccepted'];
     public memberSetName: MetaGroupWrapper['memberSetName'];
     public memberSetPromoted: MetaGroupWrapper['memberSetPromoted'];
+    public memberSetAdmin: MetaGroupWrapper['memberSetAdmin'];
     public memberSetInvited: MetaGroupWrapper['memberSetInvited'];
-    public memberErase: MetaGroupWrapper['memberErase'];
+    public memberEraseAndRekey: MetaGroupWrapper['memberEraseAndRekey'];
     public memberSetProfilePicture: MetaGroupWrapper['memberSetProfilePicture'];
 
     // keys
@@ -117,8 +118,9 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<MetaGroupWrapper, 'memberSetAccepted'>
     | MakeActionCall<MetaGroupWrapper, 'memberSetName'>
     | MakeActionCall<MetaGroupWrapper, 'memberSetPromoted'>
+    | MakeActionCall<MetaGroupWrapper, 'memberSetAdmin'>
     | MakeActionCall<MetaGroupWrapper, 'memberSetInvited'>
-    | MakeActionCall<MetaGroupWrapper, 'memberErase'>
+    | MakeActionCall<MetaGroupWrapper, 'memberEraseAndRekey'>
     | MakeActionCall<MetaGroupWrapper, 'memberSetProfilePicture'>
 
     // keys actions

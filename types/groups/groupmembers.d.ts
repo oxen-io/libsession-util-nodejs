@@ -30,6 +30,7 @@ declare module 'libsession_util_nodejs' {
     memberSetName: (pubkeyHex: PubkeyType, newName: string) => GroupMemberGet;
     memberSetInvited: (pubkeyHex: PubkeyType, failed: boolean) => GroupMemberGet;
     memberSetPromoted: (pubkeyHex: PubkeyType, failed: boolean) => GroupMemberGet;
+    memberSetAdmin: (pubkeyHex: PubkeyType) => GroupMemberGet;
     memberSetAccepted: (pubkeyHex: PubkeyType) => GroupMemberGet;
     memberSetProfilePicture: (
       pubkeyHex: PubkeyType,
@@ -37,6 +38,6 @@ declare module 'libsession_util_nodejs' {
     ) => GroupMemberGet;
 
     // eraser
-    memberErase: (members: Array<PubkeyType>) => boolean;
+    memberEraseAndRekey: (members: Array<PubkeyType>) => boolean;
   };
 }
