@@ -19,5 +19,6 @@ declare module 'libsession_util_nodejs' {
 
     swarmSubAccountToken: (memberPk: PubkeyType) => string; // hex encoded
     swarmVerifySubAccount: (signingValue: Uint8ArrayLen100) => boolean;
+    loadAdminKeys: (secret: Uint8ArrayLen64) => void;
   };
 }

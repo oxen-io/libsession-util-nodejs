@@ -92,7 +92,7 @@ class ConfigBaseImpl {
             assertInfoLength(info, 2);
 
             // we should get secret key as first arg and optional dumped as second argument
-            assertIsUInt8Array(info[0]);
+            assertIsUInt8Array(info[0], "base construct");
             assertIsUInt8ArrayOrNull(info[1]);
             ustring_view secretKey = toCppBufferView(info[0], class_name + ".new");
 

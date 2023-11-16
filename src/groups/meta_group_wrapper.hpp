@@ -92,6 +92,7 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
     Napi::Value generateSupplementKeys(const Napi::CallbackInfo& info);
     Napi::Value swarmSubaccountSign(const Napi::CallbackInfo& info);
     Napi::Value swarmVerifySubAccount(const Napi::CallbackInfo& info);
+    Napi::Value loadAdminKeys(const Napi::CallbackInfo& info);
 };
 
 }  // namespace session::nodeapi

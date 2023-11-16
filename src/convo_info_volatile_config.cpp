@@ -107,7 +107,7 @@ void ConvoInfoVolatileWrapper::set1o1(const Napi::CallbackInfo& info) {
         assertIsString(first);
 
         auto second = info[1];
-        assertIsNumber(second);
+        assertIsNumber(second, "set1o1");
 
         auto third = info[2];
         assertIsBoolean(third);
@@ -144,7 +144,7 @@ void ConvoInfoVolatileWrapper::setLegacyGroup(const Napi::CallbackInfo& info) {
         auto first = info[0];
         assertIsString(first);
         auto second = info[1];
-        assertIsNumber(second);
+        assertIsNumber(second, "setLegacyGroup");
 
         auto third = info[2];
         assertIsBoolean(third);
@@ -194,7 +194,7 @@ void ConvoInfoVolatileWrapper::setCommunityByFullUrl(const Napi::CallbackInfo& i
         assertIsString(first);
 
         auto second = info[1];
-        assertIsNumber(second);
+        assertIsNumber(second, "setCommunityByFullUrl");
 
         auto third = info[2];
         assertIsBoolean(third);

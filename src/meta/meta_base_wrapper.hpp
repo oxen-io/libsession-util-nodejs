@@ -46,12 +46,12 @@ class MetaBaseWrapper {
             if (obj.IsEmpty())
                 throw std::invalid_argument("constructGroupWrapper received empty");
 
-            assertIsUInt8Array(obj.Get("userEd25519Secretkey"));
+            assertIsUInt8Array(obj.Get("userEd25519Secretkey"), "constructGroupWrapper userEd");
             auto user_ed25519_secretkey = toCppBuffer(
                     obj.Get("userEd25519Secretkey"),
                     class_name + ":constructGroupWrapper.userEd25519Secretkey");
 
-            assertIsUInt8Array(obj.Get("groupEd25519Pubkey"));
+            assertIsUInt8Array(obj.Get("groupEd25519Pubkey"), "constructGroupWrapper groupEd");
             auto group_ed25519_pubkey = toCppBuffer(
                     obj.Get("groupEd25519Pubkey"),
                     class_name + ":constructGroupWrapper.groupEd25519Pubkey");

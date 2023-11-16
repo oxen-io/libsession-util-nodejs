@@ -46,7 +46,7 @@ Napi::Value ConfigBaseImpl::makeDump(const Napi::CallbackInfo& info) {
 void ConfigBaseImpl::confirmPushed(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&]() {
         assertInfoLength(info, 2);
-        assertIsNumber(info[0]);
+        assertIsNumber(info[0], "confirmPushed");
         assertIsString(info[1]);
 
         get_config<ConfigBase>().confirm_pushed(

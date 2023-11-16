@@ -130,7 +130,7 @@ void UserGroupsWrapper::setCommunityByFullUrl(const Napi::CallbackInfo& info) {
                 toCppString(first, "group.SetCommunityByFullUrl"));
 
         auto second = info[1];
-        assertIsNumber(second);
+        assertIsNumber(second, "setCommunityByFullUrl");
         createdOrFound.priority = toPriority(second, createdOrFound.priority);
 
         config.set(createdOrFound);

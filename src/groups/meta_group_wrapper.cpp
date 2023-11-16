@@ -61,6 +61,8 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod("swarmSubAccountToken", &MetaGroupWrapper::swarmSubAccountToken),
                     InstanceMethod(
                             "swarmVerifySubAccount", &MetaGroupWrapper::swarmVerifySubAccount),
+                    InstanceMethod("loadAdminKeys", &MetaGroupWrapper::loadAdminKeys),
+
                     InstanceMethod("swarmSubaccountSign", &MetaGroupWrapper::swarmSubaccountSign),
                     InstanceMethod(
                             "generateSupplementKeys", &MetaGroupWrapper::generateSupplementKeys),
@@ -220,8 +222,8 @@ Napi::Value MetaGroupWrapper::metaMerge(const Napi::CallbackInfo& info) {
 
                 Napi::Object itemObject = item.As<Napi::Object>();
                 assertIsString(itemObject.Get("hash"));
-                assertIsUInt8Array(itemObject.Get("data"));
-                assertIsNumber(itemObject.Get("timestampMs"));
+                assertIsUInt8Array(itemObject.Get("data"), "groupKeys merge");
+                assertIsNumber(itemObject.Get("timestampMs"), "timestampMs groupKeys");
 
                 auto hash = toCppString(itemObject.Get("hash"), "meta.merge keys hash");
                 auto data = toCppBuffer(itemObject.Get("data"), "meta.merge keys data");
@@ -254,7 +256,7 @@ Napi::Value MetaGroupWrapper::metaMerge(const Napi::CallbackInfo& info) {
 
                 Napi::Object itemObject = item.As<Napi::Object>();
                 assertIsString(itemObject.Get("hash"));
-                assertIsUInt8Array(itemObject.Get("data"));
+                assertIsUInt8Array(itemObject.Get("data"), "groupInfo merge");
                 conf_strs.emplace_back(
                         toCppString(itemObject.Get("hash"), "meta.merge"),
                         toCppBufferView(itemObject.Get("data"), "meta.merge"));
@@ -279,7 +281,7 @@ Napi::Value MetaGroupWrapper::metaMerge(const Napi::CallbackInfo& info) {
 
                 Napi::Object itemObject = item.As<Napi::Object>();
                 assertIsString(itemObject.Get("hash"));
-                assertIsUInt8Array(itemObject.Get("data"));
+                assertIsUInt8Array(itemObject.Get("data"), "groupMember merge");
                 conf_strs.emplace_back(
                         toCppString(itemObject.Get("hash"), "meta.merge"),
                         toCppBufferView(itemObject.Get("data"), "meta.merge"));
@@ -528,8 +530,8 @@ Napi::Value MetaGroupWrapper::loadKeyMessage(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
         assertInfoLength(info, 3);
         assertIsString(info[0]);
-        assertIsUInt8Array(info[1]);
-        assertIsNumber(info[2]);
+        assertIsUInt8Array(info[1], __PRETTY_FUNCTION__);
+        assertIsNumber(info[2], __PRETTY_FUNCTION__);
 
         auto hash = toCppString(info[0], __PRETTY_FUNCTION__);
         auto data = toCppBuffer(info[1], __PRETTY_FUNCTION__);
@@ -556,7 +558,7 @@ Napi::Value MetaGroupWrapper::encryptMessage(const Napi::CallbackInfo& info) {
 Napi::Value MetaGroupWrapper::decryptMessage(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
         assertInfoLength(info, 1);
-        assertIsUInt8Array(info[0]);
+        assertIsUInt8Array(info[0], __PRETTY_FUNCTION__);
 
         auto ciphertext = toCppBuffer(info[0], __PRETTY_FUNCTION__);
         auto decrypted = this->meta_group->keys->decrypt_message(ciphertext);
@@ -598,10 +600,22 @@ Napi::Value MetaGroupWrapper::swarmSubAccountToken(const Napi::CallbackInfo& inf
 Napi::Value MetaGroupWrapper::swarmVerifySubAccount(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
         assertInfoLength(info, 1);
-        assertIsUInt8Array(info[0]);
+        assertIsUInt8Array(info[0], __PRETTY_FUNCTION__);
 
         auto signingValue = toCppBuffer(info[0], __PRETTY_FUNCTION__);
         return this->meta_group->keys->swarm_verify_subaccount(signingValue);
+    });
+}
+
+Napi::Value MetaGroupWrapper::loadAdminKeys(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        assertInfoLength(info, 1);
+        assertIsUInt8Array(info[0], __PRETTY_FUNCTION__);
+
+        auto secret = toCppBuffer(info[0], __PRETTY_FUNCTION__);
+        this->meta_group->keys->load_admin_key(
+                secret, *(this->meta_group->info), *(this->meta_group->members));
+        return info.Env().Null();
     });
 }
 
@@ -629,8 +643,8 @@ Napi::Value MetaGroupWrapper::generateSupplementKeys(const Napi::CallbackInfo& i
 Napi::Value MetaGroupWrapper::swarmSubaccountSign(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
         assertInfoLength(info, 2);
-        assertIsUInt8Array(info[0]);
-        assertIsUInt8Array(info[1]);
+        assertIsUInt8Array(info[0], "swarmSubaccountSign 0");
+        assertIsUInt8Array(info[1], "swarmSubaccountSign 1");
 
         auto message = toCppBuffer(info[0], __PRETTY_FUNCTION__);
         auto authdata = toCppBuffer(info[1], __PRETTY_FUNCTION__);

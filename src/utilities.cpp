@@ -18,10 +18,10 @@ void assertIsStringOrNull(const Napi::Value& val) {
     checkOrThrow(val.IsString() || val.IsNull(), "Wrong arguments: expected string or null");
 }
 
-void assertIsNumber(const Napi::Value& val) {
+void assertIsNumber(const Napi::Value& val, const std::string& identifier) {
     checkOrThrow(
             val.IsNumber() && !val.IsEmpty() && !val.IsNull() && !val.IsUndefined(),
-            "Wrong arguments: expected number");
+            std::string("Wrong arguments: expected number" + identifier).c_str());
 }
 
 void assertIsArray(const Napi::Value& val) {
@@ -42,8 +42,10 @@ void assertIsUInt8ArrayOrNull(const Napi::Value& val) {
     checkOrThrow(val.IsNull() || IsUint8Array(val), "Wrong arguments: expected uint8Array or null");
 }
 
-void assertIsUInt8Array(const Napi::Value& val) {
-    checkOrThrow(IsUint8Array(val), "Wrong arguments: expected Buffer");
+void assertIsUInt8Array(const Napi::Value& val, const std::string& identifier) {
+    checkOrThrow(
+            IsUint8Array(val),
+            std::string("Wrong arguments: expected uint8Array" + identifier).c_str());
 }
 
 void assertIsString(const Napi::Value& val) {

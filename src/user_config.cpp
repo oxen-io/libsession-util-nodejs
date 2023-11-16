@@ -71,7 +71,7 @@ void UserConfigWrapper::setUserInfo(const Napi::CallbackInfo& info) {
         // auto expirySeconds = info[3];
 
         assertIsStringOrNull(name);
-        assertIsNumber(priority);
+        assertIsNumber(priority, "setUserInfo priority");
         // assertIsNumber(expirySeconds);
         std::string new_name;
 

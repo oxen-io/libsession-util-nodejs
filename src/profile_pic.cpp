@@ -22,7 +22,7 @@ config::profile_pic profile_pic_from_object(Napi::Value val) {
         return {};
 
     assertIsString(url);
-    assertIsUInt8Array(key);
+    assertIsUInt8Array(key, "profile_pic_from_object");
 
     auto url_str = toCppString(url, "profile_pic_from_object");
     if (url_str.size() > config::profile_pic::MAX_URL_LENGTH)

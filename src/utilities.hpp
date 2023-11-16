@@ -26,11 +26,11 @@ void assertInfoLength(const Napi::CallbackInfo& info, const int expected);
 void assertInfoMinLength(const Napi::CallbackInfo& info, const int minLength);
 
 void assertIsStringOrNull(const Napi::Value& value);
-void assertIsNumber(const Napi::Value& value);
+void assertIsNumber(const Napi::Value& value, const std::string& identifier);
 void assertIsArray(const Napi::Value& value);
 void assertIsObject(const Napi::Value& value);
 void assertIsUInt8ArrayOrNull(const Napi::Value& value);
-void assertIsUInt8Array(const Napi::Value& value);
+void assertIsUInt8Array(const Napi::Value& value, const std::string& identifier);
 void assertIsString(const Napi::Value& value);
 void assertIsBoolean(const Napi::Value& value);
 
