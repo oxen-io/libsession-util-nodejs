@@ -56,6 +56,7 @@ ustring toCppBuffer(Napi::Value x, const std::string& identifier);
 ustring_view toCppBufferView(Napi::Value x, const std::string& identifier);
 int64_t toCppInteger(Napi::Value x, const std::string& identifier, bool allowUndefined = false);
 std::optional<int64_t> maybeNonemptyInt(Napi::Value x, const std::string& identifier);
+std::optional<bool> maybeNonemptyBoolean(Napi::Value x, const std::string& identifier);
 
 bool toCppBoolean(Napi::Value x, const std::string& identifier);
 

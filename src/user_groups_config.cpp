@@ -68,7 +68,8 @@ struct toJs_impl<group_info> {
         obj["joinedAtSeconds"] = toJs(env, info.joined_at);
         obj["name"] = toJs(env, info.name);
         obj["authData"] = toJs(env, info.auth_data);
-        // TODO kicked and setKicked todo
+        obj["invitedButNotAccepted"] = toJs(env, info.invited);
+        obj["kicked"] = toJs(env, info.kicked());
 
         return obj;
     }
@@ -307,6 +308,19 @@ Napi::Value UserGroupsWrapper::setGroup(const Napi::CallbackInfo& info) {
         if (auto joinedAtSeconds = maybeNonemptyInt(
                     obj.Get("joinedAtSeconds"), "UserGroupsWrapper::setGroup joinedAtSeconds")) {
             group_info.joined_at = *joinedAtSeconds;
+        }
+
+        if (auto invited = maybeNonemptyBoolean(
+                    obj.Get("invitedButNotAccepted"),
+                    "UserGroupsWrapper::setGroup invitedButNotAccepted")) {
+            group_info.invited = *invited;
+        }
+
+        if (auto kicked =
+                    maybeNonemptyBoolean(obj.Get("kicked"), "UserGroupsWrapper::setGroup kicked")) {
+            if (*kicked) {
+                group_info.setKicked();
+            }
         }
 
         if (auto secretKey = maybeNonemptyBuffer(

@@ -133,6 +133,18 @@ std::optional<int64_t> maybeNonemptyInt(Napi::Value x, const std::string& identi
     throw std::invalid_argument{"maybeNonemptyInt with invalid type, called from " + identifier};
 }
 
+std::optional<bool> maybeNonemptyBoolean(Napi::Value x, const std::string& identifier) {
+    if (x.IsNull() || x.IsUndefined())
+        return std::nullopt;
+    if (x.IsBoolean()) {
+
+        return x.As<Napi::Boolean>().Value();
+    }
+
+    throw std::invalid_argument{
+            "maybeNonemptyBoolean with invalid type, called from " + identifier};
+}
+
 bool toCppBoolean(Napi::Value x, const std::string& identifier) {
     if (x.IsNull() || x.IsUndefined())
         return false;

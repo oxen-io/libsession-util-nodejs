@@ -43,6 +43,8 @@ declare module 'libsession_util_nodejs' {
     secretKey: Uint8ArrayLen64 | null; // len 64
     authData: Uint8ArrayLen100 | null; // len 100
     name: string | null;
+    invitedButNotAccepted: boolean; // libsession allows this field for all groups (including communities, but we don't need it for more)
+    kicked: boolean; // Note: setting this to true will erase authData and admin secretKey, permanently
   };
 
   /**
