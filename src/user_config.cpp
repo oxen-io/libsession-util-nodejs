@@ -104,7 +104,14 @@ void UserConfigWrapper::setEnableBlindedMsgRequest(const Napi::CallbackInfo& inf
 }
 
 Napi::Value UserConfigWrapper::getNoteToSelfExpiry(const Napi::CallbackInfo& info) {
-    return wrapResult(info, [&] { return config.get_nts_expiry()->count(); });
+    return wrapResult(info, [&] {
+        auto nts_expiry = config.get_nts_expiry();
+        if (nts_expiry) {
+            return nts_expiry->count();
+        }
+
+        return static_cast<int64_t>(0);
+    });
 }
 
 void UserConfigWrapper::setNoteToSelfExpiry(const Napi::CallbackInfo& info) {
