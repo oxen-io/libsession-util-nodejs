@@ -16,15 +16,22 @@ declare module 'libsession_util_nodejs' {
 
   export type ContactsWrapperActionsCalls = MakeWrapperActionCalls<ContactsWrapper>;
 
+  // NOTE must match DisappearingMessageConversationModeType in session-desktop
+  export type DisappearingMessageConversationModeType =
+    | 'off'
+    | 'deleteAfterRead'
+    | 'deleteAfterSend'
+    // TODO legacy messages support will be removed in a future release
+    | 'legacy';
+
   type ContactInfoShared = WithPriority & {
     id: string;
     name?: string;
     nickname?: string;
     profilePicture?: ProfilePicture;
     createdAtSeconds: number; // can only be set the first time a contact is created, a new change won't overide the value in the wrapper.
-
-    // expirationMode: 'off' | 'disappearAfterRead' | 'disappearAfterSend'; // the same as defined in the disappearingBranch
-    // expirationTimerSeconds: number;
+    expirationMode?: DisappearingMessageConversationModeType;
+    expirationTimerSeconds?: number;
   };
 
   export type ContactInfoSet = ContactInfoShared & {

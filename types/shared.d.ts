@@ -1,9 +1,4 @@
 declare module 'libsession_util_nodejs' {
-  type Uint8ArrayFixedLength<T extends number> = {
-    buffer: Uint8Array;
-    length: T;
-  };
-
   /**
    * Allow a single type to be Nullable. i.e. string => string | null
    */
@@ -59,20 +54,10 @@ declare module 'libsession_util_nodejs' {
     dump: () => Uint8Array;
     makeDump: () => Uint8Array;
     confirmPushed: (seqno: number, hash: string) => void;
-    merge: (toMerge: Array<MergeSingle>) => Array<string>; // merge returns the array of hashes merged correctly
+    merge: (toMerge: Array<MergeSingle>) => Array<string>; // merge returns the array of hashes that merged correctly
+    storageNamespace: () => number;
     currentHashes: () => Array<string>;
   };
-
-  export type BaseConfigFunctions =
-    | 'needsDump'
-    | 'needsPush'
-    | 'push'
-    | 'dump'
-    | 'makeDump'
-    | 'confirmPushed'
-    | 'merge'
-    | 'needsPush'
-    | 'currentHashes';
 
   export type GenericWrapperActionsCall<A extends string, B extends keyof BaseConfigWrapper> = (
     wrapperId: A,
@@ -87,6 +72,7 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<BaseConfigWrapper, 'makeDump'>
     | MakeActionCall<BaseConfigWrapper, 'confirmPushed'>
     | MakeActionCall<BaseConfigWrapper, 'merge'>
+    | MakeActionCall<BaseConfigWrapper, 'storageNamespace'>
     | MakeActionCall<BaseConfigWrapper, 'currentHashes'>;
 
   export abstract class BaseConfigWrapperNode {
@@ -97,6 +83,7 @@ declare module 'libsession_util_nodejs' {
     public makeDump: BaseConfigWrapper['makeDump'];
     public confirmPushed: BaseConfigWrapper['confirmPushed'];
     public merge: BaseConfigWrapper['merge'];
+    public storageNamespace: BaseConfigWrapper['storageNamespace'];
     public currentHashes: BaseConfigWrapper['currentHashes'];
   }
 

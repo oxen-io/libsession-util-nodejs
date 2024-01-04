@@ -27,6 +27,8 @@ declare module 'libsession_util_nodejs' {
 
   type BaseUserGroup = WithPriority & {
     joinedAtSeconds: number; // equivalent to the lastJoinedTimestamp in Session desktop but in seconds rather than MS
+    // NOTE Properties need to be optional going forward to backward compatibility
+    disappearingTimerSeconds?: number; // in seconds, 0 or undefined == disabled.
   };
 
   export type LegacyGroupInfo = BaseUserGroup & {
