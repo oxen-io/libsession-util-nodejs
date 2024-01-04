@@ -1,4 +1,8 @@
 declare module 'libsession_util_nodejs' {
+  type Uint8ArrayFixedLength<T extends number> = {
+    buffer: Uint8Array;
+    length: T;
+  };
   /**
    * Allow a single type to be Nullable. i.e. string => string | null
    */
