@@ -85,7 +85,7 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
     Napi::Value keyRekey(const Napi::CallbackInfo& info);
     Napi::Value loadKeyMessage(const Napi::CallbackInfo& info);
     Napi::Value currentHashes(const Napi::CallbackInfo& info);
-    Napi::Value encryptMessage(const Napi::CallbackInfo& info);
+    Napi::Value encryptMessages(const Napi::CallbackInfo& info);
     Napi::Value decryptMessage(const Napi::CallbackInfo& info);
     Napi::Value makeSwarmSubAccount(const Napi::CallbackInfo& info);
     Napi::Value swarmSubAccountToken(const Napi::CallbackInfo& info);

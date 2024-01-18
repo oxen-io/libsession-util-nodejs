@@ -8,7 +8,7 @@ declare module 'libsession_util_nodejs' {
     loadKeyMessage: (hash: string, data: Uint8Array, timestampMs: number) => boolean;
 
     currentHashes: () => Array<string>;
-    encryptMessage: (plaintext: Uint8Array) => Uint8Array;
+    encryptMessages: (plaintexts: Array<Uint8Array>) => Array<Uint8Array>;
     decryptMessage: (ciphertext: Uint8Array) => { pubkeyHex: string; plaintext: Uint8Array };
     makeSwarmSubAccount: (memberPubkeyHex: PubkeyType) => Uint8ArrayLen100;
     generateSupplementKeys: (membersPubkeyHex: Array<PubkeyType>) => Array<Uint8Array>;

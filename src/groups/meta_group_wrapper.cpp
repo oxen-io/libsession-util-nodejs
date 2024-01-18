@@ -55,7 +55,7 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod("currentHashes", &MetaGroupWrapper::currentHashes),
                     InstanceMethod("loadKeyMessage", &MetaGroupWrapper::loadKeyMessage),
 
-                    InstanceMethod("encryptMessage", &MetaGroupWrapper::encryptMessage),
+                    InstanceMethod("encryptMessages", &MetaGroupWrapper::encryptMessages),
                     InstanceMethod("decryptMessage", &MetaGroupWrapper::decryptMessage),
                     InstanceMethod("makeSwarmSubAccount", &MetaGroupWrapper::makeSwarmSubAccount),
                     InstanceMethod("swarmSubAccountToken", &MetaGroupWrapper::swarmSubAccountToken),
@@ -546,12 +546,22 @@ Napi::Value MetaGroupWrapper::currentHashes(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] { return meta_group->keys->current_hashes(); });
 }
 
-Napi::Value MetaGroupWrapper::encryptMessage(const Napi::CallbackInfo& info) {
+Napi::Value MetaGroupWrapper::encryptMessages(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
         assertInfoLength(info, 1);
+        assertIsArray(info[0]);
 
-        auto plaintext = toCppBuffer(info[0], __PRETTY_FUNCTION__);
-        return this->meta_group->keys->encrypt_message(plaintext);
+        auto plaintextsJS = info[0].As<Napi::Array>();
+        uint32_t arrayLength = plaintextsJS.Length();
+        std::vector<session::ustring> encryptedMessages;
+        encryptedMessages.reserve(arrayLength);
+
+        for (uint32_t i = 0; i < plaintextsJS.Length(); i++) {
+            auto plaintext = toCppBuffer(plaintextsJS[i], __PRETTY_FUNCTION__);
+
+            encryptedMessages.push_back(this->meta_group->keys->encrypt_message(plaintext));
+        }
+        return encryptedMessages;
     });
 }
 

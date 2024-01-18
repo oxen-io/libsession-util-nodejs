@@ -89,7 +89,7 @@ declare module 'libsession_util_nodejs' {
     public keysNeedsRekey: MetaGroupWrapper['keysNeedsRekey'];
     public keyRekey: MetaGroupWrapper['keyRekey'];
     public loadKeyMessage: MetaGroupWrapper['loadKeyMessage'];
-    public encryptMessage: MetaGroupWrapper['encryptMessage'];
+    public encryptMessages: MetaGroupWrapper['encryptMessages'];
     public decryptMessage: MetaGroupWrapper['decryptMessage'];
     public makeSwarmSubAccount: MetaGroupWrapper['makeSwarmSubAccount'];
     public swarmSubaccountSign: MetaGroupWrapper['swarmSubaccountSign'];
@@ -128,7 +128,7 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<MetaGroupWrapper, 'keyRekey'>
     | MakeActionCall<MetaGroupWrapper, 'loadKeyMessage'>
     | MakeActionCall<MetaGroupWrapper, 'currentHashes'>
-    | MakeActionCall<MetaGroupWrapper, 'encryptMessage'>
+    | MakeActionCall<MetaGroupWrapper, 'encryptMessages'>
     | MakeActionCall<MetaGroupWrapper, 'decryptMessage'>
     | MakeActionCall<MetaGroupWrapper, 'makeSwarmSubAccount'>
     | MakeActionCall<MetaGroupWrapper, 'swarmSubaccountSign'>

@@ -204,7 +204,8 @@ void UserGroupsWrapper::setLegacyGroup(const Napi::CallbackInfo& info) {
 
         group.disappearing_timer = std::chrono::seconds{toCppInteger(
                 obj.Get("disappearingTimerSeconds"),
-                "legacyGroup.set disappearingTimerSeconds", true)};
+                "legacyGroup.set disappearingTimerSeconds",
+                true)};
 
         auto membersJSValue = obj.Get("members");
         assertIsArray(membersJSValue);
@@ -278,6 +279,7 @@ Napi::Value UserGroupsWrapper::getGroup(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value UserGroupsWrapper::getAllGroups(const Napi::CallbackInfo& info) {
+
     return get_all_impl(info, config.size_groups(), config.begin_groups(), config.end());
 }
 

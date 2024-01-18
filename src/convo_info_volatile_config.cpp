@@ -199,10 +199,8 @@ Napi::Value ConvoInfoVolatileWrapper::getGroup(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] { return config.get_group(getStringArgs<1>(info)); });
 }
 
-
 Napi::Value ConvoInfoVolatileWrapper::getAllGroups(const Napi::CallbackInfo& info) {
-    return get_all_impl(
-            info, config.size_legacy_groups(), config.begin_legacy_groups(), config.end());
+    return get_all_impl(info, config.size_groups(), config.begin_groups(), config.end());
 }
 
 void ConvoInfoVolatileWrapper::setGroup(const Napi::CallbackInfo& info) {
