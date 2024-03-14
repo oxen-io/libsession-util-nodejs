@@ -126,6 +126,7 @@ declare module 'libsession_util_nodejs' {
     // keys actions
     | MakeActionCall<MetaGroupWrapper, 'keysNeedsRekey'>
     | MakeActionCall<MetaGroupWrapper, 'keyRekey'>
+    | MakeActionCall<MetaGroupWrapper, 'keyGetAll'>
     | MakeActionCall<MetaGroupWrapper, 'loadKeyMessage'>
     | MakeActionCall<MetaGroupWrapper, 'currentHashes'>
     | MakeActionCall<MetaGroupWrapper, 'encryptMessages'>

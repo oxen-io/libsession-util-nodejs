@@ -113,6 +113,7 @@ declare module 'libsession_util_nodejs' {
 
   export type WithPriority = { priority: number }; // -1 means hidden, 0 means normal, > 1 means pinned
   export type WithGroupPubkey = { groupPk: GroupPubkeyType };
+  export type WithPubkey = { pubkey: PubkeyType };
 
   type GroupInfoShared = {
     name: string | null;

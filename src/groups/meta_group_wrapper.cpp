@@ -51,6 +51,7 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
 
                     InstanceMethod("keysNeedsRekey", &MetaGroupWrapper::keysNeedsRekey),
                     InstanceMethod("keyRekey", &MetaGroupWrapper::keyRekey),
+                    InstanceMethod("keyGetAll", &MetaGroupWrapper::keyGetAll),
 
                     InstanceMethod("currentHashes", &MetaGroupWrapper::currentHashes),
                     InstanceMethod("loadKeyMessage", &MetaGroupWrapper::loadKeyMessage),
@@ -291,6 +292,10 @@ Napi::Value MetaGroupWrapper::metaMerge(const Napi::CallbackInfo& info) {
 
             count_merged += member_merged.size();
         }
+
+        if (this->meta_group->keys->needs_rekey()) {
+            this->meta_group->keys->rekey(*(this->meta_group->info), *(this->meta_group->members));
+        }
         return count_merged;
     });
 }
@@ -526,6 +531,10 @@ Napi::Value MetaGroupWrapper::keyRekey(const Napi::CallbackInfo& info) {
     });
 }
 
+Napi::Value MetaGroupWrapper::keyGetAll(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] { return meta_group->keys->group_keys(); });
+}
+
 Napi::Value MetaGroupWrapper::loadKeyMessage(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
         assertInfoLength(info, 3);
@@ -601,7 +610,7 @@ Napi::Value MetaGroupWrapper::swarmSubAccountToken(const Napi::CallbackInfo& inf
         ustring subaccount = this->meta_group->keys->swarm_subaccount_token(memberPk);
 
         session::nodeapi::checkOrThrow(
-                subaccount.length() == 36, "expected subaccount tken to be 36 bytes long");
+                subaccount.length() == 36, "expected subaccount token to be 36 bytes long");
 
         return oxenc::to_hex(subaccount);
     });
