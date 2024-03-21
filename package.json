@@ -2,7 +2,7 @@
   "main": "index.js",
   "name": "libsession_util_nodejs",
   "description": "Wrappers for the Session Util Library",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "license": "GPL-3.0",
   "author": {
     "name": "Oxen Project",
