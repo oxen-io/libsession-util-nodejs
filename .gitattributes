@@ -4,3 +4,6 @@ libsession-util/external/libsodium-internal/test export-ignore
 libsession-util/external/zstd/doc export-ignore
 libsession-util/tests export-ignore
 libsession-util/external/oxen-encoding/tests export-ignore
+libsession-util/external/zstd/tests export-ignore
+libsession-util/external/nlohmann-json/tests export-ignore
+libsession-util/external/nlohmann-json/docs export-ignore

@@ -2,12 +2,9 @@
 
 #include <oxenc/hex.h>
 
-namespace session::nodeapi {
+#include "session/config/namespaces.hpp"
 
-static void checkOrThrow(bool condition, const char* msg) {
-    if (!condition)
-        throw std::invalid_argument{msg};
-}
+namespace session::nodeapi {
 
 void assertInfoLength(const Napi::CallbackInfo& info, const int expected) {
     checkOrThrow(info.Length() == expected, "Invalid number of arguments");
@@ -21,10 +18,10 @@ void assertIsStringOrNull(const Napi::Value& val) {
     checkOrThrow(val.IsString() || val.IsNull(), "Wrong arguments: expected string or null");
 }
 
-void assertIsNumber(const Napi::Value& val) {
+void assertIsNumber(const Napi::Value& val, const std::string& identifier) {
     checkOrThrow(
             val.IsNumber() && !val.IsEmpty() && !val.IsNull() && !val.IsUndefined(),
-            "Wrong arguments: expected number");
+            std::string("Wrong arguments: expected number" + identifier).c_str());
 }
 
 void assertIsArray(const Napi::Value& val) {
@@ -45,8 +42,10 @@ void assertIsUInt8ArrayOrNull(const Napi::Value& val) {
     checkOrThrow(val.IsNull() || IsUint8Array(val), "Wrong arguments: expected uint8Array or null");
 }
 
-void assertIsUInt8Array(const Napi::Value& val) {
-    checkOrThrow(IsUint8Array(val), "Wrong arguments: expected Buffer");
+void assertIsUInt8Array(const Napi::Value& val, const std::string& identifier) {
+    checkOrThrow(
+            IsUint8Array(val),
+            std::string("Wrong arguments: expected uint8Array" + identifier).c_str());
 }
 
 void assertIsString(const Napi::Value& val) {
@@ -123,6 +122,29 @@ int64_t toCppInteger(Napi::Value x, const std::string& identifier, bool allowUnd
     throw std::invalid_argument{"Unsupported type for "s + identifier + ": expected a number"};
 }
 
+std::optional<int64_t> maybeNonemptyInt(Napi::Value x, const std::string& identifier) {
+    if (x.IsNull() || x.IsUndefined())
+        return std::nullopt;
+    if (x.IsNumber()) {
+        auto num = x.As<Napi::Number>().Int64Value();
+        return num;
+    }
+
+    throw std::invalid_argument{"maybeNonemptyInt with invalid type, called from " + identifier};
+}
+
+std::optional<bool> maybeNonemptyBoolean(Napi::Value x, const std::string& identifier) {
+    if (x.IsNull() || x.IsUndefined())
+        return std::nullopt;
+    if (x.IsBoolean()) {
+
+        return x.As<Napi::Boolean>().Value();
+    }
+
+    throw std::invalid_argument{
+            "maybeNonemptyBoolean with invalid type, called from " + identifier};
+}
+
 bool toCppBoolean(Napi::Value x, const std::string& identifier) {
     if (x.IsNull() || x.IsUndefined())
         return false;
@@ -166,6 +188,42 @@ int64_t toPriority(Napi::Value x, int64_t currentPriority) {
 int64_t unix_timestamp_now() {
     using namespace std::chrono;
     return duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+}
+
+Napi::Object push_result_to_JS(
+        const Napi::Env& env,
+        const push_entry_t& push_entry,
+        const session::config::Namespace& push_namespace) {
+    auto obj = Napi::Object::New(env);
+
+    obj["seqno"] = toJs(env, std::get<0>(push_entry));
+    obj["data"] = toJs(env, std::get<1>(push_entry));
+    obj["hashes"] = toJs(env, std::get<2>(push_entry));
+    obj["namespace"] = toJs(env, push_namespace);
+
+    return obj;
+};
+
+Napi::Object push_key_entry_to_JS(
+        const Napi::Env& env,
+        const session::ustring_view& key_data,
+        const session::config::Namespace& push_namespace) {
+    auto obj = Napi::Object::New(env);
+
+    obj["data"] = toJs(env, key_data);
+    obj["namespace"] = toJs(env, push_namespace);
+
+    return obj;
+};
+
+Napi::Object decrypt_result_to_JS(
+        const Napi::Env& env, const std::pair<std::string, ustring> decrypted) {
+    auto obj = Napi::Object::New(env);
+
+    obj["pubkeyHex"] = toJs(env, decrypted.first);
+    obj["plaintext"] = toJs(env, decrypted.second);
+
+    return obj;
 }
 
 }  // namespace session::nodeapi
