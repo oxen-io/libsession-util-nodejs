@@ -7,6 +7,8 @@ declare module 'libsession_util_nodejs' {
 
   type UserConfigWrapper = BaseConfigWrapper & {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
+    /** This function is used to free wrappers from memory only */
+    free: () => void;
     getUserInfo: () => {
       name: string;
       priority: number;
@@ -49,6 +51,7 @@ declare module 'libsession_util_nodejs' {
    */
   export type UserConfigActionsType =
     | ['init', Uint8Array, Uint8Array | null]
+    | MakeActionCall<UserConfigWrapper, 'free'>
     | MakeActionCall<UserConfigWrapper, 'getUserInfo'>
     | MakeActionCall<UserConfigWrapper, 'setUserInfo'>
     | MakeActionCall<UserConfigWrapper, 'getEnableBlindedMsgRequest'>
