@@ -1,6 +1,6 @@
 ## Libsession-util NodeJS
 
-This library is the wrappers around libsession-util for NodeJS. It is built using the node-native-addon and cmake-js. The build and dev instructions are quite custom, so check them out below.
+This library is the wrappers around libsession-util for NodeJS. It is built using the [node-addon-api](https://github.com/nodejs/node-addon-api) and [cmake-js](https://github.com/cmake-js/cmake-js). The build and dev instructions are quite custom, so check them out below.
 
 ### Issue with Yarn
 
@@ -24,13 +24,14 @@ Then, you can quickly compile a non-electron build by running `yarn cmake-js` fr
 Once your changes are ready to be tested in the `session-desktop` you can compile an electron build using this command:
 
 ```
-cd [SESSION_DESKTOP_FOLDER]
-rm -rf node_modules/libsession_util_nodejs; cp -R [FOLDER_NOT_IN_SESSION_DESKTOP]/libsession-util-nodejs node_modules/libsession_util_nodejs; rm -rf node_modules/libsession_util_nodejs/build && yarn cmake-js --runtime=electron --runtime-version=25.3.0 --arch=x64 -d node_modules/libsession_util_nodejs -p16 && yarn build:workers
+cd [SESSION_DESKTOP_PATH]; rm -rf node_modules/libsession_util_nodejs; cp -R [THIS_PROJECT_PATH] node_modules/libsession_util_nodejs; cd node_modules/libsession_util_nodejs && rm -rf build && yarn install && cd [SESSION_DESKTOP_PATH] && yarn build:workers
 ```
 
-Every part of this command is needed and might need to be updated using your paths. Also, the `worker:libsession` needs to be recompiled too to include the just created .node file in itself.
+Replace `[SESSION_DESKTOP_PATH]` with the full path to your `session-desktop` folder, replace `[THIS_PROJECT_PATH]` with the path to the root of this project folder.
 
-Note: the `--runtime-version` will need to be updated in this command and in the `package.json` install script every time we update electron. It is a node version, but not part of the official node docs. If you compiled the node module for an incorrect electron/node version you will get an error on session-desktop start. Just google it to find the required electron version to compile the node module for.
+Every part of this command is needed and might need to be updated using your paths. Also, the `worker:libsession` needs to be recompiled too to include the just created .node file in itself. This is done by the `yarn build:workers` command.
+
+Note: The `electron` property in the `config` object will need to be updated in the `package.json` every time we update `electron` package in [session-desktop](https://github.com/oxen-io/session-desktop/) so that the versions match. It is a node version, but not part of the official node docs. If you compiled the node module for an incorrect electron/node version you will get an error on `session-desktop` start.
 
 ### Making a Release and updating Session-desktop
 
