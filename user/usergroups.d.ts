@@ -84,7 +84,7 @@ declare module 'libsession_util_nodejs' {
 
   export type UserGroupsConfigActionsType =
     | ['init', Uint8Array, Uint8Array | null]
-    | MakeActionCall<UserConfigWrapper, 'free'>
+    | MakeActionCall<UserGroupsWrapper, 'free'>
     | MakeActionCall<UserGroupsWrapper, 'getCommunityByFullUrl'>
     | MakeActionCall<UserGroupsWrapper, 'setCommunityByFullUrl'>
     | MakeActionCall<UserGroupsWrapper, 'getAllCommunities'>

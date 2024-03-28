@@ -57,7 +57,7 @@ declare module 'libsession_util_nodejs' {
 
   export type ContactsConfigActionsType =
     | ['init', Uint8Array, Uint8Array | null]
-    | MakeActionCall<UserConfigWrapper, 'free'>
+    | MakeActionCall<ContactsWrapper, 'free'>
     | MakeActionCall<ContactsWrapper, 'get'>
     | MakeActionCall<ContactsWrapper, 'set'>
     | MakeActionCall<ContactsWrapper, 'getAll'>

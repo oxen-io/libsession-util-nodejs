@@ -62,7 +62,7 @@ declare module 'libsession_util_nodejs' {
 
   export type ConvoInfoVolatileConfigActionsType =
     | ['init', Uint8Array, Uint8Array | null]
-    | MakeActionCall<UserConfigWrapper, 'free'>
+    | MakeActionCall<ConvoInfoVolatileWrapper, 'free'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'get1o1'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'getAll1o1'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'set1o1'>
