@@ -8,8 +8,11 @@
     "name": "Oxen Project",
     "email": "team@oxen.io"
   },
+  "config": {
+    "electron": "25.8.4"
+  },
   "scripts": {
-    "install": "cmake-js compile --runtime=electron --runtime-version=25.3.0 -p16"
+    "install": "cmake-js compile --runtime=electron --runtime-version=$npm_package_config_electron -p16"
   },
   "devDependencies": {
     "clang-format": "^1.8.0"

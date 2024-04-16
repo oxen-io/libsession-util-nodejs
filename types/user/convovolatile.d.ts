@@ -18,6 +18,8 @@ declare module 'libsession_util_nodejs' {
 
   type ConvoInfoVolatileWrapper = BaseConfigWrapper & {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
+    /** This function is used to free wrappers from memory only */
+    free: () => void;
 
     // 1o1 related methods
     get1o1: (pubkeyHex: string) => ConvoInfoVolatile1o1 | null;
@@ -70,6 +72,7 @@ declare module 'libsession_util_nodejs' {
 
   export type ConvoInfoVolatileConfigActionsType =
     | ['init', Uint8Array, Uint8Array | null]
+    | MakeActionCall<ConvoInfoVolatileWrapper, 'free'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'get1o1'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'getAll1o1'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'set1o1'>

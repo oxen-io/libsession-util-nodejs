@@ -8,6 +8,8 @@
 declare module 'libsession_util_nodejs' {
   type ContactsWrapper = BaseConfigWrapper & {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
+    /** This function is used to free wrappers from memory only */
+    free: () => void;
     get: (pubkeyHex: string) => ContactInfo | null;
     set: (contact: ContactInfoSet) => void;
     getAll: () => Array<ContactInfo>;
@@ -56,6 +58,7 @@ declare module 'libsession_util_nodejs' {
 
   export type ContactsConfigActionsType =
     | ['init', Uint8Array, Uint8Array | null]
+    | MakeActionCall<ContactsWrapper, 'free'>
     | MakeActionCall<ContactsWrapper, 'get'>
     | MakeActionCall<ContactsWrapper, 'set'>
     | MakeActionCall<ContactsWrapper, 'getAll'>

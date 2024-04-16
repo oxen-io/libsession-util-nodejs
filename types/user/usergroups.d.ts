@@ -58,6 +58,8 @@ declare module 'libsession_util_nodejs' {
 
   type UserGroupsWrapper = BaseConfigWrapper & {
     init: (secretKey: Uint8Array, dump: Uint8Array | null) => void;
+    /** This function is used to free wrappers from memory only */
+    free: () => void;
 
     // Communities related methods
     /** Note: can have the pubkey argument set or not.  */
@@ -118,6 +120,7 @@ declare module 'libsession_util_nodejs' {
 
   export type UserGroupsConfigActionsType =
     | ['init', Uint8Array, Uint8Array | null]
+    | MakeActionCall<UserGroupsWrapper, 'free'>
     | MakeActionCall<UserGroupsWrapper, 'getCommunityByFullUrl'>
     | MakeActionCall<UserGroupsWrapper, 'setCommunityByFullUrl'>
     | MakeActionCall<UserGroupsWrapper, 'getAllCommunities'>

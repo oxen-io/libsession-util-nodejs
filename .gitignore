@@ -1,5 +1,6 @@
 /build/
 /.vscode/
+/.vscrof/
 /node_modules/
 /*.tar.gz
 /package-lock.json
