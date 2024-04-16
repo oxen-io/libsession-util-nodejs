@@ -27,6 +27,7 @@ struct toJs_impl<member> {
         obj["promotionFailed"] = toJs(env, info.promotion_failed());
         obj["promoted"] = toJs(env, info.promoted());
         obj["admin"] = toJs(env, info.admin);
+        obj["removedStatus"] = toJs(env, info.removed_status);
 
         return obj;
     }
@@ -69,6 +70,7 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
 
     /** Members Actions */
     Napi::Value memberGetAll(const Napi::CallbackInfo& info);
+    Napi::Value memberGetAllPendingRemovals(const Napi::CallbackInfo& info);
     Napi::Value memberGet(const Napi::CallbackInfo& info);
     Napi::Value memberGetOrConstruct(const Napi::CallbackInfo& info);
     Napi::Value memberSetName(const Napi::CallbackInfo& info);
@@ -78,6 +80,7 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
     Napi::Value memberSetAdmin(const Napi::CallbackInfo& info);
     Napi::Value memberSetProfilePicture(const Napi::CallbackInfo& info);
     Napi::Value memberEraseAndRekey(const Napi::CallbackInfo& info);
+    Napi::Value membersMarkPendingRemoval(const Napi::CallbackInfo& info);
 
     /** Keys Actions */
 
@@ -85,6 +88,7 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
     Napi::Value keyRekey(const Napi::CallbackInfo& info);
     Napi::Value keyGetAll(const Napi::CallbackInfo& info);
     Napi::Value loadKeyMessage(const Napi::CallbackInfo& info);
+    Napi::Value keyGetCurrentGen(const Napi::CallbackInfo& info);
     Napi::Value currentHashes(const Napi::CallbackInfo& info);
     Napi::Value encryptMessages(const Napi::CallbackInfo& info);
     Napi::Value decryptMessage(const Napi::CallbackInfo& info);

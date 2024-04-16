@@ -126,7 +126,6 @@ declare module 'libsession_util_nodejs' {
 
   export type GroupInfoGet = GroupInfoShared & {
     isDestroyed: boolean;
-    secretKey?: Uint8ArrayLen64; // len 64
   };
 
   export type GroupInfoSet = GroupInfoShared & {};
@@ -142,4 +141,6 @@ declare module 'libsession_util_nodejs' {
   export type Uint8ArrayLen32 = Uint8Array;
   export type Uint8ArrayLen36 = Uint8Array; // subaccount tokens are 36 bytes long
   export type Uint8ArrayLen100 = Uint8Array; // subaccount authdata are 100 bytes long
+
+  export type EncryptionDomain = 'SessionGroupKickedMessage';
 }

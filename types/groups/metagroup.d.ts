@@ -76,12 +76,14 @@ declare module 'libsession_util_nodejs' {
     public memberGet: MetaGroupWrapper['memberGet'];
     public memberGetOrConstruct: MetaGroupWrapper['memberGetOrConstruct'];
     public memberGetAll: MetaGroupWrapper['memberGetAll'];
+    public memberGetAllPendingRemovals: MetaGroupWrapper['memberGetAllPendingRemovals'];
     public memberSetAccepted: MetaGroupWrapper['memberSetAccepted'];
     public memberSetName: MetaGroupWrapper['memberSetName'];
     public memberSetPromoted: MetaGroupWrapper['memberSetPromoted'];
     public memberSetAdmin: MetaGroupWrapper['memberSetAdmin'];
     public memberSetInvited: MetaGroupWrapper['memberSetInvited'];
     public memberEraseAndRekey: MetaGroupWrapper['memberEraseAndRekey'];
+    public membersMarkPendingRemoval: MetaGroupWrapper['membersMarkPendingRemoval'];
     public memberSetProfilePicture: MetaGroupWrapper['memberSetProfilePicture'];
 
     // keys
@@ -89,6 +91,7 @@ declare module 'libsession_util_nodejs' {
     public keysNeedsRekey: MetaGroupWrapper['keysNeedsRekey'];
     public keyRekey: MetaGroupWrapper['keyRekey'];
     public loadKeyMessage: MetaGroupWrapper['loadKeyMessage'];
+    public keyGetCurrentGen: MetaGroupWrapper['keyGetCurrentGen'];
     public encryptMessages: MetaGroupWrapper['encryptMessages'];
     public decryptMessage: MetaGroupWrapper['decryptMessage'];
     public makeSwarmSubAccount: MetaGroupWrapper['makeSwarmSubAccount'];
@@ -115,12 +118,14 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<MetaGroupWrapper, 'memberGet'>
     | MakeActionCall<MetaGroupWrapper, 'memberGetOrConstruct'>
     | MakeActionCall<MetaGroupWrapper, 'memberGetAll'>
+    | MakeActionCall<MetaGroupWrapper, 'memberGetAllPendingRemovals'>
     | MakeActionCall<MetaGroupWrapper, 'memberSetAccepted'>
     | MakeActionCall<MetaGroupWrapper, 'memberSetName'>
     | MakeActionCall<MetaGroupWrapper, 'memberSetPromoted'>
     | MakeActionCall<MetaGroupWrapper, 'memberSetAdmin'>
     | MakeActionCall<MetaGroupWrapper, 'memberSetInvited'>
     | MakeActionCall<MetaGroupWrapper, 'memberEraseAndRekey'>
+    | MakeActionCall<MetaGroupWrapper, 'membersMarkPendingRemoval'>
     | MakeActionCall<MetaGroupWrapper, 'memberSetProfilePicture'>
 
     // keys actions
@@ -128,6 +133,7 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<MetaGroupWrapper, 'keyRekey'>
     | MakeActionCall<MetaGroupWrapper, 'keyGetAll'>
     | MakeActionCall<MetaGroupWrapper, 'loadKeyMessage'>
+    | MakeActionCall<MetaGroupWrapper, 'keyGetCurrentGen'>
     | MakeActionCall<MetaGroupWrapper, 'currentHashes'>
     | MakeActionCall<MetaGroupWrapper, 'encryptMessages'>
     | MakeActionCall<MetaGroupWrapper, 'decryptMessage'>

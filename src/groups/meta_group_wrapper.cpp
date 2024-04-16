@@ -38,6 +38,12 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
                     InstanceMethod("memberGet", &MetaGroupWrapper::memberGet),
                     InstanceMethod("memberGetOrConstruct", &MetaGroupWrapper::memberGetOrConstruct),
                     InstanceMethod("memberGetAll", &MetaGroupWrapper::memberGetAll),
+                    InstanceMethod(
+                            "memberGetAllPendingRemovals",
+                            &MetaGroupWrapper::memberGetAllPendingRemovals),
+                    InstanceMethod(
+                            "membersMarkPendingRemoval",
+                            &MetaGroupWrapper::membersMarkPendingRemoval),
                     InstanceMethod("memberSetName", &MetaGroupWrapper::memberSetName),
                     InstanceMethod("memberSetInvited", &MetaGroupWrapper::memberSetInvited),
                     InstanceMethod("memberSetAccepted", &MetaGroupWrapper::memberSetAccepted),
@@ -55,6 +61,7 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
 
                     InstanceMethod("currentHashes", &MetaGroupWrapper::currentHashes),
                     InstanceMethod("loadKeyMessage", &MetaGroupWrapper::loadKeyMessage),
+                    InstanceMethod("keyGetCurrentGen", &MetaGroupWrapper::keyGetCurrentGen),
 
                     InstanceMethod("encryptMessages", &MetaGroupWrapper::encryptMessages),
                     InstanceMethod("decryptMessage", &MetaGroupWrapper::decryptMessage),
@@ -383,6 +390,17 @@ Napi::Value MetaGroupWrapper::memberGetAll(const Napi::CallbackInfo& info) {
         return allMembers;
     });
 }
+Napi::Value MetaGroupWrapper::memberGetAllPendingRemovals(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        std::vector<session::config::groups::member> allMembersRemoved;
+        for (auto& member : *this->meta_group->members) {
+            if (member.is_removed()) {
+                allMembersRemoved.push_back(member);
+            }
+        }
+        return allMembersRemoved;
+    });
+}
 
 Napi::Value MetaGroupWrapper::memberGet(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
@@ -496,6 +514,28 @@ Napi::Value MetaGroupWrapper::memberSetProfilePicture(const Napi::CallbackInfo& 
     });
 }
 
+Napi::Value MetaGroupWrapper::membersMarkPendingRemoval(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        assertInfoLength(info, 2);
+        auto toUpdateJSValue = info[0];
+        auto withMessageJSValue = info[1];
+
+        assertIsArray(toUpdateJSValue);
+        assertIsBoolean(withMessageJSValue);
+        bool withMessages = toCppBoolean(withMessageJSValue, __PRETTY_FUNCTION__);
+
+        auto toUpdateJS = toUpdateJSValue.As<Napi::Array>();
+        for (uint32_t i = 0; i < toUpdateJS.Length(); i++) {
+            auto pubkeyHex = toCppString(toUpdateJS[i], __PRETTY_FUNCTION__);
+            auto existing = this->meta_group->members->get_or_construct(pubkeyHex);
+            existing.set_removed(withMessages);
+            this->meta_group->members->set(existing);
+        }
+
+        return true;
+    });
+}
+
 Napi::Value MetaGroupWrapper::memberEraseAndRekey(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
         assertInfoLength(info, 1);
@@ -548,6 +588,13 @@ Napi::Value MetaGroupWrapper::loadKeyMessage(const Napi::CallbackInfo& info) {
 
         return meta_group->keys->load_key_message(
                 hash, data, timestamp_ms, *(this->meta_group->info), *(this->meta_group->members));
+    });
+}
+
+Napi::Value MetaGroupWrapper::keyGetCurrentGen(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        assertInfoLength(info, 0);
+        return meta_group->keys->current_generation();
     });
 }
 

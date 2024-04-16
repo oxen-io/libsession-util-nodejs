@@ -7,7 +7,7 @@ declare module 'libsession_util_nodejs' {
        * len 64: ed25519 secretKey with pubkey
        */
       ed25519SecretKey: Uint8ArrayLen64;
-      domain: string;
+      domain: EncryptionDomain;
       messages: Array<Uint8Array>;
       recipients: Array<Uint8Array>;
     }) => Uint8Array;
@@ -18,7 +18,7 @@ declare module 'libsession_util_nodejs' {
        */
       ed25519SecretKey: Uint8ArrayLen64;
       senderEd25519Pubkey: Uint8Array;
-      domain: string;
+      domain: EncryptionDomain;
     }) => Uint8Array | null;
   };
 
