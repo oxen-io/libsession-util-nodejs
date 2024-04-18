@@ -45,6 +45,12 @@ Then, bump the version in the package.json of the nodejs wrapper.
 Then, run these commands:
 
 ```
+# bump the version in the package.json
+git add .
+git commit
+git push upstream main
+# Make sure you do the steps above, otherwise the tag won't be on the right commit with the `gh release create`
+
 pip install git-archive-all
 PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[", ]//g')
 git-archive-all libsession_util_nodejs-v$PACKAGE_VERSION.tar.gz
