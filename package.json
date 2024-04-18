@@ -12,14 +12,17 @@
     "electron": "25.8.4"
   },
   "scripts": {
-    "install": "cmake-js compile --runtime=electron --runtime-version=$npm_package_config_electron -p16"
+    "install": "run-script-os",
+    "install:default": "cmake-js compile --runtime=electron --runtime-version=$npm_package_config_electron -p16",
+    "install:win32": "cmake-js compile --runtime=electron --runtime-version=%npm_package_config_electron% -p16"
   },
   "devDependencies": {
     "clang-format": "^1.8.0"
   },
   "dependencies": {
     "cmake-js": "^7.2.1",
-    "node-addon-api": "^6.1.0"
+    "node-addon-api": "^6.1.0",
+    "run-script-os": "^1.1.6"
   },
   "typings": "index.d.ts"
 }
