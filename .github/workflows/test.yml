@@ -1,0 +1,61 @@
+name: libession-util-nodejs build test
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-11, ubuntu-20.04]
+    env:
+      SIGNAL_ENV: production
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - run: git config --global core.autocrlf false
+
+      - name: Checkout git repo
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+
+      - name: Install node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.3.1
+        if: runner.os == 'Windows'
+
+      - name: Setup node for windows
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          yarn global add node-gyp@latest
+
+
+      - name: build libsession-util-nodejs for macos
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)" && yarn install --frozen-lockfile --network-timeout 600000
+
+      - name: build libsession-util-nodejs for others
+        shell: bash
+        if: runner.os != 'macOS'
+        run: yarn install --frozen-lockfile --network-timeout 600000

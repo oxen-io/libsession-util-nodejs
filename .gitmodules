@@ -1,3 +1,3 @@
 [submodule "libsession-util"]
 	path = libsession-util
-	url = https://github.com/oxen-io/libsession-util.git
+	url = https://github.com/Bilb/libsession-util.git

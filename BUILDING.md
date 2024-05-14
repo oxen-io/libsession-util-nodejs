@@ -1,5 +1,5 @@
 # Building instructions
 
-    pnpm install
+    yarn install
 
-For more advanced/customized builds, you may want to invoke `pnpm cmake-js ...` directly.
+For more advanced/customized builds, you may want to invoke `yarn cmake-js ...` directly.
