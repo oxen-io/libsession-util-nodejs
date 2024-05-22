@@ -16,7 +16,7 @@ declare module 'libsession_util_nodejs' {
       /**
        * len 64: ed25519 secretKey with pubkey
        */
-      ed25519SecretKey: Uint8ArrayLen64;
+      userEd25519SecretKey: Uint8ArrayLen64;
       senderEd25519Pubkey: Uint8Array;
       domain: EncryptionDomain;
     }) => Uint8Array | null;

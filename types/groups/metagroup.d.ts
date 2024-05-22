@@ -17,7 +17,8 @@ declare module 'libsession_util_nodejs' {
     GroupMemberWrapper &
     GroupKeysWrapper & {
       // shared actions
-      init: (options: GroupWrapperConstructor) => void;
+    init: (options: GroupWrapperConstructor) => void;
+    free: () => void;
       needsPush: () => boolean;
       push: () => {
         groupInfo: PushConfigResult | null;
@@ -108,6 +109,7 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<MetaGroupWrapper, 'metaMakeDump'>
     | MakeActionCall<MetaGroupWrapper, 'metaConfirmPushed'>
     | MakeActionCall<MetaGroupWrapper, 'metaMerge'>
+    | MakeActionCall<MetaGroupWrapper, 'free'>
 
     // info actions
     | MakeActionCall<MetaGroupWrapper, 'infoGet'>

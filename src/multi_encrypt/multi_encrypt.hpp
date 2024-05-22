@@ -103,9 +103,10 @@ class MultiEncryptWrapper : public Napi::ObjectWrap<MultiEncryptWrapper> {
             assertIsUInt8Array(obj.Get("encoded"), "multiDecryptEd25519.encoded");
             auto encoded = toCppBuffer(obj.Get("encoded"), "multiDecryptEd25519.encoded");
 
-            assertIsUInt8Array(obj.Get("ed25519SecretKey"), "multiDecryptEd25519.ed25519SecretKey");
+            assertIsUInt8Array(
+                    obj.Get("userEd25519SecretKey"), "multiDecryptEd25519.userEd25519SecretKey");
             auto ed25519_secret_key = toCppBuffer(
-                    obj.Get("ed25519SecretKey"), "multiDecryptEd25519.ed25519SecretKey");
+                    obj.Get("userEd25519SecretKey"), "multiDecryptEd25519.userEd25519SecretKey");
 
             assertIsUInt8Array(
                     obj.Get("senderEd25519Pubkey"), "multiDecryptEd25519.senderEd25519Pubkey");

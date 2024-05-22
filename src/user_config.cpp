@@ -1,11 +1,15 @@
 #include "user_config.hpp"
 
+#include <iostream>
+
 #include "base_config.hpp"
 #include "profile_pic.hpp"
+#include "session/config/base.hpp"
 #include "session/config/user_profile.hpp"
 
 namespace session::nodeapi {
 
+using config::LogLevel;
 using config::UserProfile;
 
 void UserConfigWrapper::Init(Napi::Env env, Napi::Object exports) {
