@@ -599,7 +599,16 @@ Napi::Value MetaGroupWrapper::keyGetCurrentGen(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value MetaGroupWrapper::currentHashes(const Napi::CallbackInfo& info) {
-    return wrapResult(info, [&] { return meta_group->keys->current_hashes(); });
+    return wrapResult(info, [&] {
+        auto keysHashes = meta_group->keys->current_hashes();
+        auto infoHashes = meta_group->info->current_hashes();
+        auto memberHashes = meta_group->members->current_hashes();
+        std::vector<std::string> merged;
+        std::copy(std::begin(keysHashes), std::end(keysHashes), std::back_inserter(merged));
+        std::copy(std::begin(infoHashes), std::end(infoHashes), std::back_inserter(merged));
+        std::copy(std::begin(memberHashes), std::end(memberHashes), std::back_inserter(merged));
+        return merged;
+    });
 }
 
 Napi::Value MetaGroupWrapper::encryptMessages(const Napi::CallbackInfo& info) {

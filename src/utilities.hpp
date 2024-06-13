@@ -3,10 +3,12 @@
 #include <napi.h>
 
 #include <optional>
+#include <stdexcept>
 #include <string_view>
 #include <type_traits>
 #include <unordered_set>
 #include <vector>
+#include <stdexcept>
 
 #include "session/config/namespaces.hpp"
 #include "session/types.hpp"
@@ -192,7 +194,8 @@ inline std::optional<std::string_view> maybe_string(std::string_view val) {
 // - The return value will be returned as-is if it is already a Napi::Value (or subtype)
 // - The return will be void if void
 // - Otherwise the return value will be passed through toJs() to convert it to a Napi::Value.
-// See toJs below, but generally this supports numeric types, bools, strings, ustrings, and vectors of any of those primitives.
+// See toJs below, but generally this supports numeric types, bools, strings, ustrings, and vectors
+// of any of those primitives.
 //
 // General use is:
 //
