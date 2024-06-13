@@ -13,7 +13,7 @@ declare module 'libsession_util_nodejs' {
     encryptMessages: (plaintexts: Array<Uint8Array>) => Array<Uint8Array>;
     decryptMessage: (ciphertext: Uint8Array) => { pubkeyHex: string; plaintext: Uint8Array };
     makeSwarmSubAccount: (memberPubkeyHex: PubkeyType) => Uint8ArrayLen100;
-    generateSupplementKeys: (membersPubkeyHex: Array<PubkeyType>) => Array<Uint8Array>;
+    generateSupplementKeys: (membersPubkeyHex: Array<PubkeyType>) => Uint8Array;
     swarmSubaccountSign: (
       message: Uint8Array,
       authData: Uint8ArrayLen100

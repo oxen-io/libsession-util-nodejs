@@ -704,14 +704,14 @@ Napi::Value MetaGroupWrapper::generateSupplementKeys(const Napi::CallbackInfo& i
         uint32_t arrayLength = membersJS.Length();
         std::vector<std::string> membersToAdd;
         membersToAdd.reserve(arrayLength);
-        std::vector<ustring> keyMessages;
-        keyMessages.reserve(arrayLength);
+        std::vector<std::string> membersCpp;
+        membersCpp.reserve(arrayLength);
 
         for (uint32_t i = 0; i < membersJS.Length(); i++) {
             auto memberPk = toCppString(membersJS[i], __PRETTY_FUNCTION__);
-            keyMessages.push_back(this->meta_group->keys->key_supplement(memberPk));
+            membersCpp.push_back(memberPk);
         }
-        return keyMessages;
+        return this->meta_group->keys->key_supplement(membersCpp);
     });
 }
 

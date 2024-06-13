@@ -17,7 +17,12 @@ declare module 'libsession_util_nodejs' {
     inviteFailed: boolean;
     promotionPending: boolean;
     promotionFailed: boolean;
-    removedStatus: number; // 0 = not removed, 1 means removed, 2 means removed with messages
+    /**
+     * - 0 means not removed,
+     * - 1 means removed (libsession: REMOVED_MEMBER),
+     * - 2 means removed with messages  (libsession: REMOVED_MEMBER_AND_MESSAGES)
+     */
+    removedStatus: number;
     promoted: boolean;
     admin: boolean;
   };
