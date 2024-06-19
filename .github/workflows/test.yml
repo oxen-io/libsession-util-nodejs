@@ -28,7 +28,6 @@ jobs:
         with:
           submodules: 'recursive'
 
-
       - name: Install node
         uses: actions/setup-node@v3
         with:
@@ -48,14 +47,6 @@ jobs:
         run: |
           yarn global add node-gyp@latest
 
-
-      - name: build libsession-util-nodejs for macos
-        if: runner.os == 'macOS'
+      - name: build libsession-util-nodejs
         shell: bash
-        run: |
-          export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)" && yarn install --frozen-lockfile --network-timeout 600000
-
-      - name: build libsession-util-nodejs for others
-        shell: bash
-        if: runner.os != 'macOS'
         run: yarn install --frozen-lockfile --network-timeout 600000
