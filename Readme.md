@@ -2,7 +2,7 @@
 
 This library is the wrappers around libsession-util for NodeJS. It is built using the [node-addon-api](https://github.com/nodejs/node-addon-api) and [cmake-js](https://github.com/cmake-js/cmake-js). The build and dev instructions are quite custom, so check them out below.
 
-### Issue with Yarn
+### Issue with yarn
 
 The yarn package manager (used on session-desktop) does understand what is a git url in a dependency as part of a package.json file, but won't do a full clone including submodules when forking such a repository. For more details, see https://github.com/yarnpkg/yarn/issues/1488
 
@@ -51,9 +51,12 @@ git commit
 git push upstream main
 # Make sure you do the steps above, otherwise the tag won't be on the right commit with the `gh release create`
 
+virtualenv venv
+source venv/bin/activate
 pip install git-archive-all
 PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[", ]//g')
-git-archive-all libsession_util_nodejs-v$PACKAGE_VERSION.tar.gz
+echo $PACKAGE_VERSION
+python3 build_release_archive.py libsession_util_nodejs-v$PACKAGE_VERSION.tar.gz
 gh release create v$PACKAGE_VERSION -t v$PACKAGE_VERSION --latest --generate-notes
 gh release upload v$PACKAGE_VERSION libsession_util_nodejs-v$PACKAGE_VERSION.tar.gz
 ```

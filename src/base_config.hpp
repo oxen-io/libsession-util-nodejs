@@ -101,7 +101,24 @@ class ConfigBaseImpl {
             if (!second.IsEmpty() && !second.IsNull() && !second.IsUndefined())
                 dump = toCppBufferView(second, class_name + ".new");
 
-            return std::make_shared<Config>(secretKey, dump);
+            // return std::make_shared<Config>(secretKey, dump);
+            std::shared_ptr<Config> config = std::make_shared<Config>(secretKey, dump);
+
+            Napi::Env env = info.Env();
+
+            config->logger = [env, class_name](session::config::LogLevel, std::string_view x) {
+                std::string toLog =
+                        "libsession-util:" + std::string(class_name) + ": " + std::string(x) + "\n";
+
+                Napi::Function consoleLog = env.Global()
+                                                    .Get("console")
+                                                    .As<Napi::Object>()
+                                                    .Get("log")
+                                                    .As<Napi::Function>();
+                consoleLog.Call({Napi::String::New(env, toLog)});
+            };
+
+            return config;
         });
     }
 
