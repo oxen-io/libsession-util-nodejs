@@ -9,7 +9,7 @@
 
 namespace session::nodeapi {
 
-using config::LogLevel;
+// using config::LogLevel;
 using config::UserProfile;
 
 void UserConfigWrapper::Init(Napi::Env env, Napi::Object exports) {

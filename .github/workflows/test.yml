@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - groups-chunk-2
 
 concurrency:
   group: ${{ github.workflow }}

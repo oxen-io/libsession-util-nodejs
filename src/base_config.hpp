@@ -106,17 +106,18 @@ class ConfigBaseImpl {
 
             Napi::Env env = info.Env();
 
-            config->logger = [env, class_name](session::config::LogLevel, std::string_view x) {
-                std::string toLog =
-                        "libsession-util:" + std::string(class_name) + ": " + std::string(x) + "\n";
+            // config->logger = [env, class_name](session::config::LogLevel, std::string_view x) {
+            //     std::string toLog =
+            //             "libsession-util:" + std::string(class_name) + ": " + std::string(x) +
+            //             "\n";
 
-                Napi::Function consoleLog = env.Global()
-                                                    .Get("console")
-                                                    .As<Napi::Object>()
-                                                    .Get("log")
-                                                    .As<Napi::Function>();
-                consoleLog.Call({Napi::String::New(env, toLog)});
-            };
+            //     Napi::Function consoleLog = env.Global()
+            //                                         .Get("console")
+            //                                         .As<Napi::Object>()
+            //                                         .Get("log")
+            //                                         .As<Napi::Function>();
+            //     consoleLog.Call({Napi::String::New(env, toLog)});
+            // };
 
             return config;
         });

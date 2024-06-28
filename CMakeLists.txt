@@ -6,6 +6,20 @@ set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 
 set(VERBOSE ON)
 
+# Detect the number of processors
+include(ProcessorCount)
+ProcessorCount(N)
+
+# Set a default value in case the detection fails
+if(NOT N EQUAL 0)
+  set(CMAKE_BUILD_PARALLEL_LEVEL ${N})
+else()
+  set(CMAKE_BUILD_PARALLEL_LEVEL 4)  # Fallback to 16 if detection fails
+endif()
+# set(CMAKE_BUILD_PARALLEL_LEVEL 32)
+message(STATUS "Number of processors detected: ${N}")
+
+
 add_definitions(-DNAPI_VERSION=8)
 set(CMAKE_CONFIGURATION_TYPES Release)
 

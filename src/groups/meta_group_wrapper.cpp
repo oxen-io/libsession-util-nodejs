@@ -11,7 +11,32 @@ namespace session::nodeapi {
 
 MetaGroupWrapper::MetaGroupWrapper(const Napi::CallbackInfo& info) :
         meta_group{std::move(MetaBaseWrapper::constructGroupWrapper(info, "MetaGroupWrapper"))},
-        Napi::ObjectWrap<MetaGroupWrapper>{info} {}
+        Napi::ObjectWrap<MetaGroupWrapper>{info} {
+    auto env = info.Env();
+    // this->meta_group->members->logger = [env](session::config::LogLevel, std::string_view x) {
+    //     std::string toLog = "libsession-util:MetaGroup:Member: " + std::string(x) + "\n";
+
+    //     Napi::Function consoleLog =
+    //             env.Global().Get("console").As<Napi::Object>().Get("log").As<Napi::Function>();
+    //     consoleLog.Call({Napi::String::New(env, toLog)});
+    // };
+    // this->meta_group->info->logger = [env](session::config::LogLevel, std::string_view x) {
+    //     std::string toLog = "libsession-util:MetaGroup:Info: " + std::string(x) + "\n";
+
+    //     Napi::Function consoleLog =
+    //             env.Global().Get("console").As<Napi::Object>().Get("log").As<Napi::Function>();
+    //     consoleLog.Call({Napi::String::New(env, toLog)});
+    // };
+    // this->meta_group->keys->logger = [env](
+    //                                                    session::config::LogLevel,
+    //                                                    std::string_view x) {
+    //     std::string toLog = "libsession-util:MetaGroup:Keys: " + std::string(x) + "\n";
+
+    //     Napi::Function consoleLog =
+    //             env.Global().Get("console").As<Napi::Object>().Get("log").As<Napi::Function>();
+    //     consoleLog.Call({Napi::String::New(env, toLog)});
+    // };
+}
 
 void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
     MetaBaseWrapper::NoBaseClassInitHelper<MetaGroupWrapper>(
@@ -445,9 +470,31 @@ Napi::Value MetaGroupWrapper::memberSetInvited(const Napi::CallbackInfo& info) {
         auto pubkeyHex = toCppString(info[0], __PRETTY_FUNCTION__);
         auto failed = toCppBoolean(info[1], __PRETTY_FUNCTION__);
         auto m = this->meta_group->members->get_or_construct(pubkeyHex);
+
+        // this->meta_group->members->log(
+        //         session::config::LogLevel::warning,
+        //         "libsession-util before: needsDump? " +
+        //                 std::string(this->needsDump(info) ? "true" : "false"));
+        // this->meta_group->members->log(
+        //         session::config::LogLevel::warning,
+        //         "libsession-util before: invite_failed of " + std::string(pubkeyHex) +
+        //                 " val: " + std::string(m.invite_failed() ? "true" : "false"));
         m.set_invited(failed);
         this->meta_group->members->set(m);
-        return this->meta_group->members->get_or_construct(m.session_id);
+        // this->meta_group->members->log(
+        //         session::config::LogLevel::warning,
+        //         "libsession-util after: invite_failed of " + std::string(pubkeyHex) +
+        //                 " val: " + std::string(m.invite_failed() ? "true" : "false"));
+        auto refreshed = this->meta_group->members->get_or_construct(m.session_id);
+        // this->meta_group->members->log(
+        //         session::config::LogLevel::warning,
+        //         "libsession-util refreshed: invite_failed of " + std::string(pubkeyHex) +
+        //                 " val: " + std::string(refreshed.invite_failed() ? "true" : "false"));
+        // this->meta_group->members->log(
+        //         session::config::LogLevel::warning,
+        //         "libsession-util after: needsDump? of " +
+        //                 std::string(this->needsDump(info) ? "true" : "false"));
+        return refreshed;
     });
 }
 
