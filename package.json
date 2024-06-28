@@ -9,7 +9,7 @@
     "email": "team@oxen.io"
   },
   "scripts": {
-    "install": "cmake-js compile --runtime=electron --runtime-version=25.8.4  --CDLOCAL_MIRROR=https://oxen.rocks/deps --CDENABLE_ONIONREQ=OFF"
+    "install": "cmake-js compile --runtime=electron --runtime-version=25.8.4  --CDLOCAL_MIRROR=https://oxen.rocks/deps --CDENABLE_ONIONREQ=OFF --CDWITH_TESTS=OFF"
   },
   "devDependencies": {
     "clang-format": "^1.8.0"
