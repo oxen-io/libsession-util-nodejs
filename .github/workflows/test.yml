@@ -20,11 +20,7 @@ jobs:
 
 
       matrix:
-        os: [windows-2022, macos-11, ubuntu-20.04]
-        include:
-          - runs-on: ubuntu-20.04
-            compiler: gcc
-            gcc: 10
+        os: [windows-latest, macos-latest, ubuntu-latest]
 
     env:
       SIGNAL_ENV: production
@@ -37,15 +33,15 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Install libstdc++-10-dev on ubuntu-20.04
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          sudo apt install -y libstdc++-10-dev  g++-10
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
-          sudo update-alternatives --set gcc /usr/bin/gcc-10
+      # this should only be needed on ubuntu-20.04
 
-
+      # - name: Force g++10 to be used
+      #   if: runner.os == 'Linux'
+      #   shell: bash
+      #   run: |
+      #     sudo apt install -y libstdc++-10-dev  g++-10
+      #     sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
+      #     sudo update-alternatives --set gcc /usr/bin/gcc-10
 
       - name: Install node
         uses: actions/setup-node@v3
@@ -76,9 +72,4 @@ jobs:
 
       - name: build libsession-util-nodejs
         shell: bash
-        continue-on-error: true
-        run:  yarn install --frozen-lockfile --network-timeout 600000
-
-      - name: print cmake files
-        shell: bash
-        run: cat build/compile_commands.json
+        run:  yarn install --frozen-lockfile
