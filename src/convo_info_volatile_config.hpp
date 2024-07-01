@@ -29,6 +29,12 @@ class ConvoInfoVolatileWrapper : public ConfigBaseImpl,
     void setLegacyGroup(const Napi::CallbackInfo& info);
     Napi::Value eraseLegacyGroup(const Napi::CallbackInfo& info);
 
+    // group related methods
+    Napi::Value getGroup(const Napi::CallbackInfo& info);
+    Napi::Value getAllGroups(const Napi::CallbackInfo& info);
+    void setGroup(const Napi::CallbackInfo& info);
+    Napi::Value eraseGroup(const Napi::CallbackInfo& info);
+
     // communities related methods
     Napi::Value getCommunity(const Napi::CallbackInfo& info);
     Napi::Value getAllCommunities(const Napi::CallbackInfo& info);

@@ -1,3 +1,5 @@
+/// <reference path="../shared.d.ts" />
+
 declare module 'libsession_util_nodejs' {
   /**
    *
@@ -13,12 +15,12 @@ declare module 'libsession_util_nodejs' {
       name: string;
       priority: number;
       url: string;
-      key: Uint8Array;
+      key: Uint8Array; // TODO could be made a FixedLength<32> but that impacts a bunch of things
     };
     setUserInfo: (
       name: string,
       priority: number,
-      profilePic: { url: string; key: Uint8Array } | null
+      profilePic: { url: string; key: Uint8Array } | null // TODO could be made a FixedLength<32> but that impacts a bunch of things
     ) => void;
     setEnableBlindedMsgRequest: (msgRequest: boolean) => void;
     getEnableBlindedMsgRequest: () => boolean | undefined;

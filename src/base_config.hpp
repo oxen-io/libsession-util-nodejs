@@ -1,6 +1,7 @@
 #pragma once
 
 #include <napi.h>
+#include <oxenc/hex.h>
 
 #include <cassert>
 #include <memory>
@@ -11,12 +12,13 @@
 #include "session/types.hpp"
 #include "utilities.hpp"
 
+using ustring_view = std::basic_string_view<unsigned char>;
+
 namespace session::nodeapi {
 
 class ConfigBaseImpl;
 template <typename T>
-inline constexpr bool is_derived_napi_wrapper =
-        std::is_base_of_v<ConfigBaseImpl, T> && std::is_base_of_v<Napi::ObjectWrap<T>, T>;
+inline constexpr bool is_derived_napi_wrapper = std::is_base_of_v<Napi::ObjectWrap<T>, T>;
 
 /// Base implementation class for config types; this provides the napi wrappers for the base
 /// methods.  Subclasses should inherit from this (alongside Napi::ObjectWrap<ConfigBaseWrapper>)
@@ -31,11 +33,11 @@ class ConfigBaseImpl {
     // These are exposed as read-only accessors rather than methods:
     Napi::Value needsDump(const Napi::CallbackInfo& info);
     Napi::Value needsPush(const Napi::CallbackInfo& info);
-    Napi::Value storageNamespace(const Napi::CallbackInfo& info);
     Napi::Value currentHashes(const Napi::CallbackInfo& info);
 
     Napi::Value push(const Napi::CallbackInfo& info);
     Napi::Value dump(const Napi::CallbackInfo& info);
+    Napi::Value makeDump(const Napi::CallbackInfo& info);
     void confirmPushed(const Napi::CallbackInfo& info);
     Napi::Value merge(const Napi::CallbackInfo& info);
 
@@ -51,11 +53,10 @@ class ConfigBaseImpl {
 
         properties.push_back(T::InstanceMethod("needsDump", &T::needsDump));
         properties.push_back(T::InstanceMethod("needsPush", &T::needsPush));
-        properties.push_back(T::InstanceMethod("storageNamespace", &T::storageNamespace));
         properties.push_back(T::InstanceMethod("currentHashes", &T::currentHashes));
-
         properties.push_back(T::InstanceMethod("push", &T::push));
         properties.push_back(T::InstanceMethod("dump", &T::dump));
+        properties.push_back(T::InstanceMethod("makeDump", &T::makeDump));
         properties.push_back(T::InstanceMethod("confirmPushed", &T::confirmPushed));
         properties.push_back(T::InstanceMethod("merge", &T::merge));
 
@@ -91,7 +92,7 @@ class ConfigBaseImpl {
             assertInfoLength(info, 2);
 
             // we should get secret key as first arg and optional dumped as second argument
-            assertIsUInt8Array(info[0]);
+            assertIsUInt8Array(info[0], "base construct");
             assertIsUInt8ArrayOrNull(info[1]);
             ustring_view secretKey = toCppBufferView(info[0], class_name + ".new");
 
@@ -105,17 +106,18 @@ class ConfigBaseImpl {
 
             Napi::Env env = info.Env();
 
-            config->logger = [env, class_name](session::config::LogLevel, std::string_view x) {
-                std::string toLog =
-                        "libsession-util:" + std::string(class_name) + ": " + std::string(x) + "\n";
+            // config->logger = [env, class_name](session::config::LogLevel, std::string_view x) {
+            //     std::string toLog =
+            //             "libsession-util:" + std::string(class_name) + ": " + std::string(x) +
+            //             "\n";
 
-                Napi::Function consoleLog = env.Global()
-                                                    .Get("console")
-                                                    .As<Napi::Object>()
-                                                    .Get("log")
-                                                    .As<Napi::Function>();
-                consoleLog.Call({Napi::String::New(env, toLog)});
-            };
+            //     Napi::Function consoleLog = env.Global()
+            //                                         .Get("console")
+            //                                         .As<Napi::Object>()
+            //                                         .Get("log")
+            //                                         .As<Napi::Function>();
+            //     consoleLog.Call({Napi::String::New(env, toLog)});
+            // };
 
             return config;
         });
@@ -132,18 +134,6 @@ class ConfigBaseImpl {
         assert(conf_);  // should not be possible to construct without this set
         if (auto* t = dynamic_cast<T*>(conf_.get()))
             return *t;
-        throw std::invalid_argument{
-                "Error retrieving config: config instance is not of the requested type"};
-    }
-
-    // Same as above, but return a shared ptr.
-    template <
-            typename T = config::ConfigBase,
-            std::enable_if_t<std::is_base_of_v<config::ConfigBase, T>, int> = 0>
-    std::shared_ptr<T> config_ptr() {
-        assert(conf_);  // should not be possible to construct without this set
-        if (auto t = std::dynamic_pointer_cast<T>(conf_))
-            return t;
         throw std::invalid_argument{
                 "Error retrieving config: config instance is not of the requested type"};
     }
