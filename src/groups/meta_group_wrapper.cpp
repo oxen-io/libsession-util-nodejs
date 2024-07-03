@@ -469,32 +469,13 @@ Napi::Value MetaGroupWrapper::memberSetInvited(const Napi::CallbackInfo& info) {
         assertIsBoolean(info[1]);
         auto pubkeyHex = toCppString(info[0], __PRETTY_FUNCTION__);
         auto failed = toCppBoolean(info[1], __PRETTY_FUNCTION__);
-        auto m = this->meta_group->members->get_or_construct(pubkeyHex);
 
-        // this->meta_group->members->log(
-        //         session::config::LogLevel::warning,
-        //         "libsession-util before: needsDump? " +
-        //                 std::string(this->needsDump(info) ? "true" : "false"));
-        // this->meta_group->members->log(
-        //         session::config::LogLevel::warning,
-        //         "libsession-util before: invite_failed of " + std::string(pubkeyHex) +
-        //                 " val: " + std::string(m.invite_failed() ? "true" : "false"));
+        auto m = this->meta_group->members->get_or_construct(pubkeyHex);
         m.set_invited(failed);
         this->meta_group->members->set(m);
-        // this->meta_group->members->log(
-        //         session::config::LogLevel::warning,
-        //         "libsession-util after: invite_failed of " + std::string(pubkeyHex) +
-        //                 " val: " + std::string(m.invite_failed() ? "true" : "false"));
-        auto refreshed = this->meta_group->members->get_or_construct(m.session_id);
-        // this->meta_group->members->log(
-        //         session::config::LogLevel::warning,
-        //         "libsession-util refreshed: invite_failed of " + std::string(pubkeyHex) +
-        //                 " val: " + std::string(refreshed.invite_failed() ? "true" : "false"));
-        // this->meta_group->members->log(
-        //         session::config::LogLevel::warning,
-        //         "libsession-util after: needsDump? of " +
-        //                 std::string(this->needsDump(info) ? "true" : "false"));
-        return refreshed;
+
+        return this->meta_group->members->get_or_construct(pubkeyHex);
+
     });
 }
 

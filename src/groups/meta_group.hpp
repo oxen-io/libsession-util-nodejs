@@ -25,12 +25,20 @@ class MetaGroup {
     shared_ptr<config::groups::Info> info;
     shared_ptr<config::groups::Members> members;
     shared_ptr<config::groups::Keys> keys;
+    string edGroupPubKey;
+    std::optional<string> edGroupSecKey;
 
     MetaGroup(
             shared_ptr<config::groups::Info> info,
             shared_ptr<config::groups::Members> members,
-            shared_ptr<config::groups::Keys> keys) :
-            info{info}, members{members}, keys{keys} {};
+            shared_ptr<config::groups::Keys> keys,
+            session::ustring edGroupPubKey,
+            std::optional<session::ustring> edGroupSecKey) :
+            info{info}, members{members}, keys{keys} {
+
+        this->edGroupPubKey = oxenc::to_hex(edGroupPubKey);
+        this->edGroupSecKey = edGroupSecKey ? oxenc::to_hex(*edGroupSecKey) : nullptr;
+    };
 
     explicit MetaGroup(const Napi::CallbackInfo& info) {}
 };

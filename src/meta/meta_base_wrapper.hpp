@@ -101,7 +101,7 @@ class MetaBaseWrapper {
                     *info,
                     *members);
 
-            return std::make_unique<session::nodeapi::MetaGroup>(info, members, keys);
+            return std::make_unique<session::nodeapi::MetaGroup>(info, members, keys,group_ed25519_pubkey, group_ed25519_secretkey);
         });
     }
 };

@@ -16,7 +16,6 @@ if(NOT N EQUAL 0)
 else()
   set(CMAKE_BUILD_PARALLEL_LEVEL 4)  # Fallback to 16 if detection fails
 endif()
-# set(CMAKE_BUILD_PARALLEL_LEVEL 32)
 message(STATUS "Number of processors detected: ${N}")
 
 
