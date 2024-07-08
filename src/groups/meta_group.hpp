@@ -34,13 +34,13 @@ class MetaGroup {
             shared_ptr<config::groups::Keys> keys,
             session::ustring edGroupPubKey,
             std::optional<session::ustring> edGroupSecKey) :
-            info{info}, members{members}, keys{keys} {
+            info{info}, members{members}, keys{keys}, edGroupPubKey{oxenc::to_hex(edGroupPubKey)} {
 
-        this->edGroupPubKey = oxenc::to_hex(edGroupPubKey);
-        this->edGroupSecKey = edGroupSecKey ? oxenc::to_hex(*edGroupSecKey) : nullptr;
-    };
-
-    explicit MetaGroup(const Napi::CallbackInfo& info) {}
+        if (edGroupSecKey.has_value()) {
+            this->edGroupSecKey = oxenc::to_hex(*edGroupSecKey);
+        } else {
+            this->edGroupSecKey = std::nullopt;
+        }
+    }
 };
-
 }  // namespace session::nodeapi

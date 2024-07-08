@@ -68,6 +68,7 @@ class MetaBaseWrapper {
             std::optional<ustring_view> dumped_keys;
 
             if (dumped_meta) {
+
                 auto dumped_meta_str = from_unsigned_sv(*dumped_meta);
 
                 oxenc::bt_dict_consumer combined{dumped_meta_str};
@@ -101,7 +102,8 @@ class MetaBaseWrapper {
                     *info,
                     *members);
 
-            return std::make_unique<session::nodeapi::MetaGroup>(info, members, keys,group_ed25519_pubkey, group_ed25519_secretkey);
+            return std::make_unique<session::nodeapi::MetaGroup>(
+                    info, members, keys, group_ed25519_pubkey, group_ed25519_secretkey);
         });
     }
 };

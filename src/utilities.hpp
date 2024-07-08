@@ -8,7 +8,6 @@
 #include <type_traits>
 #include <unordered_set>
 #include <vector>
-#include <stdexcept>
 
 #include "session/config/namespaces.hpp"
 #include "session/types.hpp"

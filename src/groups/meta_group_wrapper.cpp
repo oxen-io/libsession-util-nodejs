@@ -11,32 +11,7 @@ namespace session::nodeapi {
 
 MetaGroupWrapper::MetaGroupWrapper(const Napi::CallbackInfo& info) :
         meta_group{std::move(MetaBaseWrapper::constructGroupWrapper(info, "MetaGroupWrapper"))},
-        Napi::ObjectWrap<MetaGroupWrapper>{info} {
-    auto env = info.Env();
-    // this->meta_group->members->logger = [env](session::config::LogLevel, std::string_view x) {
-    //     std::string toLog = "libsession-util:MetaGroup:Member: " + std::string(x) + "\n";
-
-    //     Napi::Function consoleLog =
-    //             env.Global().Get("console").As<Napi::Object>().Get("log").As<Napi::Function>();
-    //     consoleLog.Call({Napi::String::New(env, toLog)});
-    // };
-    // this->meta_group->info->logger = [env](session::config::LogLevel, std::string_view x) {
-    //     std::string toLog = "libsession-util:MetaGroup:Info: " + std::string(x) + "\n";
-
-    //     Napi::Function consoleLog =
-    //             env.Global().Get("console").As<Napi::Object>().Get("log").As<Napi::Function>();
-    //     consoleLog.Call({Napi::String::New(env, toLog)});
-    // };
-    // this->meta_group->keys->logger = [env](
-    //                                                    session::config::LogLevel,
-    //                                                    std::string_view x) {
-    //     std::string toLog = "libsession-util:MetaGroup:Keys: " + std::string(x) + "\n";
-
-    //     Napi::Function consoleLog =
-    //             env.Global().Get("console").As<Napi::Object>().Get("log").As<Napi::Function>();
-    //     consoleLog.Call({Napi::String::New(env, toLog)});
-    // };
-}
+        Napi::ObjectWrap<MetaGroupWrapper>{info} {}
 
 void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
     MetaBaseWrapper::NoBaseClassInitHelper<MetaGroupWrapper>(
@@ -152,8 +127,6 @@ Napi::Value MetaGroupWrapper::needsDump(const Napi::CallbackInfo& info) {
 
 Napi::Value MetaGroupWrapper::metaDump(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
-        auto env = info.Env();
-
         oxenc::bt_dict_producer combined;
 
         // NOTE: the keys have to be in ascii-sorted order:
@@ -168,8 +141,6 @@ Napi::Value MetaGroupWrapper::metaDump(const Napi::CallbackInfo& info) {
 
 Napi::Value MetaGroupWrapper::metaMakeDump(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
-        auto env = info.Env();
-
         oxenc::bt_dict_producer combined;
 
         // NOTE: the keys have to be in ascii-sorted order:
@@ -192,7 +163,6 @@ void MetaGroupWrapper::metaConfirmPushed(const Napi::CallbackInfo& info) {
 
         auto groupInfo = obj.Get("groupInfo");
         auto groupMember = obj.Get("groupMember");
-        auto groupKeys = obj.Get("groupKeys");
 
         if (!groupInfo.IsNull() && !groupInfo.IsUndefined()) {
             assertIsArray(groupInfo);
@@ -429,7 +399,6 @@ Napi::Value MetaGroupWrapper::memberGetAllPendingRemovals(const Napi::CallbackIn
 
 Napi::Value MetaGroupWrapper::memberGet(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
-        auto env = info.Env();
         assertInfoLength(info, 1);
         assertIsString(info[0]);
 
@@ -440,7 +409,6 @@ Napi::Value MetaGroupWrapper::memberGet(const Napi::CallbackInfo& info) {
 
 Napi::Value MetaGroupWrapper::memberGetOrConstruct(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] {
-        auto env = info.Env();
         assertInfoLength(info, 1);
         assertIsString(info[0]);
 
@@ -475,7 +443,6 @@ Napi::Value MetaGroupWrapper::memberSetInvited(const Napi::CallbackInfo& info) {
         this->meta_group->members->set(m);
 
         return this->meta_group->members->get_or_construct(pubkeyHex);
-
     });
 }
 
