@@ -35,16 +35,16 @@ declare module 'libsession_util_nodejs' {
     memberGetAllPendingRemovals: () => Array<GroupMemberGet>;
 
     // setters
-    memberSetName: (pubkeyHex: PubkeyType, newName: string) => GroupMemberGet;
-    memberSetInvited: (pubkeyHex: PubkeyType, failed: boolean) => GroupMemberGet;
-    memberSetPromoted: (pubkeyHex: PubkeyType, failed: boolean) => GroupMemberGet;
-    memberSetAdmin: (pubkeyHex: PubkeyType) => GroupMemberGet;
-    memberSetAccepted: (pubkeyHex: PubkeyType) => GroupMemberGet;
+    memberSetName: (pubkeyHex: PubkeyType, newName: string) => void;
+    memberSetInvited: (pubkeyHex: PubkeyType, failed: boolean) => void;
+    memberSetPromoted: (pubkeyHex: PubkeyType, failed: boolean) => void;
+    memberSetAdmin: (pubkeyHex: PubkeyType) => void;
+    memberSetAccepted: (pubkeyHex: PubkeyType) => void;
     memberSetProfilePicture: (
       pubkeyHex: PubkeyType,
       profilePicture: ProfilePicture
-    ) => GroupMemberGet;
-    membersMarkPendingRemoval: (members: Array<PubkeyType>, withMessages: boolean) => boolean;
+    ) => void;
+    membersMarkPendingRemoval: (members: Array<PubkeyType>, withMessages: boolean) => void;
 
     // eraser
     memberEraseAndRekey: (members: Array<PubkeyType>) => boolean;

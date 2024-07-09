@@ -417,84 +417,83 @@ Napi::Value MetaGroupWrapper::memberGetOrConstruct(const Napi::CallbackInfo& inf
     });
 }
 
-Napi::Value MetaGroupWrapper::memberSetName(const Napi::CallbackInfo& info) {
-    return wrapResult(info, [&] {
+void MetaGroupWrapper::memberSetName(const Napi::CallbackInfo& info) {
+    wrapExceptions(info, [&] {
         assertIsString(info[0]);
         assertIsString(info[1]);
 
         auto pubkeyHex = toCppString(info[0], __PRETTY_FUNCTION__);
         auto newName = toCppString(info[1], __PRETTY_FUNCTION__);
-        auto m = this->meta_group->members->get_or_construct(pubkeyHex);
-        m.set_name(newName);
-        this->meta_group->members->set(m);
-        return this->meta_group->members->get_or_construct(m.session_id);
+        auto m = this->meta_group->members->get(pubkeyHex);
+        if (m) {
+            m->set_name(newName);
+            this->meta_group->members->set(*m);
+        }
     });
 }
 
-Napi::Value MetaGroupWrapper::memberSetInvited(const Napi::CallbackInfo& info) {
-    return wrapResult(info, [&] {
+void MetaGroupWrapper::memberSetInvited(const Napi::CallbackInfo& info) {
+    wrapExceptions(info, [&] {
         assertIsString(info[0]);
         assertIsBoolean(info[1]);
         auto pubkeyHex = toCppString(info[0], __PRETTY_FUNCTION__);
         auto failed = toCppBoolean(info[1], __PRETTY_FUNCTION__);
 
-        auto m = this->meta_group->members->get_or_construct(pubkeyHex);
-        m.set_invited(failed);
-        this->meta_group->members->set(m);
-
-        return this->meta_group->members->get_or_construct(pubkeyHex);
+        auto m = this->meta_group->members->get(pubkeyHex);
+        if (m) {
+            m->set_invited(failed);
+            this->meta_group->members->set(*m);
+        }
     });
 }
 
-Napi::Value MetaGroupWrapper::memberSetAccepted(const Napi::CallbackInfo& info) {
-    return wrapResult(info, [&] {
+void MetaGroupWrapper::memberSetAccepted(const Napi::CallbackInfo& info) {
+    wrapExceptions(info, [&] {
         assertInfoLength(info, 1);
         assertIsString(info[0]);
 
         auto pubkeyHex = toCppString(info[0], __PRETTY_FUNCTION__);
-        auto m = this->meta_group->members->get_or_construct(pubkeyHex);
-        m.set_accepted();
-
-        this->meta_group->members->set(m);
-        return this->meta_group->members->get_or_construct(m.session_id);
+        auto m = this->meta_group->members->get(pubkeyHex);
+        if (m) {
+            m->set_accepted();
+            this->meta_group->members->set(*m);
+        }
     });
 }
 
-Napi::Value MetaGroupWrapper::memberSetPromoted(const Napi::CallbackInfo& info) {
-
-    return wrapResult(info, [&] {
+void MetaGroupWrapper::memberSetPromoted(const Napi::CallbackInfo& info) {
+    wrapExceptions(info, [&] {
         assertInfoLength(info, 2);
         assertIsString(info[0]);
         assertIsBoolean(info[1]);
         auto pubkeyHex = toCppString(info[0], __PRETTY_FUNCTION__);
         auto failed = toCppBoolean(info[1], __PRETTY_FUNCTION__);
-        auto m = this->meta_group->members->get_or_construct(pubkeyHex);
-        m.set_promoted(failed);
-
-        this->meta_group->members->set(m);
-        return this->meta_group->members->get_or_construct(m.session_id);
+        auto m = this->meta_group->members->get(pubkeyHex);
+        if (m) {
+            m->set_promoted(failed);
+            this->meta_group->members->set(*m);
+        }
     });
 }
 
-Napi::Value MetaGroupWrapper::memberSetAdmin(const Napi::CallbackInfo& info) {
+void MetaGroupWrapper::memberSetAdmin(const Napi::CallbackInfo& info) {
 
-    return wrapResult(info, [&] {
+    wrapExceptions(info, [&] {
         assertInfoLength(info, 1);
         assertIsString(info[0]);
         auto pubkeyHex = toCppString(info[0], __PRETTY_FUNCTION__);
         // Note: this step might add an admin which was removed back once he accepts the promotion,
         // but there is not much we can do about it
-        auto m = this->meta_group->members->get_or_construct(pubkeyHex);
-        m.admin = true;
+        auto m = this->meta_group->members->get(pubkeyHex);
+        m->admin = true;
 
-        this->meta_group->members->set(m);
-        return this->meta_group->members->get_or_construct(m.session_id);
+        this->meta_group->members->set(*m);
     });
 }
 
-Napi::Value MetaGroupWrapper::memberSetProfilePicture(const Napi::CallbackInfo& info) {
+void MetaGroupWrapper::memberSetProfilePicture(const Napi::CallbackInfo& info) {
 
-    return wrapResult(info, [&] {
+    wrapExceptions(info, [&] {
         assertInfoLength(info, 2);
         assertIsString(info[0]);
         assertIsObject(info[1]);
@@ -502,15 +501,16 @@ Napi::Value MetaGroupWrapper::memberSetProfilePicture(const Napi::CallbackInfo& 
         auto pubkeyHex = toCppString(info[0], __PRETTY_FUNCTION__);
         auto profilePicture = profile_pic_from_object(info[1]);
 
-        auto m = this->meta_group->members->get_or_construct(pubkeyHex);
-        m.profile_picture = profilePicture;
-        this->meta_group->members->set(m);
-        return this->meta_group->members->get_or_construct(m.session_id);
+        auto m = this->meta_group->members->get(pubkeyHex);
+        if (m) {
+            m->profile_picture = profilePicture;
+            this->meta_group->members->set(*m);
+        }
     });
 }
 
-Napi::Value MetaGroupWrapper::membersMarkPendingRemoval(const Napi::CallbackInfo& info) {
-    return wrapResult(info, [&] {
+void MetaGroupWrapper::membersMarkPendingRemoval(const Napi::CallbackInfo& info) {
+    wrapExceptions(info, [&] {
         assertInfoLength(info, 2);
         auto toUpdateJSValue = info[0];
         auto withMessageJSValue = info[1];
@@ -522,12 +522,12 @@ Napi::Value MetaGroupWrapper::membersMarkPendingRemoval(const Napi::CallbackInfo
         auto toUpdateJS = toUpdateJSValue.As<Napi::Array>();
         for (uint32_t i = 0; i < toUpdateJS.Length(); i++) {
             auto pubkeyHex = toCppString(toUpdateJS[i], __PRETTY_FUNCTION__);
-            auto existing = this->meta_group->members->get_or_construct(pubkeyHex);
-            existing.set_removed(withMessages);
-            this->meta_group->members->set(existing);
+            auto existing = this->meta_group->members->get(pubkeyHex);
+            if (existing) {
+                existing->set_removed(withMessages);
+                this->meta_group->members->set(*existing);
+            }
         }
-
-        return true;
     });
 }
 

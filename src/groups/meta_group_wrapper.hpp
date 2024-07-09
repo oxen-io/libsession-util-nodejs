@@ -73,14 +73,14 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
     Napi::Value memberGetAllPendingRemovals(const Napi::CallbackInfo& info);
     Napi::Value memberGet(const Napi::CallbackInfo& info);
     Napi::Value memberGetOrConstruct(const Napi::CallbackInfo& info);
-    Napi::Value memberSetName(const Napi::CallbackInfo& info);
-    Napi::Value memberSetInvited(const Napi::CallbackInfo& info);
-    Napi::Value memberSetAccepted(const Napi::CallbackInfo& info);
-    Napi::Value memberSetPromoted(const Napi::CallbackInfo& info);
-    Napi::Value memberSetAdmin(const Napi::CallbackInfo& info);
-    Napi::Value memberSetProfilePicture(const Napi::CallbackInfo& info);
+    void memberSetName(const Napi::CallbackInfo& info);
+    void memberSetInvited(const Napi::CallbackInfo& info);
+    void memberSetAccepted(const Napi::CallbackInfo& info);
+    void memberSetPromoted(const Napi::CallbackInfo& info);
+    void memberSetAdmin(const Napi::CallbackInfo& info);
+    void memberSetProfilePicture(const Napi::CallbackInfo& info);
     Napi::Value memberEraseAndRekey(const Napi::CallbackInfo& info);
-    Napi::Value membersMarkPendingRemoval(const Napi::CallbackInfo& info);
+    void membersMarkPendingRemoval(const Napi::CallbackInfo& info);
 
     /** Keys Actions */
 
