@@ -70,7 +70,7 @@ void UserConfigWrapper::setUserInfo(const Napi::CallbackInfo& info) {
         if (name.IsString())
             new_name = name.As<Napi::String>().Utf8Value();
 
-        config.set_name(new_name);
+        config.set_name_truncated(new_name);
 
         auto new_priority = toPriority(priority, config.get_nts_priority());
         config.set_nts_priority(new_priority);

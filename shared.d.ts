@@ -65,3 +65,13 @@ declare module 'libsession_util_nodejs' {
 
   export type BaseWrapperActionsCalls = MakeWrapperActionCalls<BaseConfigWrapper>;
 }
+
+/**
+ * Constants wrapper logic
+ */
+
+export type ConstantsWrapper = {
+  "CONSTANTS": {
+    MAX_NAME_LENGTH: number
+  }
+}
