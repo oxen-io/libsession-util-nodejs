@@ -64,14 +64,11 @@ declare module 'libsession_util_nodejs' {
   }
 
   export type BaseWrapperActionsCalls = MakeWrapperActionCalls<BaseConfigWrapper>;
-}
 
-/**
- * Constants wrapper logic
- */
-
-export type ConstantsWrapper = {
-  "CONSTANTS": {
-    MAX_NAME_LENGTH: number
+  export type ConstantsType = {
+    /** Maximum byte length for user, contact and group names  */
+    MAX_NAME_LENGTH: number;
   }
+
+  export const CONSTANTS: ConstantsType;
 }
