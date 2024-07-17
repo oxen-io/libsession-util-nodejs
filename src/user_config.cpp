@@ -55,8 +55,8 @@ Napi::Value UserConfigWrapper::getUserInfo(const Napi::CallbackInfo& info) {
     });
 }
 
-void UserConfigWrapper::setUserInfo(const Napi::CallbackInfo& info) {
-    wrapExceptions(info, [&] {
+Napi::Value UserConfigWrapper::setUserInfo(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
         assertInfoLength(info, 3);
 
         auto name = info[0];
@@ -79,6 +79,8 @@ void UserConfigWrapper::setUserInfo(const Napi::CallbackInfo& info) {
             assertIsObject(profile_pic_obj);
 
         config.set_profile_pic(profile_pic_from_object(profile_pic_obj));
+
+        return config.get_name();
     });
 }
 
