@@ -72,7 +72,13 @@ declare module 'libsession_util_nodejs' {
     BASE_GROUP_MAX_NAME_LENGTH: number;
     /** 100 bytes */
     GROUP_INFO_MAX_NAME_LENGTH: number;
-  }
+    /** 411 bytes
+     * 
+     * COMMUNITY_BASE_URL_MAX_LENGTH + '/r/' + COMMUNITY_ROOM_MAX_LENGTH
+    qs_pubkey.size() + hex pubkey + null terminator
+    */
+    COMMUNITY_FULL_URL_MAX_LENGTH: number;
+  };
 
   export const CONSTANTS: ConstantsType;
 }
