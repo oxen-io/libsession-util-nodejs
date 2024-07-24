@@ -10,4 +10,3 @@ class ConstantsWrapper : public Napi::ObjectWrap<ConstantsWrapper> {
     static Napi::Object Init(Napi::Env env, Napi::Object exports);
 };
 }  // namespace session::nodeapi
-
