@@ -1,6 +1,9 @@
-/build/
-/.vscode/
+# ide files
 /.vscrof/
+/.vscode/
+/.idea/
+
+/build/
 /node_modules/
 /*.tar.gz
 /package-lock.json

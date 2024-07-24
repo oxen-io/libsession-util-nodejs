@@ -15,11 +15,12 @@ declare module 'libsession_util_nodejs' {
       url: string;
       key: Uint8Array;
     };
+    /** if name > CONTACT_MAX_NAME_LENGTH it will be truncated */
     setUserInfo: (
       name: string,
       priority: number,
       profilePic: { url: string; key: Uint8Array } | null
-    ) => void;
+    ) => string;
     setEnableBlindedMsgRequest: (msgRequest: boolean) => void;
     getEnableBlindedMsgRequest: () => boolean | undefined;
     setNoteToSelfExpiry: (expirySeconds: number) => void;
