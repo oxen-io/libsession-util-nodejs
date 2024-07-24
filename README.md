@@ -35,12 +35,15 @@ Note: The `electron` property in the `config` object will need to be updated in 
 
 ### Making a Release and updating Session-desktop
 
-First, make sure all your changes are commited and pushed to the `libsession-util-nodejs` project from your `[FOLDER_NOT_IN_SESSION_DESKTOP]` folder.
-Then, bump the version in the package.json of the nodejs wrapper.
+1. First, make sure all your changes are commited and pushed to the `libsession-util-nodejs` project from your `[FOLDER_NOT_IN_SESSION_DESKTOP]` folder.
 
-- A **patch** version bump is required only if you have changed the implementation of an existing function or doing a hot fix for libsession version used by `session-desktop`.
+2. Then make sure the `libsession-util` is using the latest `dev` branch (unless there is a reason not to).
 
-- A **minor** version bump is required if you have added a new function or changed the signature of an existing one.
+3. Then, bump the version in the package.json of the nodejs wrapper.
+
+   - A **patch** version bump is required only if you have changed the implementation of an existing function or doing a hot fix for libsession version used by `session-desktop`.
+
+   - A **minor** version bump is required if you have added a new function or changed the signature of an existing one.
 
 Then, run these commands:
 
