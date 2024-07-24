@@ -73,6 +73,8 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
     Napi::Value memberGetAllPendingRemovals(const Napi::CallbackInfo& info);
     Napi::Value memberGet(const Napi::CallbackInfo& info);
     Napi::Value memberGetOrConstruct(const Napi::CallbackInfo& info);
+    void memberConstructAndSet(const Napi::CallbackInfo& info);
+
     void memberSetName(const Napi::CallbackInfo& info);
     void memberSetInvited(const Napi::CallbackInfo& info);
     void memberSetAccepted(const Napi::CallbackInfo& info);
@@ -98,6 +100,7 @@ class MetaGroupWrapper : public Napi::ObjectWrap<MetaGroupWrapper> {
     Napi::Value swarmSubaccountSign(const Napi::CallbackInfo& info);
     Napi::Value swarmVerifySubAccount(const Napi::CallbackInfo& info);
     Napi::Value loadAdminKeys(const Napi::CallbackInfo& info);
+    Napi::Value keysAdmin(const Napi::CallbackInfo& info);
 };
 
 }  // namespace session::nodeapi

@@ -7,6 +7,7 @@ declare module 'libsession_util_nodejs' {
     keyRekey: () => Uint8Array;
     keyGetAll: () => Array<Uint8Array>;
     loadKeyMessage: (hash: string, data: Uint8Array, timestampMs: number) => boolean;
+    keysAdmin: () => boolean;
     keyGetCurrentGen: () => number;
 
     currentHashes: () => Array<string>;

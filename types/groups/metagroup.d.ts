@@ -76,6 +76,7 @@ declare module 'libsession_util_nodejs' {
     // members
     public memberGet: MetaGroupWrapper['memberGet'];
     public memberGetOrConstruct: MetaGroupWrapper['memberGetOrConstruct'];
+    public memberConstructAndSet: MetaGroupWrapper['memberConstructAndSet'];
     public memberGetAll: MetaGroupWrapper['memberGetAll'];
     public memberGetAllPendingRemovals: MetaGroupWrapper['memberGetAllPendingRemovals'];
     public memberSetAccepted: MetaGroupWrapper['memberSetAccepted'];
@@ -92,6 +93,7 @@ declare module 'libsession_util_nodejs' {
     public keysNeedsRekey: MetaGroupWrapper['keysNeedsRekey'];
     public keyRekey: MetaGroupWrapper['keyRekey'];
     public loadKeyMessage: MetaGroupWrapper['loadKeyMessage'];
+    public keysAdmin: MetaGroupWrapper['keysAdmin'];
     public keyGetCurrentGen: MetaGroupWrapper['keyGetCurrentGen'];
     public encryptMessages: MetaGroupWrapper['encryptMessages'];
     public decryptMessage: MetaGroupWrapper['decryptMessage'];
@@ -119,6 +121,7 @@ declare module 'libsession_util_nodejs' {
     // member actions
     | MakeActionCall<MetaGroupWrapper, 'memberGet'>
     | MakeActionCall<MetaGroupWrapper, 'memberGetOrConstruct'>
+    | MakeActionCall<MetaGroupWrapper, 'memberConstructAndSet'>
     | MakeActionCall<MetaGroupWrapper, 'memberGetAll'>
     | MakeActionCall<MetaGroupWrapper, 'memberGetAllPendingRemovals'>
     | MakeActionCall<MetaGroupWrapper, 'memberSetAccepted'>
@@ -135,6 +138,7 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<MetaGroupWrapper, 'keyRekey'>
     | MakeActionCall<MetaGroupWrapper, 'keyGetAll'>
     | MakeActionCall<MetaGroupWrapper, 'loadKeyMessage'>
+    | MakeActionCall<MetaGroupWrapper, 'keysAdmin'>
     | MakeActionCall<MetaGroupWrapper, 'keyGetCurrentGen'>
     | MakeActionCall<MetaGroupWrapper, 'currentHashes'>
     | MakeActionCall<MetaGroupWrapper, 'encryptMessages'>

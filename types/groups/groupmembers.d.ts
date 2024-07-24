@@ -31,6 +31,8 @@ declare module 'libsession_util_nodejs' {
     // GroupMember related methods
     memberGet: (pubkeyHex: PubkeyType) => GroupMemberGet | null;
     memberGetOrConstruct: (pubkeyHex: PubkeyType) => GroupMemberGet;
+    memberConstructAndSet: (pubkeyHex: PubkeyType) => void;
+
     memberGetAll: () => Array<GroupMemberGet>;
     memberGetAllPendingRemovals: () => Array<GroupMemberGet>;
 

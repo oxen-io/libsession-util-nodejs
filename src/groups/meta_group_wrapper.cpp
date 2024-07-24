@@ -37,6 +37,9 @@ void MetaGroupWrapper::Init(Napi::Env env, Napi::Object exports) {
                     // members exposed functions
                     InstanceMethod("memberGet", &MetaGroupWrapper::memberGet),
                     InstanceMethod("memberGetOrConstruct", &MetaGroupWrapper::memberGetOrConstruct),
+                    InstanceMethod(
+                            "memberConstructAndSet", &MetaGroupWrapper::memberConstructAndSet),
+
                     InstanceMethod("memberGetAll", &MetaGroupWrapper::memberGetAll),
                     InstanceMethod(
                             "memberGetAllPendingRemovals",
@@ -417,6 +420,17 @@ Napi::Value MetaGroupWrapper::memberGetOrConstruct(const Napi::CallbackInfo& inf
     });
 }
 
+void MetaGroupWrapper::memberConstructAndSet(const Napi::CallbackInfo& info) {
+    wrapExceptions(info, [&] {
+        assertInfoLength(info, 1);
+        assertIsString(info[0]);
+
+        auto pubkeyHex = toCppString(info[0], __PRETTY_FUNCTION__);
+        auto created = meta_group->members->get_or_construct(pubkeyHex);
+        meta_group->members->set(created);
+    });
+}
+
 void MetaGroupWrapper::memberSetName(const Napi::CallbackInfo& info) {
     wrapExceptions(info, [&] {
         assertIsString(info[0]);
@@ -477,7 +491,6 @@ void MetaGroupWrapper::memberSetPromoted(const Napi::CallbackInfo& info) {
 }
 
 void MetaGroupWrapper::memberSetAdmin(const Napi::CallbackInfo& info) {
-
     wrapExceptions(info, [&] {
         assertInfoLength(info, 1);
         assertIsString(info[0]);
@@ -485,9 +498,10 @@ void MetaGroupWrapper::memberSetAdmin(const Napi::CallbackInfo& info) {
         // Note: this step might add an admin which was removed back once he accepts the promotion,
         // but there is not much we can do about it
         auto m = this->meta_group->members->get(pubkeyHex);
-        m->admin = true;
-
-        this->meta_group->members->set(*m);
+        if (m) {
+            m->admin = true;
+            this->meta_group->members->set(*m);
+        }
     });
 }
 
@@ -686,6 +700,14 @@ Napi::Value MetaGroupWrapper::loadAdminKeys(const Napi::CallbackInfo& info) {
         this->meta_group->keys->load_admin_key(
                 secret, *(this->meta_group->info), *(this->meta_group->members));
         return info.Env().Null();
+    });
+}
+
+
+Napi::Value MetaGroupWrapper::keysAdmin(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] {
+        assertInfoLength(info, 0);
+        return this->meta_group->keys->admin();
     });
 }
 
