@@ -1,3 +1,5 @@
+/// <reference path="../shared.d.ts" />
+
 /**
  *
  * Contacts wrapper logic
@@ -24,12 +26,11 @@ declare module 'libsession_util_nodejs' {
     // TODO legacy messages support will be removed in a future release
     | 'legacy';
 
-  type ContactInfoShared = {
+  type ContactInfoShared = WithPriority & {
     id: string;
     name?: string;
     nickname?: string;
     profilePicture?: ProfilePicture;
-    priority: number; // -1 means hidden, 0 means normal, > 1 means pinned
     createdAtSeconds: number; // can only be set the first time a contact is created, a new change won't overide the value in the wrapper.
     expirationMode?: DisappearingMessageConversationModeType;
     expirationTimerSeconds?: number;

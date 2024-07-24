@@ -49,7 +49,7 @@ struct toJs_impl<contact_info> {
         obj["createdAtSeconds"] = toJs(env, contact.created);
         obj["expirationMode"] = toJs(env, expiration_mode_string(contact.exp_mode));
         obj["expirationTimerSeconds"] = toJs(env, contact.exp_timer.count());
-        obj["profilePicture"] = object_from_profile_pic(env, contact.profile_picture);
+        obj["profilePicture"] = toJs(env, contact.profile_picture);
 
         return obj;
     }

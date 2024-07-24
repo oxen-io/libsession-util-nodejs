@@ -50,6 +50,19 @@ struct toJs_impl<convo::community> : toJs_impl<config::community> {
     }
 };
 
+template <>
+struct toJs_impl<convo::group> {
+    Napi::Object operator()(const Napi::Env& env, const convo::group group_info) {
+        auto obj = Napi::Object::New(env);
+
+        obj["pubkeyHex"] = toJs(env, group_info.id);
+        obj["unread"] = toJs(env, group_info.unread);
+        obj["lastRead"] = toJs(env, group_info.last_read);
+
+        return obj;
+    }
+};
+
 void ConvoInfoVolatileWrapper::Init(Napi::Env env, Napi::Object exports) {
     InitHelper<ConvoInfoVolatileWrapper>(
             env,
@@ -68,6 +81,12 @@ void ConvoInfoVolatileWrapper::Init(Napi::Env env, Napi::Object exports) {
                             "getAllLegacyGroups", &ConvoInfoVolatileWrapper::getAllLegacyGroups),
                     InstanceMethod("setLegacyGroup", &ConvoInfoVolatileWrapper::setLegacyGroup),
                     InstanceMethod("eraseLegacyGroup", &ConvoInfoVolatileWrapper::eraseLegacyGroup),
+
+                    // group related methods
+                    InstanceMethod("getGroup", &ConvoInfoVolatileWrapper::getGroup),
+                    InstanceMethod("getAllGroups", &ConvoInfoVolatileWrapper::getAllGroups),
+                    InstanceMethod("setGroup", &ConvoInfoVolatileWrapper::setGroup),
+                    InstanceMethod("eraseGroup", &ConvoInfoVolatileWrapper::eraseGroup),
 
                     // communities related methods
                     InstanceMethod("getCommunity", &ConvoInfoVolatileWrapper::getCommunity),
@@ -107,7 +126,7 @@ void ConvoInfoVolatileWrapper::set1o1(const Napi::CallbackInfo& info) {
         assertIsString(first);
 
         auto second = info[1];
-        assertIsNumber(second);
+        assertIsNumber(second, "set1o1");
 
         auto third = info[2];
         assertIsBoolean(third);
@@ -121,6 +140,10 @@ void ConvoInfoVolatileWrapper::set1o1(const Napi::CallbackInfo& info) {
 
         config.set(convo);
     });
+}
+
+Napi::Value ConvoInfoVolatileWrapper::erase1o1(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] { return config.erase_1to1(getStringArgs<1>(info)); });
 }
 
 /**
@@ -144,7 +167,7 @@ void ConvoInfoVolatileWrapper::setLegacyGroup(const Napi::CallbackInfo& info) {
         auto first = info[0];
         assertIsString(first);
         auto second = info[1];
-        assertIsNumber(second);
+        assertIsNumber(second, "setLegacyGroup");
 
         auto third = info[2];
         assertIsBoolean(third);
@@ -166,8 +189,45 @@ Napi::Value ConvoInfoVolatileWrapper::eraseLegacyGroup(const Napi::CallbackInfo&
     return wrapResult(info, [&] { return config.erase_legacy_group(getStringArgs<1>(info)); });
 }
 
-Napi::Value ConvoInfoVolatileWrapper::erase1o1(const Napi::CallbackInfo& info) {
-    return wrapResult(info, [&] { return config.erase_1to1(getStringArgs<1>(info)); });
+/**
+ * =================================================
+ * ===================== Groups ====================
+ * =================================================
+ */
+
+Napi::Value ConvoInfoVolatileWrapper::getGroup(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] { return config.get_group(getStringArgs<1>(info)); });
+}
+
+Napi::Value ConvoInfoVolatileWrapper::getAllGroups(const Napi::CallbackInfo& info) {
+    return get_all_impl(info, config.size_groups(), config.begin_groups(), config.end());
+}
+
+void ConvoInfoVolatileWrapper::setGroup(const Napi::CallbackInfo& info) {
+    wrapExceptions(info, [&] {
+        assertInfoLength(info, 3);
+        auto first = info[0];
+        assertIsString(first);
+        auto second = info[1];
+        assertIsNumber(second, "setGroup");
+
+        auto third = info[2];
+        assertIsBoolean(third);
+
+        auto convo = config.get_or_construct_group(toCppString(first, "convoInfo.setGroup1"));
+
+        if (auto last_read = toCppInteger(second, "convoInfo.setGroup2");
+            last_read > convo.last_read)
+            convo.last_read = last_read;
+
+        convo.unread = toCppBoolean(third, "convoInfo.setGroup3");
+
+        config.set(convo);
+    });
+}
+
+Napi::Value ConvoInfoVolatileWrapper::eraseGroup(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&] { return config.erase_group(getStringArgs<1>(info)); });
 }
 
 /**
@@ -194,7 +254,7 @@ void ConvoInfoVolatileWrapper::setCommunityByFullUrl(const Napi::CallbackInfo& i
         assertIsString(first);
 
         auto second = info[1];
-        assertIsNumber(second);
+        assertIsNumber(second, "setCommunityByFullUrl");
 
         auto third = info[2];
         assertIsBoolean(third);

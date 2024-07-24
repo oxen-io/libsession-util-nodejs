@@ -1,3 +1,6 @@
+/// <reference path="../shared.d.ts" />
+/// <reference path="./usergroups.d.ts" />
+
 declare module 'libsession_util_nodejs' {
   export type ConvoVolatileType = '1o1' | UserGroupsType;
 
@@ -8,6 +11,7 @@ declare module 'libsession_util_nodejs' {
 
   type ConvoInfoVolatile1o1 = BaseConvoInfoVolatile & { pubkeyHex: string };
   type ConvoInfoVolatileLegacyGroup = BaseConvoInfoVolatile & { pubkeyHex: string };
+  type ConvoInfoVolatileGroup = BaseConvoInfoVolatile & { pubkeyHex: GroupPubkeyType };
   type ConvoInfoVolatileCommunity = BaseConvoInfoVolatile & CommunityDetails;
 
   // type ConvoInfoVolatileCommunity = BaseConvoInfoVolatile & { pubkeyHex: string }; // we need a `set` with the full url but maybe not for the `get`
@@ -28,6 +32,12 @@ declare module 'libsession_util_nodejs' {
     getAllLegacyGroups: () => Array<ConvoInfoVolatileLegacyGroup>;
     setLegacyGroup: (pubkeyHex: string, lastRead: number, unread: boolean) => void;
     eraseLegacyGroup: (pubkeyHex: string) => boolean;
+
+    // group related methods
+    getGroup: (pubkeyHex: GroupPubkeyType) => ConvoInfoVolatileGroup | null;
+    getAllGroups: () => Array<ConvoInfoVolatileGroup>;
+    setGroup: (pubkeyHex: GroupPubkeyType, lastRead: number, unread: boolean) => void;
+    eraseGroup: (pubkeyHex: GroupPubkeyType) => boolean;
 
     // communities related methods
     getCommunity: (communityFullUrl: string) => ConvoInfoVolatileCommunity | null; // pubkey not required
@@ -71,6 +81,10 @@ declare module 'libsession_util_nodejs' {
     | MakeActionCall<ConvoInfoVolatileWrapper, 'getAllLegacyGroups'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'setLegacyGroup'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'eraseLegacyGroup'>
+    | MakeActionCall<ConvoInfoVolatileWrapper, 'getGroup'>
+    | MakeActionCall<ConvoInfoVolatileWrapper, 'getAllGroups'>
+    | MakeActionCall<ConvoInfoVolatileWrapper, 'setGroup'>
+    | MakeActionCall<ConvoInfoVolatileWrapper, 'eraseGroup'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'getCommunity'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'setCommunityByFullUrl'>
     | MakeActionCall<ConvoInfoVolatileWrapper, 'getAllCommunities'>

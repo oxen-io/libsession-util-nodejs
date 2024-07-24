@@ -3,31 +3,35 @@
 #include <napi.h>
 
 #include <optional>
+#include <stdexcept>
 #include <string_view>
 #include <type_traits>
+#include <unordered_set>
 #include <vector>
 
+#include "session/config/namespaces.hpp"
 #include "session/types.hpp"
+#include "utilities.hpp"
 
 namespace session::nodeapi {
 
 using namespace std::literals;
 
-// template <typename T>
-// T object_wrap_impl(const Napi::ObjectWrap<T>&);
-// template <typename T>
-// using object_wrap_t = decltype(object_wrap_impl(std::declval<const T&>()));
+static void checkOrThrow(bool condition, const char* msg) {
+    if (!condition)
+        throw std::invalid_argument{msg};
+}
 
 void assertInfoLength(const Napi::CallbackInfo& info, const int expected);
 
 void assertInfoMinLength(const Napi::CallbackInfo& info, const int minLength);
 
 void assertIsStringOrNull(const Napi::Value& value);
-void assertIsNumber(const Napi::Value& value);
+void assertIsNumber(const Napi::Value& value, const std::string& identifier);
 void assertIsArray(const Napi::Value& value);
 void assertIsObject(const Napi::Value& value);
 void assertIsUInt8ArrayOrNull(const Napi::Value& value);
-void assertIsUInt8Array(const Napi::Value& value);
+void assertIsUInt8Array(const Napi::Value& value, const std::string& identifier);
 void assertIsString(const Napi::Value& value);
 void assertIsBoolean(const Napi::Value& value);
 
@@ -48,11 +52,13 @@ auto getStringArgs(const Napi::CallbackInfo& info) {
         return args;
 }
 
-
 std::string toCppString(Napi::Value x, const std::string& identifier);
 ustring toCppBuffer(Napi::Value x, const std::string& identifier);
 ustring_view toCppBufferView(Napi::Value x, const std::string& identifier);
 int64_t toCppInteger(Napi::Value x, const std::string& identifier, bool allowUndefined = false);
+std::optional<int64_t> maybeNonemptyInt(Napi::Value x, const std::string& identifier);
+std::optional<bool> maybeNonemptyBoolean(Napi::Value x, const std::string& identifier);
+
 bool toCppBoolean(Napi::Value x, const std::string& identifier);
 
 // If the object is null/undef/empty returns nullopt, otherwise if a String returns a std::string of
@@ -93,26 +99,38 @@ template <>
 struct toJs_impl<bool> {
     auto operator()(const Napi::Env& env, bool b) const { return Napi::Boolean::New(env, b); }
 };
+
+template <>
+struct toJs_impl<session::config::Namespace> {
+    auto operator()(const Napi::Env& env, session::config::Namespace b) const {
+        return Napi::Number::New(env, static_cast<int16_t>(b));
+    }
+};
+
 template <typename T>
 struct toJs_impl<T, std::enable_if_t<std::is_arithmetic_v<T>>> {
     auto operator()(const Napi::Env& env, T n) const { return Napi::Number::New(env, n); }
 };
+
 template <typename T>
 struct toJs_impl<T, std::enable_if_t<std::is_convertible_v<T, std::string_view>>> {
     auto operator()(const Napi::Env& env, std::string_view s) const {
         return Napi::String::New(env, s.data(), s.size());
     }
 };
+
 template <typename T>
 struct toJs_impl<T, std::enable_if_t<std::is_convertible_v<T, ustring_view>>> {
     auto operator()(const Napi::Env& env, ustring_view b) const {
         return Napi::Buffer<uint8_t>::Copy(env, b.data(), b.size());
     }
 };
+
 template <typename T>
 struct toJs_impl<T, std::enable_if_t<std::is_base_of_v<Napi::Value, T>>> {
     auto operator()(const Napi::Env& env, const T& val) { return val; }
 };
+
 template <typename T>
 struct toJs_impl<std::vector<T>> {
     auto operator()(const Napi::Env& env, const std::vector<T>& val) {
@@ -122,6 +140,20 @@ struct toJs_impl<std::vector<T>> {
         return arr;
     }
 };
+
+template <typename T>
+struct toJs_impl<std::unordered_set<T>> {
+    auto operator()(const Napi::Env& env, const std::unordered_set<T>& set) {
+        std::vector<T> as_array(set.begin(), set.end());
+
+        auto arr = Napi::Array::New(env, as_array.size());
+        for (size_t i = 0; i < as_array.size(); i++)
+            arr[i] = toJs(env, as_array[i]);
+
+        return arr;
+    }
+};
+
 template <typename T>
 struct toJs_impl<std::optional<T>> {
     Napi::Value operator()(const Napi::Env& env, const std::optional<T>& val) {
@@ -161,7 +193,8 @@ inline std::optional<std::string_view> maybe_string(std::string_view val) {
 // - The return value will be returned as-is if it is already a Napi::Value (or subtype)
 // - The return will be void if void
 // - Otherwise the return value will be passed through toJs() to convert it to a Napi::Value.
-// See toJs below, but generally this supports numeric types, bools, strings, ustrings, and vectors of any of those primitives.
+// See toJs below, but generally this supports numeric types, bools, strings, ustrings, and vectors
+// of any of those primitives.
 //
 // General use is:
 //
@@ -218,5 +251,23 @@ std::string printable(ustring_view x);
 int64_t toPriority(Napi::Value x, int64_t currentPriority);
 
 int64_t unix_timestamp_now();
+
+using push_entry_t = std::tuple<
+        session::config::seqno_t,
+        session::ustring,
+        std::vector<std::string, std::allocator<std::string>>>;
+
+Napi::Object push_result_to_JS(
+        const Napi::Env& env,
+        const push_entry_t& push_entry,
+        const session::config::Namespace& push_namespace);
+
+Napi::Object push_key_entry_to_JS(
+        const Napi::Env& env,
+        const session::ustring_view& key_data,
+        const session::config::Namespace& push_namespace);
+
+Napi::Object decrypt_result_to_JS(
+        const Napi::Env& env, const std::pair<std::string, ustring> decrypted);
 
 }  // namespace session::nodeapi

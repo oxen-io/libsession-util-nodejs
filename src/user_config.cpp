@@ -1,11 +1,15 @@
 #include "user_config.hpp"
 
+#include <iostream>
+
 #include "base_config.hpp"
 #include "profile_pic.hpp"
+#include "session/config/base.hpp"
 #include "session/config/user_profile.hpp"
 
 namespace session::nodeapi {
 
+// using config::LogLevel;
 using config::UserProfile;
 
 void UserConfigWrapper::Init(Napi::Env env, Napi::Object exports) {
@@ -42,7 +46,7 @@ Napi::Value UserConfigWrapper::getUserInfo(const Napi::CallbackInfo& info) {
         user_info_obj["name"] = toJs(env, name);
         user_info_obj["priority"] = toJs(env, priority);
 
-        auto profile_pic_obj = object_from_profile_pic(env, config.get_profile_pic());
+        auto profile_pic_obj = toJs(env, config.get_profile_pic());
         if (profile_pic_obj) {
             user_info_obj["url"] = profile_pic_obj.Get("url");
             user_info_obj["key"] = profile_pic_obj.Get("key");
@@ -64,7 +68,7 @@ void UserConfigWrapper::setUserInfo(const Napi::CallbackInfo& info) {
         auto profile_pic_obj = info[2];
 
         assertIsStringOrNull(name);
-        assertIsNumber(priority);
+        assertIsNumber(priority, "setUserInfo priority");
         std::string new_name;
 
         if (name.IsString())
@@ -119,7 +123,7 @@ void UserConfigWrapper::setNoteToSelfExpiry(const Napi::CallbackInfo& info) {
         assertInfoLength(info, 1);
 
         auto expirySeconds = info[0];
-        assertIsNumber(expirySeconds);
+        assertIsNumber(expirySeconds, "setNoteToSelfExpiry");
 
         auto expiryCppSeconds = toCppInteger(expirySeconds, "set_nts_expiry", false);
         config.set_nts_expiry(std::chrono::seconds{expiryCppSeconds});

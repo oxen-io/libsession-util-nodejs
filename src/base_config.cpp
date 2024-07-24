@@ -15,12 +15,6 @@ Napi::Value ConfigBaseImpl::needsPush(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] { return get_config<ConfigBase>().needs_push(); });
 }
 
-Napi::Value ConfigBaseImpl::storageNamespace(const Napi::CallbackInfo& info) {
-    return wrapResult(info, [&] {
-        return static_cast<uint16_t>(get_config<ConfigBase>().storage_namespace());
-    });
-}
-
 Napi::Value ConfigBaseImpl::currentHashes(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&] { return (get_config<ConfigBase>().current_hashes()); });
 }
@@ -28,15 +22,10 @@ Napi::Value ConfigBaseImpl::currentHashes(const Napi::CallbackInfo& info) {
 Napi::Value ConfigBaseImpl::push(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&]() {
         assertInfoLength(info, 0);
-        auto [seqno, to_push, hashes] = get_config<ConfigBase>().push();
+        auto& conf = get_config<ConfigBase>();
+        auto to_push = conf.push();
 
-        auto env = info.Env();
-        Napi::Object result = Napi::Object::New(env);
-        result["data"] = toJs(env, to_push);
-        result["seqno"] = toJs(env, seqno);
-        result["hashes"] = toJs(env, hashes);
-
-        return result;
+        return push_result_to_JS(info.Env(), to_push, conf.storage_namespace());
     });
 }
 
@@ -47,10 +36,17 @@ Napi::Value ConfigBaseImpl::dump(const Napi::CallbackInfo& info) {
     });
 }
 
+Napi::Value ConfigBaseImpl::makeDump(const Napi::CallbackInfo& info) {
+    return wrapResult(info, [&]() {
+        assertInfoLength(info, 0);
+        return get_config<ConfigBase>().make_dump();
+    });
+}
+
 void ConfigBaseImpl::confirmPushed(const Napi::CallbackInfo& info) {
     return wrapResult(info, [&]() {
         assertInfoLength(info, 2);
-        assertIsNumber(info[0]);
+        assertIsNumber(info[0], "confirmPushed");
         assertIsString(info[1]);
 
         get_config<ConfigBase>().confirm_pushed(
