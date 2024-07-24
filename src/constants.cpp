@@ -1,6 +1,5 @@
 #include "constants.hpp"
 
-#include "session/config/community.h"
 #include "session/config/contacts.hpp"
 #include "session/config/groups/info.hpp"
 #include "session/config/user_groups.hpp"
@@ -30,7 +29,7 @@ Napi::Object ConstantsWrapper::Init(Napi::Env env, Napi::Object exports) {
                      napi_enumerable),
              ObjectWrap::StaticValue(
                      "COMMUNITY_FULL_URL_MAX_LENGTH",
-                     Napi::Number::New(env, COMMUNITY_FULL_URL_MAX_LENGTH),
+                     Napi::Number::New(env, session::config::community::FULL_URL_MAX_LENGTH),
                      napi_enumerable)});
 
     // export object as javascript module
