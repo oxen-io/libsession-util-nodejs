@@ -1,5 +1,6 @@
 /// <reference path="./shared.d.ts" />
 /// <reference path="./user/index.d.ts" />
+/// <reference path="./types/index.d.ts" />
 
 declare module 'libsession_util_nodejs' {
   /**

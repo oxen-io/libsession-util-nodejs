@@ -1,5 +1,6 @@
 #include <napi.h>
 
+#include "blinding/blinding.hpp"
 #include "constants.hpp"
 #include "contacts_config.hpp"
 #include "convo_info_volatile_config.hpp"
@@ -14,6 +15,9 @@ Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
     ContactsConfigWrapper::Init(env, exports);
     UserGroupsWrapper::Init(env, exports);
     ConvoInfoVolatileWrapper::Init(env, exports);
+
+    // Fully static wrappers init
+    BlindingWrapper::Init(env, exports);
 
     return exports;
 }
