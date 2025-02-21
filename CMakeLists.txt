@@ -31,6 +31,7 @@ SET(WITH_TESTS OFF)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(ENABLE_ONIONREQ OFF)
 
 # when building from a release of libsession on desktop, it complains that ios-cmake is not up to date
 # as it is not part of the archive. We actually don't care about it on session-desktop
