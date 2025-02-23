@@ -17,7 +17,7 @@ else()
   set(CMAKE_BUILD_PARALLEL_LEVEL 4)  # Fallback to 16 if detection fails
 endif()
 message(STATUS "Number of processors detected: ${N}")
-
+set(ENABLE_ONIONREQ OFF)
 
 add_definitions(-DNAPI_VERSION=8)
 set(CMAKE_CONFIGURATION_TYPES Release)
